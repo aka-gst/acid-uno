@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#090b10">
+
+  <title>ACID UNO</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="game">
+
+  <header>
+    <div class="logo"><b>ACID</b> UNO</div>
+    <button id="restart">↻</button>
+  </header>
+
+  <section id="bot">
+    <strong>🤖 ACID BOT</strong>
+    <div id="botCount">7 карт</div>
+    <div id="botCards"></div>
+  </section>
+
+  <main id="table">
+
+    <div id="center">
+
+      <button id="deck">
+        <span>ACID</span>
+        <small id="deckCount"></small>
+      </button>
+
+      <div id="discard"></div>
+
+    </div>
+
+  </main>
+
+  <div id="status">
+    Твой ход
+  </div>
+
+  <div id="hand"></div>
+
+</div>
+
+
+<div id="colorPicker" class="overlay hidden">
+
+  <div class="window">
+
+    <h2>Выбери цвет</h2>
+
+    <div class="colors">
+      <button class="pick red" data-color="red"></button>
+      <button class="pick yellow" data-color="yellow"></button>
+      <button class="pick green" data-color="green"></button>
+      <button class="pick blue" data-color="blue"></button>
+    </div>
+
+  </div>
+
+</div>
+
+
+<div id="endScreen" class="overlay hidden">
+
+  <div class="window">
+
+    <h1 id="endText"></h1>
+
+    <button id="again">
+      ЕЩЁ РАЗ
+    </button>
+
+  </div>
+
+</div>
+
+
+<script src="game.js"></script>
+
+</body>
+</html>
