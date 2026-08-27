@@ -1,1 +1,1017 @@
--
+/* =========================================================
+   ACID UNO v6 — EFFECTS / ANIMATIONS
+   ========================================================= */
+
+
+/* =========================================================
+   GENERAL
+   ========================================================= */
+
+#game.animating {
+  pointer-events: none;
+}
+
+#game.animating #restart {
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   FLYING CARD
+   ========================================================= */
+
+.flyingCard {
+  will-change:
+    transform,
+    left,
+    top,
+    opacity,
+    filter;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  transform-style: preserve-3d;
+}
+
+.flyingCard.fly-active {
+  filter:
+    drop-shadow(0 18px 16px rgba(0,0,0,.55));
+}
+
+
+/* =========================================================
+   CARD LANDING
+   ========================================================= */
+
+.discardPile.card-landed {
+  animation:
+    discardLand .32s
+    cubic-bezier(.18,.9,.3,1.25);
+}
+
+@keyframes discardLand {
+
+  0% {
+    transform:
+      scale(.93)
+      rotate(-4deg);
+  }
+
+  45% {
+    transform:
+      scale(1.08)
+      rotate(2deg);
+  }
+
+  100% {
+    transform:
+      scale(1)
+      rotate(0);
+  }
+
+}
+
+
+/* =========================================================
+   DECK TAP
+   ========================================================= */
+
+#deck.deck-pulse {
+  animation:
+    deckPulse .3s ease;
+}
+
+@keyframes deckPulse {
+
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform:
+      scale(.91)
+      rotate(-2deg);
+  }
+
+  70% {
+    transform:
+      scale(1.04)
+      rotate(1deg);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   DRAW ARRIVAL
+   ========================================================= */
+
+.hand.draw-arrival {
+  animation:
+    handReceive .3s ease;
+}
+
+@keyframes handReceive {
+
+  0% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(5px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+
+}
+
+.botCards.draw-arrival {
+  animation:
+    botReceive .3s ease;
+}
+
+@keyframes botReceive {
+
+  0% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+
+}
+
+
+/* =========================================================
+   PLAYABLE CARD BREATHING
+   ========================================================= */
+
+.handCard.playable {
+  animation:
+    playableBreath
+    2.1s
+    ease-in-out
+    infinite;
+}
+
+@keyframes playableBreath {
+
+  0%,
+  100% {
+    filter:
+      brightness(1.04)
+      saturate(1.03);
+  }
+
+  50% {
+    filter:
+      brightness(1.12)
+      saturate(1.1);
+
+    box-shadow:
+      0 0 0 2px rgba(202,255,56,.95),
+      0 0 21px rgba(202,255,56,.47),
+      0 9px 18px rgba(0,0,0,.66);
+  }
+
+}
+
+
+/* =========================================================
+   SELECTED PLAYER CARD
+   ========================================================= */
+
+.handCard.card-selected {
+  z-index: 999 !important;
+
+  animation:
+    selectedCard .18s ease forwards;
+}
+
+@keyframes selectedCard {
+
+  to {
+    filter:
+      brightness(1.18)
+      saturate(1.08);
+  }
+
+}
+
+
+/* =========================================================
+   SCREEN FLASH
+   ========================================================= */
+
+.screenFlash.flash-white {
+  animation:
+    flashWhite .32s ease-out;
+}
+
+.screenFlash.flash-red {
+  background:
+    rgba(255,48,79,.32);
+
+  animation:
+    flashColor .38s ease-out;
+}
+
+.screenFlash.flash-green {
+  background:
+    rgba(202,255,56,.26);
+
+  animation:
+    flashColor .38s ease-out;
+}
+
+.screenFlash.flash-purple {
+  background:
+    rgba(179,54,255,.31);
+
+  animation:
+    flashColor .42s ease-out;
+}
+
+.screenFlash.flash-blue {
+  background:
+    rgba(57,137,255,.27);
+
+  animation:
+    flashColor .4s ease-out;
+}
+
+.screenFlash.flash-yellow {
+  background:
+    rgba(255,216,61,.27);
+
+  animation:
+    flashColor .4s ease-out;
+}
+
+@keyframes flashWhite {
+
+  0% {
+    opacity: 0;
+  }
+
+  15% {
+    opacity: .65;
+  }
+
+  100% {
+    opacity: 0;
+  }
+
+}
+
+@keyframes flashColor {
+
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+
+}
+
+
+/* =========================================================
+   IMPACT RING
+   ========================================================= */
+
+.impactRing.impact {
+  display: block !important;
+
+  animation:
+    impactRing .52s ease-out forwards;
+}
+
+@keyframes impactRing {
+
+  0% {
+    opacity: 1;
+
+    width: 55px;
+    height: 55px;
+
+    border-width: 5px;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.4);
+  }
+
+  70% {
+    opacity: .65;
+  }
+
+  100% {
+    opacity: 0;
+
+    width: 330px;
+    height: 330px;
+
+    border-width: 1px;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   SCREEN SHAKE
+   ========================================================= */
+
+#game.shake-soft {
+  animation:
+    shakeSoft .28s linear;
+}
+
+#game.shake-hard {
+  animation:
+    shakeHard .42s linear;
+}
+
+@keyframes shakeSoft {
+
+  0%,
+  100% {
+    transform: translate(0,0);
+  }
+
+  20% {
+    transform: translate(-2px,1px);
+  }
+
+  40% {
+    transform: translate(2px,-1px);
+  }
+
+  60% {
+    transform: translate(-1px,-1px);
+  }
+
+  80% {
+    transform: translate(1px,1px);
+  }
+
+}
+
+@keyframes shakeHard {
+
+  0%,
+  100% {
+    transform: translate(0,0);
+  }
+
+  10% {
+    transform:
+      translate(-5px,2px)
+      rotate(-.25deg);
+  }
+
+  20% {
+    transform:
+      translate(5px,-3px)
+      rotate(.2deg);
+  }
+
+  30% {
+    transform:
+      translate(-4px,-1px);
+  }
+
+  40% {
+    transform:
+      translate(4px,3px);
+  }
+
+  55% {
+    transform:
+      translate(-3px,1px);
+  }
+
+  70% {
+    transform:
+      translate(2px,-2px);
+  }
+
+  85% {
+    transform:
+      translate(-1px,1px);
+  }
+
+}
+
+
+/* =========================================================
+   ACTION BANNER
+   ========================================================= */
+
+.actionBanner.banner-show {
+  display: block !important;
+
+  animation:
+    bannerPop .72s
+    cubic-bezier(.16,.9,.25,1.2)
+    forwards;
+}
+
+@keyframes bannerPop {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.35)
+      rotate(-12deg);
+  }
+
+  25% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.16)
+      rotate(3deg);
+  }
+
+  45% {
+    transform:
+      translate(-50%, -50%)
+      scale(.98)
+      rotate(-4deg);
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -54%)
+      scale(1.03)
+      rotate(-4deg);
+  }
+
+}
+
+
+/* =========================================================
+   PENALTY BANNER
+   ========================================================= */
+
+.actionBanner.penalty-banner {
+  border-color: #ff5368;
+
+  background:
+    linear-gradient(
+      180deg,
+      #311117,
+      #13080b
+    );
+
+  box-shadow:
+    0 0 42px rgba(255,50,85,.4);
+}
+
+.actionBanner.penalty-banner
+.actionBannerText {
+  color: #ff6579;
+
+  font-size: 26px;
+
+  text-shadow:
+    0 0 14px rgba(255,55,85,.45);
+}
+
+
+/* =========================================================
+   SKIP / REVERSE BANNER
+   ========================================================= */
+
+.actionBanner.special-banner {
+  border-color: #c9a7ff;
+
+  background:
+    linear-gradient(
+      180deg,
+      #241631,
+      #100a16
+    );
+
+  box-shadow:
+    0 0 40px rgba(180,60,255,.35);
+}
+
+.actionBanner.special-banner
+.actionBannerText {
+  color: #d9c0ff;
+}
+
+
+/* =========================================================
+   INTERCEPT
+   ========================================================= */
+
+.actionBanner.intercept-banner {
+  border-color: var(--acid);
+
+  background:
+    linear-gradient(
+      180deg,
+      #202b0e,
+      #0b0e07
+    );
+
+  box-shadow:
+    0 0 45px rgba(202,255,56,.42);
+}
+
+.actionBanner.intercept-banner
+.actionBannerText {
+  color: var(--acid);
+
+  text-shadow:
+    0 0 13px rgba(202,255,56,.4);
+}
+
+
+/* =========================================================
+   ROBOT FINGER
+   ========================================================= */
+
+.robotFinger.robot-enter {
+  display: block !important;
+
+  animation:
+    robotFingerEnter .78s
+    cubic-bezier(.16,.9,.25,1)
+    forwards;
+}
+
+@keyframes robotFingerEnter {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(130px,100px)
+      rotate(-40deg)
+      scale(.75);
+  }
+
+  40% {
+    opacity: 1;
+
+    transform:
+      translate(-12px,-12px)
+      rotate(-24deg)
+      scale(1.08);
+  }
+
+  58% {
+    transform:
+      translate(0,0)
+      rotate(-28deg)
+      scale(1);
+  }
+
+  78% {
+    opacity: 1;
+
+    transform:
+      translate(-3px,-5px)
+      rotate(-27deg)
+      scale(1);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(70px,70px)
+      rotate(-35deg)
+      scale(.9);
+  }
+
+}
+
+
+/* finger tap */
+
+.robotFinger.robot-tap
+.robotIndex {
+  animation:
+    robotTap .25s ease;
+}
+
+@keyframes robotTap {
+
+  0%,
+  100% {
+    transform:
+      rotate(-11deg)
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      rotate(-8deg)
+      translateY(12px);
+  }
+
+}
+
+
+/* =========================================================
+   TURN CHANGE — PLAYER
+   ========================================================= */
+
+#playerTurnGlow.turn-pulse {
+  animation:
+    playerTurnPulse .7s ease;
+}
+
+@keyframes playerTurnPulse {
+
+  0% {
+    opacity: 0;
+    transform:
+      translateX(-50%)
+      scale(.75);
+  }
+
+  40% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   TURN CHANGE — BOT
+   ========================================================= */
+
+#botTurnGlow.turn-pulse {
+  animation:
+    botTurnPulse .7s ease;
+}
+
+@keyframes botTurnPulse {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      scale(.75);
+  }
+
+  45% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   STATUS CHANGE
+   ========================================================= */
+
+.status.status-change {
+  animation:
+    statusChange .36s ease;
+}
+
+@keyframes statusChange {
+
+  0% {
+    opacity: .25;
+
+    transform:
+      translateX(-50%)
+      translateY(4px)
+      scale(.95);
+  }
+
+  55% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      translateY(-2px)
+      scale(1.03);
+  }
+
+  100% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================================
+   WILD COLOR PULSE
+   ========================================================= */
+
+#game.wild-red::after,
+#game.wild-yellow::after,
+#game.wild-green::after,
+#game.wild-blue::after {
+  content: "";
+
+  position: fixed;
+
+  z-index: 850;
+
+  left: 50%;
+  top: 48%;
+
+  width: 30px;
+  height: 30px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  animation:
+    wildPulse .75s ease-out forwards;
+}
+
+#game.wild-red::after {
+  background: var(--red);
+}
+
+#game.wild-yellow::after {
+  background: var(--yellow);
+}
+
+#game.wild-green::after {
+  background: var(--green);
+}
+
+#game.wild-blue::after {
+  background: var(--blue);
+}
+
+@keyframes wildPulse {
+
+  0% {
+    opacity: .72;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.2);
+
+    box-shadow:
+      0 0 15px currentColor;
+  }
+
+  65% {
+    opacity: .18;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(18);
+  }
+
+}
+
+
+/* =========================================================
+   TABLE COLOR RESPONSE
+   ========================================================= */
+
+.tableInner.color-red {
+  box-shadow:
+    inset 0 0 65px rgba(0,0,0,.72),
+    inset 0 0 38px rgba(255,62,84,.15);
+}
+
+.tableInner.color-yellow {
+  box-shadow:
+    inset 0 0 65px rgba(0,0,0,.72),
+    inset 0 0 38px rgba(255,216,61,.13);
+}
+
+.tableInner.color-green {
+  box-shadow:
+    inset 0 0 65px rgba(0,0,0,.72),
+    inset 0 0 38px rgba(56,223,115,.13);
+}
+
+.tableInner.color-blue {
+  box-shadow:
+    inset 0 0 65px rgba(0,0,0,.72),
+    inset 0 0 38px rgba(57,137,255,.15);
+}
+
+
+/* =========================================================
+   SPECIAL SYMBOL
+   ========================================================= */
+
+.actionIcon.action-pop {
+  display: block !important;
+
+  animation:
+    actionIconPop .6s ease forwards;
+}
+
+@keyframes actionIconPop {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      scale(.2)
+      rotate(-20deg);
+  }
+
+  40% {
+    opacity: 1;
+
+    transform:
+      translateX(-50%)
+      scale(1.25)
+      rotate(8deg);
+  }
+
+  70% {
+    transform:
+      translateX(-50%)
+      scale(.95)
+      rotate(-3deg);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translateX(-50%)
+      scale(1)
+      rotate(0);
+  }
+
+}
+
+
+/* =========================================================
+   BOT CARD THROW
+   ========================================================= */
+
+.botCards.bot-throw {
+  animation:
+    botThrowReaction .35s ease;
+}
+
+@keyframes botThrowReaction {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-7px);
+  }
+
+}
+
+
+/* =========================================================
+   PLAYER THROW
+   ========================================================= */
+
+.hand.player-throw {
+  animation:
+    playerThrowReaction .32s ease;
+}
+
+@keyframes playerThrowReaction {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(5px);
+  }
+
+}
+
+
+/* =========================================================
+   END SCREEN FX
+   ========================================================= */
+
+.endWindow {
+  animation:
+    endWindowEnter .55s
+    cubic-bezier(.16,.9,.25,1.1);
+}
+
+@keyframes endWindowEnter {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(.72)
+      translateY(20px);
+  }
+
+  70% {
+    opacity: 1;
+
+    transform:
+      scale(1.04)
+      translateY(-3px);
+  }
+
+  100% {
+    transform:
+      scale(1)
+      translateY(0);
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+
+    transition-duration: .01ms !important;
+  }
+
+}
