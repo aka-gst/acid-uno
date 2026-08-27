@@ -2,8 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#090b10">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#070910">
 
   <title>ACID UNO</title>
 
@@ -14,25 +19,50 @@
 
 <div id="game">
 
-  <header>
-    <div class="logo"><b>ACID</b> UNO</div>
-    <button id="restart">↻</button>
+  <header class="topbar">
+    <div class="logo">
+      <b>ACID</b> UNO
+    </div>
+
+    <div id="penalty" class="penalty hidden"></div>
+
+    <button id="restart" class="iconButton" aria-label="Новая игра">
+      ↻
+    </button>
   </header>
 
+
   <section id="bot">
-    <strong>🤖 ACID BOT</strong>
-    <div id="botCount">7 карт</div>
+
+    <div class="botTitle">
+      <span class="botIcon">🤖</span>
+
+      <div>
+        <strong>ACID BOT</strong>
+        <div id="botCount">7 карт</div>
+      </div>
+    </div>
+
     <div id="botCards"></div>
+
   </section>
+
 
   <main id="table">
 
+    <div class="tableGlow"></div>
+
     <div id="center">
 
-      <button id="deck">
-        <span>ACID</span>
-        <small id="deckCount"></small>
+      <button id="deck" aria-label="Взять карту">
+        <span class="deckLogo">
+          ACID
+          <small>UNO</small>
+        </span>
+
+        <span id="deckCount"></span>
       </button>
+
 
       <div id="discard"></div>
 
@@ -40,26 +70,65 @@
 
   </main>
 
+
   <div id="status">
-    Твой ход
+    ТВОЙ ХОД
   </div>
 
-  <div id="hand"></div>
+
+  <div id="currentColor">
+    <span>ЦВЕТ</span>
+    <i id="currentColorDot"></i>
+  </div>
+
+
+  <section id="playerArea">
+
+    <div id="hand"></div>
+
+    <div id="playerCount">
+      7 карт
+    </div>
+
+  </section>
 
 </div>
 
+
+<!-- ВЫБОР ЦВЕТА -->
 
 <div id="colorPicker" class="overlay hidden">
 
   <div class="window">
 
-    <h2>Выбери цвет</h2>
+    <h2>ВЫБЕРИ ЦВЕТ</h2>
 
     <div class="colors">
-      <button class="pick red" data-color="red"></button>
-      <button class="pick yellow" data-color="yellow"></button>
-      <button class="pick green" data-color="green"></button>
-      <button class="pick blue" data-color="blue"></button>
+
+      <button
+        class="pick red"
+        data-color="red"
+        aria-label="Красный"
+      ></button>
+
+      <button
+        class="pick yellow"
+        data-color="yellow"
+        aria-label="Жёлтый"
+      ></button>
+
+      <button
+        class="pick green"
+        data-color="green"
+        aria-label="Зелёный"
+      ></button>
+
+      <button
+        class="pick blue"
+        data-color="blue"
+        aria-label="Синий"
+      ></button>
+
     </div>
 
   </div>
@@ -67,11 +136,19 @@
 </div>
 
 
+<!-- КОНЕЦ ИГРЫ -->
+
 <div id="endScreen" class="overlay hidden">
 
-  <div class="window">
+  <div class="window endWindow">
 
-    <h1 id="endText"></h1>
+    <div class="endAcid">
+      ACID UNO
+    </div>
+
+    <h1 id="endText">
+      ТЫ ВЫИГРАЛ
+    </h1>
 
     <button id="again">
       ЕЩЁ РАЗ
@@ -79,6 +156,14 @@
 
   </div>
 
+</div>
+
+
+<!-- УВЕДОМЛЕНИЕ О ПЕРЕХВАТЕ -->
+
+<div id="interceptFlash" class="interceptFlash hidden">
+  <span>✋</span>
+  ПЕРЕХВАТ
 </div>
 
 
