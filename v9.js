@@ -881,79 +881,126 @@
 
   async function snapToDiscard9(d) {
 
-    const el =
-      d.source;
+  const el = d.source;
+  const target = discardTarget9();
 
-    const target =
-      discardTarget9();
-
-    if (!target) {
-      await returnDrag9(d);
-      return false;
-    }
-
-    const current =
-      el.getBoundingClientRect();
-
-    const currentCenter =
-      rectCenter9(current);
-
-    const targetCenter =
-      rectCenter9(target);
-
-    const dx =
-      targetCenter.x -
-      currentCenter.x;
-
-    const dy =
-      targetCenter.y -
-      currentCenter.y;
-
-    /*
-      Current element already has transform positioning.
-      Use Web Animations from current screen rect to target,
-      which avoids transform-coordinate fighting.
-    */
-
-    const scale =
-      Math.min(
-        target.width /
-          current.width,
-        target.height /
-          current.height
-      );
-
-    el.style.transition =
-      "none";
-
-    const animation =
-      el.animate(
-        [
-          {
-            transform:
-              "translate3d(0,0,0) scale(1)",
-            opacity: 1
-          },
-          {
-            transform:
-              `translate3d(${dx}px,${dy}px,0) scale(${scale})`,
-            opacity: 1
-          }
-        ],
-        {
-          duration: 190,
-          easing:
-            "cubic-bezier(.18,.82,.2,1)",
-          fill: "forwards"
-        }
-      );
-
-    await animation.finished
-      .catch(() => {});
-
-    return true;
+  if (!target) {
+    await returnDrag9(d);
+    return false;
   }
 
+  /*
+    Берём РЕАЛЬНУЮ экранную позицию карты
+    после последнего движения пальца.
+  */
+
+  const current =
+    el.getBoundingClientRect();
+
+  /*
+    Критически важно:
+    переносим fixed-элемент в его текущие
+    screen coordinates и обнуляем старый transform.
+
+    Благодаря этому первый кадр анимации
+    больше не прыгает в (0,0).
+  */
+
+  el.getAnimations()
+    .forEach(animation => animation.cancel());
+
+  el.style.transition = "none";
+
+  el.style.left =
+    `${current.left}px`;
+
+  el.style.top =
+    `${current.top}px`;
+
+  el.style.width =
+    `${current.width}px`;
+
+  el.style.height =
+    `${current.height}px`;
+
+  el.style.transform =
+    "translate3d(0,0,0) rotate(0deg) scale(1)";
+
+  /*
+    Следующий frame — браузер фиксирует
+    новую стартовую геометрию.
+  */
+
+  await new Promise(resolve =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(resolve)
+    )
+  );
+
+  const currentCenter =
+    rectCenter9(current);
+
+  const targetCenter =
+    rectCenter9(target);
+
+  const dx =
+    targetCenter.x -
+    currentCenter.x;
+
+  const dy =
+    targetCenter.y -
+    currentCenter.y;
+
+  const scale =
+    Math.min(
+      target.width / current.width,
+      target.height / current.height
+    );
+
+  el.classList.remove(
+    "v9-drag-valid",
+    "v9-drag-invalid",
+    "v9-playable",
+    "playable"
+  );
+
+  document
+    .documentElement
+    .classList
+    .add("v91-action");
+
+  const animation =
+    el.animate(
+      [
+        {
+          transform:
+            "translate3d(0,0,0) rotate(0deg) scale(1)"
+        },
+        {
+          transform: `
+            translate3d(
+              ${dx}px,
+              ${dy}px,
+              0
+            )
+            rotate(3deg)
+            scale(${scale})
+          `
+        }
+      ],
+      {
+        duration: 205,
+        easing:
+          "cubic-bezier(.18,.82,.2,1)",
+        fill: "forwards"
+      }
+    );
+
+  await animation.finished
+    .catch(() => {});
+
+  return true;
+}
 
   /* =======================================================
      END DRAG
