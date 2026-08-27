@@ -542,6 +542,10 @@
     if (!d || d.started) return;
 
     d.started = true;
+    document
+        .documentElement
+        .classList
+        .add("v91-action");
 
     const el = d.source;
 
