@@ -1,7 +1,8 @@
 "use strict";
 
 /* =========================================================
-   ACID UNO v6 — ANIMATION ENGINE
+   ACID UNO v7 — ANIMATION ENGINE
+   Smooth motion / iPhone / drag compatible
    ========================================================= */
 
 const AcidFX = (() => {
@@ -11,102 +12,58 @@ const AcidFX = (() => {
   const sleep = ms =>
     new Promise(resolve => setTimeout(resolve, ms));
 
-
-  /* =======================================================
-     STATE
-     ======================================================= */
-
-  let queue = Promise.resolve();
   let locked = false;
-
-
-  /* =======================================================
-     QUEUE
-
-     Все визуальные действия идут строго по очереди.
-     ======================================================= */
-
-  function enqueue(task) {
-
-    queue = queue
-      .catch(() => {})
-      .then(async () => {
-
-        locked = true;
-
-        const game = $("game");
-
-        if (game) {
-          game.classList.add("animating");
-        }
-
-        try {
-          await task();
-        }
-
-        catch (error) {
-          console.error(
-            "ACID FX:",
-            error
-          );
-        }
-
-        finally {
-
-          locked = false;
-
-          if (game) {
-            game.classList.remove("animating");
-          }
-
-        }
-
-      });
-
-    return queue;
-  }
-
 
   function isLocked() {
     return locked;
   }
 
-
-  /* =======================================================
-     RECT HELPERS
-     ======================================================= */
-
-  function rectOf(target) {
-
-    if (!target) {
-      return null;
-    }
-
-    if (typeof target === "string") {
-      target =
-        document.querySelector(target);
-    }
-
-    if (!target) {
-      return null;
-    }
-
-    return target.getBoundingClientRect();
+  function setLocked(value) {
+    locked = value;
   }
 
 
-  function centerOf(rect) {
+  /* =======================================================
+     GEOMETRY
+     ======================================================= */
 
+  function rectCenter(rect) {
     return {
-      x:
-        rect.left +
-        rect.width / 2,
-
-      y:
-        rect.top +
-        rect.height / 2
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
     };
+  }
 
+  function discardRect() {
+    const el = $("discard");
+
+    if (!el) return null;
+
+    return el.getBoundingClientRect();
+  }
+
+  function deckRect() {
+    const el = $("deck");
+
+    if (!el) return null;
+
+    return el.getBoundingClientRect();
+  }
+
+  function botRect() {
+    const el = $("botCards");
+
+    if (!el) return null;
+
+    return el.getBoundingClientRect();
+  }
+
+  function handRect() {
+    const el = $("hand");
+
+    if (!el) return null;
+
+    return el.getBoundingClientRect();
   }
 
 
@@ -115,9 +72,7 @@ const AcidFX = (() => {
      ======================================================= */
 
   function label(value) {
-
     switch (value) {
-
       case "skip":
         return "⊘";
 
@@ -127,700 +82,259 @@ const AcidFX = (() => {
       case "wild":
         return "★";
 
-      case "+2":
-        return "+2";
-
-      case "+4":
-        return "+4";
-
       default:
         return value;
-
     }
-
   }
 
-
-  function createFlyingCard(
-    card,
-    faceDown = false
-  ) {
-
-    const el =
-      document.createElement("div");
+  function createFlyingCard(card) {
+    const el = document.createElement("div");
 
     el.className =
-      "flyingCard";
+      `flyingCard ${card.color}`;
 
-    if (faceDown) {
+    el.innerHTML = `
+      <div class="value">
+        ${label(card.value)}
+      </div>
+    `;
 
-      el.classList.add(
-        "flyingCardBack"
-      );
-
-      el.innerHTML = `
-        <div class="fxCardBack">
-          <span>ACID</span>
-          <b>UNO</b>
-        </div>
-      `;
-
-    }
-
-    else {
-
-      el.classList.add(
-        card.color
-      );
-
-      el.innerHTML = `
-        <div class="value">
-          ${label(card.value)}
-        </div>
-      `;
-
-    }
+    $("animationLayer")
+      .appendChild(el);
 
     return el;
   }
 
 
   /* =======================================================
-     BASIC FLY
-
-     Использует Web Animations API.
-     На современных Safari работает без библиотек.
+     PLACE ELEMENT FROM RECT
      ======================================================= */
 
-  async function flyElement(
+  function placeFromRect(
     element,
-    fromRect,
-    toRect,
-    options = {}
+    rect,
+    scale = 1,
+    rotation = 0
   ) {
-
-    const layer =
-      $("animationLayer");
-
-    if (
-      !layer ||
-      !element ||
-      !fromRect ||
-      !toRect
-    ) {
-      return;
-    }
-
-    const duration =
-      options.duration || 430;
-
-    const start =
-      centerOf(fromRect);
-
-    const end =
-      centerOf(toRect);
-
-    const width =
-      options.width ||
-      fromRect.width ||
-      82;
-
-    const height =
-      options.height ||
-      fromRect.height ||
-      122;
-
-    element.style.width =
-      `${width}px`;
-
-    element.style.height =
-      `${height}px`;
-
     element.style.left =
-      `${start.x - width / 2}px`;
+      `${rect.left}px`;
 
     element.style.top =
-      `${start.y - height / 2}px`;
+      `${rect.top}px`;
 
-    layer.appendChild(element);
+    element.style.width =
+      `${rect.width}px`;
 
-    /*
-      Движение задаём transform,
-      чтобы Safari не дёргал layout.
-    */
+    element.style.height =
+      `${rect.height}px`;
 
-    const dx =
-      end.x - start.x;
-
-    const dy =
-      end.y - start.y;
-
-    const lift =
-      options.lift ?? 45;
-
-    const startRotation =
-      options.startRotation || 0;
-
-    const endRotation =
-      options.endRotation ??
-      (
-        -7 +
-        Math.random() * 14
-      );
-
-    const startScale =
-      options.startScale || 1;
-
-    const endScale =
-      options.endScale || 1;
-
-    const frames = [
-
-      {
-        transform:
-          `translate3d(0,0,0)
-           rotate(${startRotation}deg)
-           scale(${startScale})`,
-
-        opacity: 1
-      },
-
-      {
-        transform:
-          `translate3d(
-            ${dx * .48}px,
-            ${dy * .48 - lift}px,
-            0
-          )
-          rotate(${
-            startRotation +
-            (endRotation - startRotation) * .45
-          }deg)
-          scale(${
-            Math.max(
-              startScale,
-              endScale
-            ) * 1.08
-          })`,
-
-        opacity: 1,
-
-        offset: .48
-      },
-
-      {
-        transform:
-          `translate3d(
-            ${dx}px,
-            ${dy}px,
-            0
-          )
-          rotate(${endRotation}deg)
-          scale(${endScale})`,
-
-        opacity: 1
-      }
-
-    ];
-
-    const animation =
-      element.animate(
-        frames,
-        {
-          duration,
-          easing:
-            "cubic-bezier(.22,.75,.22,1)",
-          fill: "forwards"
-        }
-      );
-
-    await animation.finished
-      .catch(() => {});
-
-    element.remove();
+    element.style.transform =
+      `translate3d(0,0,0)
+       rotate(${rotation}deg)
+       scale(${scale})`;
   }
 
 
   /* =======================================================
-     CARD FROM PLAYER → DISCARD
+     TARGET TRANSFORM
      ======================================================= */
 
-  function playPlayerCard(
-    card,
-    sourceElement
+  function transformToRect(
+    sourceRect,
+    targetRect,
+    rotation = 0,
+    scale = 1
   ) {
+    const source =
+      rectCenter(sourceRect);
 
-    return enqueue(async () => {
+    const target =
+      rectCenter(targetRect);
 
-      const source =
-        rectOf(sourceElement);
+    const x =
+      target.x - source.x;
 
-      const discard =
-        rectOf("#discard");
+    const y =
+      target.y - source.y;
 
-      if (!source || !discard) {
-        return;
-      }
+    return `
+      translate3d(
+        ${x}px,
+        ${y}px,
+        0
+      )
+      rotate(${rotation}deg)
+      scale(${scale})
+    `;
+  }
 
-      if (sourceElement) {
-        sourceElement.classList.add(
-          "card-selected"
-        );
-      }
 
-      await sleep(90);
+  /* =======================================================
+     STATUS
+     ======================================================= */
 
-      const flying =
-        createFlyingCard(card);
+  function status(text) {
+    const el = $("status");
 
-      flying.classList.add(
-        "fly-active"
-      );
+    if (!el) return;
 
-      if (sourceElement) {
-        sourceElement.style.opacity =
-          "0";
-      }
+    el.textContent = text;
 
-      const hand =
-        $("hand");
-
-      hand?.classList.add(
-        "player-throw"
-      );
-
-      await flyElement(
-        flying,
-        source,
-        discard,
+    el.animate(
+      [
         {
-          duration: 440,
-          lift: 65,
-          endRotation:
-            -5 + Math.random() * 10
-        }
-      );
-
-      hand?.classList.remove(
-        "player-throw"
-      );
-
-      await landing();
-
-    });
-
-  }
-
-
-  /* =======================================================
-     BOT → DISCARD
-
-     Сначала летит рубашка,
-     затем в середине переворачивается.
-     ======================================================= */
-
-  function playBotCard(card) {
-
-    return enqueue(async () => {
-
-      const botCards =
-        $("botCards");
-
-      const discard =
-        rectOf("#discard");
-
-      if (
-        !botCards ||
-        !discard
-      ) {
-        return;
-      }
-
-      const botRect =
-        botCards.getBoundingClientRect();
-
-      /*
-        Стартуем из центра видимой
-        руки бота.
-      */
-
-      const startRect = {
-        left:
-          botRect.left +
-          botRect.width / 2 -
-          18,
-
-        top:
-          botRect.top +
-          botRect.height / 2 -
-          26,
-
-        width: 36,
-        height: 52
-      };
-
-      const flying =
-        createFlyingCard(
-          card,
-          true
-        );
-
-      flying.classList.add(
-        "fly-active"
-      );
-
-      flying.style.overflow =
-        "visible";
-
-      const layer =
-        $("animationLayer");
-
-      if (!layer) return;
-
-      const start =
-        centerOf(startRect);
-
-      const end =
-        centerOf(discard);
-
-      const width = 82;
-      const height = 122;
-
-      flying.style.width =
-        `${width}px`;
-
-      flying.style.height =
-        `${height}px`;
-
-      flying.style.left =
-        `${start.x - width / 2}px`;
-
-      flying.style.top =
-        `${start.y - height / 2}px`;
-
-      layer.appendChild(flying);
-
-      botCards.classList.add(
-        "bot-throw"
-      );
-
-      const dx =
-        end.x - start.x;
-
-      const dy =
-        end.y - start.y;
-
-      /*
-        Первая половина:
-        рубашка летит к центру.
-      */
-
-      const first =
-        flying.animate(
-          [
-            {
-              transform:
-                "translate3d(0,0,0) rotateY(0deg) rotate(-5deg) scale(.72)"
-            },
-
-            {
-              transform:
-                `translate3d(
-                  ${dx * .5}px,
-                  ${dy * .5 - 58}px,
-                  0
-                )
-                rotateY(90deg)
-                rotate(5deg)
-                scale(1.08)`
-            }
-          ],
-          {
-            duration: 250,
-            easing: "ease-in",
-            fill: "forwards"
-          }
-        );
-
-      await first.finished
-        .catch(() => {});
-
-      /*
-        В момент, когда карта ребром,
-        меняем рубашку на лицо.
-      */
-
-      flying.className =
-        `flyingCard fly-active ${card.color}`;
-
-      flying.innerHTML = `
-        <div class="value">
-          ${label(card.value)}
-        </div>
-      `;
-
-      const second =
-        flying.animate(
-          [
-            {
-              transform:
-                `translate3d(
-                  ${dx * .5}px,
-                  ${dy * .5 - 58}px,
-                  0
-                )
-                rotateY(90deg)
-                rotate(5deg)
-                scale(1.08)`
-            },
-
-            {
-              transform:
-                `translate3d(
-                  ${dx}px,
-                  ${dy}px,
-                  0
-                )
-                rotateY(0deg)
-                rotate(-3deg)
-                scale(1)`
-            }
-          ],
-          {
-            duration: 260,
-            easing:
-              "cubic-bezier(.2,.8,.2,1)",
-            fill: "forwards"
-          }
-        );
-
-      await second.finished
-        .catch(() => {});
-
-      flying.remove();
-
-      botCards.classList.remove(
-        "bot-throw"
-      );
-
-      await landing();
-
-    });
-
-  }
-
-
-  /* =======================================================
-     DRAW ONE CARD
-
-     deck → player
-     deck → bot
-     ======================================================= */
-
-  function drawCard(
-    card,
-    target = "player"
-  ) {
-
-    return enqueue(async () => {
-
-      const deck =
-        $("deck");
-
-      if (!deck) return;
-
-      const from =
-        deck.getBoundingClientRect();
-
-      let to;
-
-      if (target === "player") {
-
-        const hand =
-          $("hand");
-
-        if (!hand) return;
-
-        const rect =
-          hand.getBoundingClientRect();
-
-        to = {
-          left:
-            rect.left +
-            rect.width / 2 -
-            35,
-
-          top:
-            rect.bottom - 80,
-
-          width: 70,
-          height: 105
-        };
-
-      }
-
-      else {
-
-        const cards =
-          $("botCards");
-
-        if (!cards) return;
-
-        const rect =
-          cards.getBoundingClientRect();
-
-        to = {
-          left:
-            rect.left +
-            rect.width / 2 -
-            18,
-
-          top:
-            rect.top + 10,
-
-          width: 36,
-          height: 52
-        };
-
-      }
-
-      deck.classList.add(
-        "deck-pulse"
-      );
-
-      await sleep(80);
-
-      const flying =
-        createFlyingCard(
-          card,
-          target === "bot"
-        );
-
-      await flyElement(
-        flying,
-        from,
-        to,
+          opacity: .55,
+          transform: "scale(.97)"
+        },
         {
-          duration:
-            target === "player"
-              ? 360
-              : 330,
-
-          lift: 38,
-
-          startScale: .85,
-
-          endScale:
-            target === "player"
-              ? .86
-              : .48,
-
-          endRotation:
-            target === "player"
-              ? 8
-              : -6
+          opacity: 1,
+          transform: "scale(1)"
         }
-      );
-
-      deck.classList.remove(
-        "deck-pulse"
-      );
-
-      const destination =
-        target === "player"
-          ? $("hand")
-          : $("botCards");
-
-      destination?.classList.add(
-        "draw-arrival"
-      );
-
-      await sleep(180);
-
-      destination?.classList.remove(
-        "draw-arrival"
-      );
-
-    });
-
+      ],
+      {
+        duration: 430,
+        easing:
+          "cubic-bezier(.16,.8,.22,1)"
+      }
+    );
   }
 
 
   /* =======================================================
-     MULTIPLE DRAW
-
-     Callback выполняется после прилёта
-     каждой карты. Так game.js сможет
-     добавлять её в руку постепенно.
+     TURN
      ======================================================= */
 
-  async function drawSequence(
-    cards,
-    target,
-    onEach
-  ) {
+  async function turn(side) {
+    const playerGlow =
+      $("playerTurnGlow");
 
-    for (
-      let i = 0;
-      i < cards.length;
-      i++
-    ) {
+    const botGlow =
+      $("botTurnGlow");
 
-      const card =
-        cards[i];
-
-      await drawCard(
-        card,
-        target
+    const botAvatar =
+      document.querySelector(
+        ".botAvatar"
       );
 
-      if (onEach) {
-        await onEach(
-          card,
-          i
-        );
-      }
+    const botCards =
+      $("botCards");
 
-      /*
-        Небольшая пауза,
-        чтобы +8 не выглядел как
-        один мгновенный комок.
-      */
+    if (side === "player") {
+      botGlow?.classList.remove(
+        "active"
+      );
 
-      await sleep(65);
+      botAvatar?.classList.remove(
+        "thinking"
+      );
 
+      botCards?.classList.remove(
+        "bot-active"
+      );
+
+      await sleep(170);
+
+      playerGlow?.classList.add(
+        "active"
+      );
+    } else {
+      playerGlow?.classList.remove(
+        "active"
+      );
+
+      await sleep(170);
+
+      botGlow?.classList.add(
+        "active"
+      );
+
+      botAvatar?.classList.add(
+        "thinking"
+      );
+
+      botCards?.classList.add(
+        "bot-active"
+      );
     }
 
+    await sleep(380);
   }
 
 
   /* =======================================================
-     DISCARD LANDING
+     TABLE IMPACT
      ======================================================= */
 
-  async function landing() {
+  function tableImpact() {
+    const table =
+      document.querySelector(
+        ".tableInner"
+      );
+
+    if (!table) return;
+
+    table.classList.remove(
+      "card-impact"
+    );
+
+    void table.offsetWidth;
+
+    table.classList.add(
+      "card-impact"
+    );
+
+    setTimeout(
+      () =>
+        table.classList.remove(
+          "card-impact"
+        ),
+      760
+    );
+  }
+
+
+  /* =======================================================
+     IMPACT RING
+     ======================================================= */
+
+  function impact() {
+    const ring =
+      $("impactRing");
 
     const discard =
-      $("discard");
+      discardRect();
 
-    if (!discard) return;
+    if (!ring || !discard) return;
 
-    discard.classList.remove(
-      "card-landed"
+    const center =
+      rectCenter(discard);
+
+    ring.style.left =
+      `${center.x}px`;
+
+    ring.style.top =
+      `${center.y}px`;
+
+    ring.classList.remove(
+      "hidden",
+      "active"
     );
 
-    void discard.offsetWidth;
+    void ring.offsetWidth;
 
-    discard.classList.add(
-      "card-landed"
+    ring.classList.add(
+      "active"
     );
 
-    await sleep(300);
+    setTimeout(() => {
+      ring.classList.remove(
+        "active"
+      );
 
-    discard.classList.remove(
-      "card-landed"
-    );
-
+      ring.classList.add(
+        "hidden"
+      );
+    }, 950);
   }
 
 
@@ -828,131 +342,45 @@ const AcidFX = (() => {
      FLASH
      ======================================================= */
 
-  async function flash(type = "white") {
-
+  async function flash(color) {
     const el =
       $("screenFlash");
 
     if (!el) return;
 
-    const classes = [
-      "flash-white",
-      "flash-red",
-      "flash-green",
-      "flash-purple",
-      "flash-blue",
-      "flash-yellow"
-    ];
+    const className =
+      `flash-${color}`;
 
     el.classList.remove(
-      ...classes
+      "flash-green",
+      "flash-purple",
+      "flash-red",
+      "flash-cyan"
     );
 
     void el.offsetWidth;
-
-    const className =
-      `flash-${type}`;
 
     el.classList.add(
       className
     );
 
-    await sleep(420);
+    await sleep(720);
 
     el.classList.remove(
       className
     );
-
   }
 
 
   /* =======================================================
-     SHAKE
-     ======================================================= */
-
-  async function shake(
-    strength = "soft"
-  ) {
-
-    const game =
-      $("game");
-
-    if (!game) return;
-
-    const className =
-      strength === "hard"
-        ? "shake-hard"
-        : "shake-soft";
-
-    game.classList.remove(
-      className
-    );
-
-    void game.offsetWidth;
-
-    game.classList.add(
-      className
-    );
-
-    await sleep(
-      strength === "hard"
-        ? 430
-        : 290
-    );
-
-    game.classList.remove(
-      className
-    );
-
-  }
-
-
-  /* =======================================================
-     IMPACT
-     ======================================================= */
-
-  async function impact() {
-
-    const ring =
-      $("impactRing");
-
-    if (!ring) return;
-
-    ring.classList.remove(
-      "hidden",
-      "impact"
-    );
-
-    void ring.offsetWidth;
-
-    ring.classList.add(
-      "impact"
-    );
-
-    await sleep(540);
-
-    ring.classList.remove(
-      "impact"
-    );
-
-    ring.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  /* =======================================================
-     ACTION BANNER
+     BANNER
      ======================================================= */
 
   async function banner(
     text,
-    icon,
-    type = ""
+    icon = "✦"
   ) {
-
-    const banner =
+    const root =
       $("actionBanner");
 
     const textEl =
@@ -962,20 +390,11 @@ const AcidFX = (() => {
       $("actionBannerIcon");
 
     if (
-      !banner ||
+      !root ||
       !textEl ||
       !iconEl
     ) {
       return;
-    }
-
-    banner.className =
-      "actionBanner";
-
-    if (type) {
-      banner.classList.add(
-        `${type}-banner`
-      );
     }
 
     textEl.textContent =
@@ -984,26 +403,508 @@ const AcidFX = (() => {
     iconEl.textContent =
       icon;
 
-    banner.classList.remove(
+    root.classList.remove(
+      "hidden",
+      "show"
+    );
+
+    void root.offsetWidth;
+
+    root.classList.add(
+      "show"
+    );
+
+    await sleep(1080);
+
+    root.classList.remove(
+      "show"
+    );
+
+    root.classList.add(
       "hidden"
     );
+  }
 
-    void banner.offsetWidth;
 
-    banner.classList.add(
-      "banner-show"
+  /* =======================================================
+     PLAYER CARD
+
+     Используется для обычного хода,
+     если карта уже отпущена игроком.
+
+     В v7 drag-система сможет передать
+     сюда реальную стартовую геометрию.
+     ======================================================= */
+
+  async function playPlayerCard(
+    card,
+    sourceElement,
+    sourceRectOverride = null
+  ) {
+    if (!card) return;
+
+    setLocked(true);
+
+    const target =
+      discardRect();
+
+    if (!target) {
+      setLocked(false);
+      return;
+    }
+
+    let source = sourceRectOverride;
+
+    if (
+      !source &&
+      sourceElement
+    ) {
+      source =
+        sourceElement
+          .getBoundingClientRect();
+    }
+
+    if (!source) {
+      source = {
+        left:
+          window.innerWidth / 2 -
+          42,
+
+        top:
+          window.innerHeight -
+          150,
+
+        width: 84,
+        height: 126
+      };
+    }
+
+    const flying =
+      createFlyingCard(card);
+
+    flying.classList.add(
+      "player-flight"
     );
 
-    await sleep(730);
-
-    banner.classList.remove(
-      "banner-show"
+    placeFromRect(
+      flying,
+      source
     );
 
-    banner.classList.add(
-      "hidden"
+    if (sourceElement) {
+      sourceElement.style.opacity =
+        "0";
+    }
+
+    /*
+      Один frame для фиксации
+      начальной позиции.
+    */
+
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(
+          resolve
+        )
+      )
     );
 
+    const targetRotation =
+      2 + Math.random() * 5;
+
+    flying.style.transform =
+      transformToRect(
+        source,
+        target,
+        targetRotation,
+        1
+      );
+
+    /*
+      Не мгновенное исчезновение.
+      Карта физически доезжает.
+    */
+
+    await sleep(610);
+
+    tableImpact();
+    impact();
+
+    await sleep(130);
+
+    flying.style.opacity =
+      "0";
+
+    await sleep(180);
+
+    flying.remove();
+
+    setLocked(false);
+  }
+
+
+  /* =======================================================
+     PLAYER DROP FINISH
+
+     Главный метод для drag-and-drop.
+
+     Карта уже находится под пальцем.
+     После отпускания она лишь плавно
+     доводится до discard.
+     ======================================================= */
+
+  async function finishPlayerDrop(
+    card,
+    startRect
+  ) {
+    if (!card || !startRect) {
+      return;
+    }
+
+    setLocked(true);
+
+    const target =
+      discardRect();
+
+    if (!target) {
+      setLocked(false);
+      return;
+    }
+
+    const flying =
+      createFlyingCard(card);
+
+    flying.classList.add(
+      "player-flight"
+    );
+
+    placeFromRect(
+      flying,
+      startRect
+    );
+
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(
+          resolve
+        )
+      )
+    );
+
+    flying.style.transform =
+      transformToRect(
+        startRect,
+        target,
+        3,
+        1
+      );
+
+    /*
+      Последняя часть пути короче,
+      поэтому чуть быстрее полного
+      полёта из руки.
+    */
+
+    await sleep(520);
+
+    tableImpact();
+    impact();
+
+    flying.classList.add(
+      "landing"
+    );
+
+    await sleep(190);
+
+    flying.style.opacity =
+      "0";
+
+    await sleep(190);
+
+    flying.remove();
+
+    setLocked(false);
+  }
+
+
+  /* =======================================================
+     BOT CARD
+     ======================================================= */
+
+  async function playBotCard(card) {
+    if (!card) return;
+
+    setLocked(true);
+
+    const bot =
+      botRect();
+
+    const target =
+      discardRect();
+
+    if (!bot || !target) {
+      setLocked(false);
+      return;
+    }
+
+    const source = {
+      left:
+        bot.left +
+        bot.width / 2 -
+        18,
+
+      top:
+        bot.top + 3,
+
+      width: 36,
+      height: 54
+    };
+
+    const flying =
+      createFlyingCard(card);
+
+    flying.classList.add(
+      "bot-flight"
+    );
+
+    /*
+      Сначала карта выглядит как
+      маленькая карта из руки бота.
+    */
+
+    placeFromRect(
+      flying,
+      source,
+      1,
+      -4
+    );
+
+    await sleep(180);
+
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(
+          resolve
+        )
+      )
+    );
+
+    /*
+      По пути карта увеличивается
+      до нормального размера.
+    */
+
+    const sourceCenter =
+      rectCenter(source);
+
+    const targetCenter =
+      rectCenter(target);
+
+    const x =
+      targetCenter.x -
+      sourceCenter.x;
+
+    const y =
+      targetCenter.y -
+      sourceCenter.y;
+
+    const scale =
+      target.width /
+      source.width;
+
+    flying.style.transform = `
+      translate3d(
+        ${x}px,
+        ${y}px,
+        0
+      )
+      rotate(4deg)
+      scale(${scale})
+    `;
+
+    await sleep(690);
+
+    tableImpact();
+    impact();
+
+    await sleep(150);
+
+    flying.style.opacity =
+      "0";
+
+    await sleep(190);
+
+    flying.remove();
+
+    setLocked(false);
+  }
+
+
+  /* =======================================================
+     DRAW CARD
+     ======================================================= */
+
+  async function drawCard(
+    card,
+    receiver
+  ) {
+    if (!card) return;
+
+    const deck =
+      deckRect();
+
+    if (!deck) return;
+
+    const flying =
+      createFlyingCard(card);
+
+    flying.classList.add(
+      "draw-flight"
+    );
+
+    placeFromRect(
+      flying,
+      deck,
+      1,
+      -4
+    );
+
+    await sleep(90);
+
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(
+          resolve
+        )
+      )
+    );
+
+    let target;
+
+    if (receiver === "player") {
+      const hand =
+        handRect();
+
+      if (!hand) {
+        flying.remove();
+        return;
+      }
+
+      target = {
+        left:
+          hand.left +
+          hand.width / 2 -
+          35,
+
+        top:
+          hand.bottom - 75,
+
+        width: 70,
+        height: 105
+      };
+    } else {
+      const bot =
+        botRect();
+
+      if (!bot) {
+        flying.remove();
+        return;
+      }
+
+      target = {
+        left:
+          bot.left +
+          bot.width / 2 -
+          18,
+
+        top:
+          bot.top + 5,
+
+        width: 36,
+        height: 54
+      };
+    }
+
+    const sourceCenter =
+      rectCenter(deck);
+
+    const targetCenter =
+      rectCenter(target);
+
+    const x =
+      targetCenter.x -
+      sourceCenter.x;
+
+    const y =
+      targetCenter.y -
+      sourceCenter.y;
+
+    const scale =
+      target.width /
+      deck.width;
+
+    flying.style.transform = `
+      translate3d(
+        ${x}px,
+        ${y}px,
+        0
+      )
+      rotate(
+        ${receiver === "player"
+          ? 7
+          : -6}deg
+      )
+      scale(${scale})
+    `;
+
+    await sleep(610);
+
+    flying.style.opacity =
+      "0";
+
+    await sleep(150);
+
+    flying.remove();
+  }
+
+
+  /* =======================================================
+     DRAW SEQUENCE
+     ======================================================= */
+
+  async function drawSequence(
+    cards,
+    receiver,
+    onCard
+  ) {
+    setLocked(true);
+
+    for (
+      let i = 0;
+      i < cards.length;
+      i++
+    ) {
+      const card =
+        cards[i];
+
+      await drawCard(
+        card,
+        receiver
+      );
+
+      if (onCard) {
+        await onCard(card);
+      }
+
+      /*
+        Пауза между картами —
+        теперь видно каждую отдельно.
+      */
+
+      await sleep(115);
+    }
+
+    setLocked(false);
   }
 
 
@@ -1011,86 +912,68 @@ const AcidFX = (() => {
      PENALTY
      ======================================================= */
 
-  function penalty(amount) {
+  async function penalty(amount) {
+    const el =
+      $("penalty");
 
-    return enqueue(async () => {
+    if (el) {
+      el.classList.remove(
+        "penalty-hit"
+      );
 
-      const isBig =
-        amount >= 4;
+      void el.offsetWidth;
 
-      /*
-        Banner + flash first.
-      */
+      el.classList.add(
+        "penalty-hit"
+      );
+    }
 
-      await Promise.all([
-        banner(
-          `+${amount}`,
-          "⚠",
-          "penalty"
-        ),
+    await Promise.all([
+      banner(
+        `+${amount}`,
+        "⚡"
+      ),
 
-        flash(
-          isBig
-            ? "red"
-            : "purple"
-        ),
+      flash("red")
+    ]);
 
-        shake(
-          isBig
-            ? "hard"
-            : "soft"
-        ),
-
-        impact()
-      ]);
-
-      await sleep(80);
-
-    });
-
+    await sleep(120);
   }
 
 
   /* =======================================================
-     SPECIAL CARD
+     SPECIAL
      ======================================================= */
 
-  function special(type) {
+  async function special(type) {
+    const game =
+      $("game");
 
-    return enqueue(async () => {
+    game?.classList.remove(
+      "special-effect"
+    );
 
-      if (type === "skip") {
+    void game?.offsetWidth;
 
-        await Promise.all([
-          banner(
-            "ПРОПУСК",
-            "⊘",
-            "special"
-          ),
+    game?.classList.add(
+      "special-effect"
+    );
 
-          flash("purple")
-        ]);
+    if (type === "skip") {
+      await banner(
+        "ПРОПУСК",
+        "⊘"
+      );
+    } else {
+      await banner(
+        "РАЗВОРОТ",
+        "↻"
+      );
+    }
 
-        return;
-      }
-
-
-      if (type === "reverse") {
-
-        await Promise.all([
-          banner(
-            "РАЗВОРОТ",
-            "↻",
-            "special"
-          ),
-
-          flash("purple")
-        ]);
-
-      }
-
-    });
-
+    game?.classList.remove(
+      "special-effect"
+    );
   }
 
 
@@ -1098,62 +981,37 @@ const AcidFX = (() => {
      WILD
      ======================================================= */
 
-  function wild(color) {
+  async function wild(color) {
+    const game =
+      $("game");
 
-    return enqueue(async () => {
+    game?.classList.remove(
+      "wild-burst"
+    );
 
-      const game =
-        $("game");
+    void game?.offsetWidth;
 
-      const table =
-        document.querySelector(
-          ".tableInner"
-        );
+    game?.classList.add(
+      "wild-burst"
+    );
 
-      if (!game) return;
+    const names = {
+      red: "КРАСНЫЙ",
+      yellow: "ЖЁЛТЫЙ",
+      green: "ЗЕЛЁНЫЙ",
+      blue: "СИНИЙ"
+    };
 
-      const wildClass =
-        `wild-${color}`;
+    await banner(
+      names[color] || "WILD",
+      "★"
+    );
 
-      game.classList.remove(
-        "wild-red",
-        "wild-yellow",
-        "wild-green",
-        "wild-blue"
-      );
+    await sleep(100);
 
-      game.classList.add(
-        wildClass
-      );
-
-      if (table) {
-
-        table.classList.remove(
-          "color-red",
-          "color-yellow",
-          "color-green",
-          "color-blue"
-        );
-
-        table.classList.add(
-          `color-${color}`
-        );
-
-      }
-
-      await Promise.all([
-        flash(color),
-        shake("soft")
-      ]);
-
-      await sleep(350);
-
-      game.classList.remove(
-        wildClass
-      );
-
-    });
-
+    game?.classList.remove(
+      "wild-burst"
+    );
   }
 
 
@@ -1161,17 +1019,31 @@ const AcidFX = (() => {
      ROBOT FINGER
      ======================================================= */
 
-  async function robotFinger() {
-
+  async function robotFingerAtDiscard() {
     const finger =
       $("robotFinger");
 
-    if (!finger) return;
+    const target =
+      discardRect();
+
+    if (!finger || !target) {
+      return;
+    }
+
+    const center =
+      rectCenter(target);
+
+    finger.style.left =
+      `${center.x + 8}px`;
+
+    finger.style.top =
+      `${center.y - 55}px`;
 
     finger.classList.remove(
       "hidden",
       "robot-enter",
-      "robot-tap"
+      "robot-tap",
+      "robot-leave"
     );
 
     void finger.offsetWidth;
@@ -1180,28 +1052,32 @@ const AcidFX = (() => {
       "robot-enter"
     );
 
-    await sleep(270);
+    await sleep(820);
 
     finger.classList.add(
       "robot-tap"
     );
 
-    await sleep(260);
+    await sleep(480);
 
     finger.classList.remove(
       "robot-tap"
     );
 
-    await sleep(280);
-
-    finger.classList.remove(
-      "robot-enter"
+    finger.classList.add(
+      "robot-leave"
     );
+
+    await sleep(650);
 
     finger.classList.add(
       "hidden"
     );
 
+    finger.classList.remove(
+      "robot-enter",
+      "robot-leave"
+    );
   }
 
 
@@ -1209,138 +1085,86 @@ const AcidFX = (() => {
      INTERCEPT
      ======================================================= */
 
-  function intercept(
-    who = "player"
+  async function intercept(side) {
+    setLocked(true);
+
+    if (side === "bot") {
+      /*
+        Сначала появляется рука,
+        потом надпись.
+      */
+
+      await robotFingerAtDiscard();
+
+      await banner(
+        "ПЕРЕХВАТ",
+        "✋"
+      );
+    } else {
+      await Promise.all([
+        banner(
+          "ПЕРЕХВАТ",
+          "⚡"
+        ),
+
+        flash("cyan")
+      ]);
+    }
+
+    setLocked(false);
+  }
+
+
+  /* =======================================================
+     DRAG FEEDBACK
+     ======================================================= */
+
+  function dragZone(
+    active,
+    inside = false,
+    valid = true
   ) {
+    const center =
+      $("center");
 
-    return enqueue(async () => {
+    if (!center) return;
 
-      if (who === "bot") {
+    center.classList.remove(
+      "drop-ready",
+      "drop-hover",
+      "drop-invalid"
+    );
 
-        await Promise.all([
-          robotFinger(),
+    if (!active) {
+      return;
+    }
 
-          banner(
-            "ПЕРЕХВАТ",
-            "✋",
-            "intercept"
-          ),
+    center.classList.add(
+      "drop-ready"
+    );
 
-          flash("green"),
+    if (!inside) {
+      return;
+    }
 
-          shake("hard")
-        ]);
-
-      }
-
-      else {
-
-        await Promise.all([
-          banner(
-            "ПЕРЕХВАТ",
-            "✋",
-            "intercept"
-          ),
-
-          flash("green"),
-
-          shake("soft")
-        ]);
-
-      }
-
-    });
-
+    center.classList.add(
+      valid
+        ? "drop-hover"
+        : "drop-invalid"
+    );
   }
 
 
   /* =======================================================
-     TURN
+     REJECT FEEDBACK
      ======================================================= */
 
-  function turn(who) {
+  async function reject() {
+    await flash("red");
 
-    return enqueue(async () => {
-
-      const player =
-        $("playerTurnGlow");
-
-      const bot =
-        $("botTurnGlow");
-
-      if (!player || !bot) {
-        return;
-      }
-
-      player.classList.remove(
-        "active",
-        "turn-pulse"
-      );
-
-      bot.classList.remove(
-        "active",
-        "turn-pulse"
-      );
-
-      const target =
-        who === "player"
-          ? player
-          : bot;
-
-      target.classList.add(
-        "active"
-      );
-
-      void target.offsetWidth;
-
-      target.classList.add(
-        "turn-pulse"
-      );
-
-      await sleep(500);
-
-      target.classList.remove(
-        "turn-pulse"
-      );
-
-    });
-
-  }
-
-
-  /* =======================================================
-     STATUS
-     ======================================================= */
-
-  function status(text) {
-
-    const el =
-      $("status");
-
-    if (!el) return;
-
-    el.textContent =
-      text;
-
-    el.classList.remove(
-      "status-change"
+    status(
+      "ЭТУ КАРТУ НЕЛЬЗЯ ПОЛОЖИТЬ"
     );
-
-    void el.offsetWidth;
-
-    el.classList.add(
-      "status-change"
-    );
-
-    setTimeout(
-      () => {
-        el.classList.remove(
-          "status-change"
-        );
-      },
-      370
-    );
-
   }
 
 
@@ -1349,50 +1173,29 @@ const AcidFX = (() => {
      ======================================================= */
 
   return {
-
-    sleep,
-
     isLocked,
 
+    status,
+    turn,
+
     playPlayerCard,
+    finishPlayerDrop,
 
     playBotCard,
 
     drawCard,
-
     drawSequence,
 
     penalty,
-
     special,
-
     wild,
 
     intercept,
 
-    turn,
+    flash,
 
-    status,
-
-    flash:
-      type =>
-        enqueue(
-          () => flash(type)
-        ),
-
-    shake:
-      strength =>
-        enqueue(
-          () => shake(strength)
-        )
-
+    dragZone,
+    reject
   };
 
 })();
-
-
-/*
-  Делаем API явно доступным game.js.
-*/
-
-window.AcidFX = AcidFX;
