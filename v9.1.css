@@ -1,0 +1,1127 @@
+/* =========================================================
+   ACID UNO v9.1
+   UI / MOTION / MOBILE / LANDSCAPE PATCH
+   ========================================================= */
+
+
+/* =========================================================
+   1. GENERAL
+   ========================================================= */
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#game,
+.game,
+#table,
+.table {
+  min-width: 0;
+  min-height: 0;
+}
+
+
+/* =========================================================
+   2. PLAYER CARDS
+   ========================================================= */
+
+#hand .handCard {
+  transform-origin: 50% 100%;
+
+  /*
+    JS owns the actual fan transform.
+    Don't put a generic transition: all here.
+  */
+  transition:
+    filter 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+
+  touch-action: none;
+  -webkit-user-drag: none;
+
+  will-change: transform;
+}
+
+
+/* Playable card */
+
+#hand .handCard.v9-playable {
+  filter:
+    brightness(1.08)
+    saturate(1.12)
+    drop-shadow(0 0 7px rgba(207, 255, 42, .68))
+    drop-shadow(0 0 15px rgba(207, 255, 42, .34));
+}
+
+
+/*
+  Existing game.js may add .playable.
+  Keep its visual under control.
+*/
+
+#hand .handCard.playable {
+  filter:
+    brightness(1.08)
+    saturate(1.12)
+    drop-shadow(0 0 7px rgba(207, 255, 42, .68))
+    drop-shadow(0 0 15px rgba(207, 255, 42, .34));
+}
+
+
+#hand .handCard.v9-unplayable {
+  filter: none;
+}
+
+
+/* =========================================================
+   3. ABSOLUTELY NO GLOW WHILE ACTION IS RUNNING
+   ========================================================= */
+
+html.v91-action #hand .handCard,
+html.v91-action #hand .handCard.playable,
+html.v91-action #hand .handCard.v9-playable,
+html.v91-action #hand .handCard.v9-unplayable {
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+
+/* =========================================================
+   4. HAND OPENS WHILE RECEIVING A CARD
+   ========================================================= */
+
+#hand {
+  transform-origin: 50% 100%;
+
+  transition:
+    transform 150ms cubic-bezier(.18, .82, .2, 1);
+}
+
+
+#hand.v91-receiving {
+  transform: scale(1.018);
+}
+
+
+/*
+  Slight visual opening of the existing cards.
+  The actual new positions are still calculated by JS.
+*/
+
+#hand.v91-receiving .handCard {
+  filter: brightness(1.035);
+}
+
+
+/* =========================================================
+   5. DRAG PLACEHOLDER
+   ========================================================= */
+
+#hand .v91-placeholder {
+  visibility: hidden !important;
+
+  pointer-events: none !important;
+
+  opacity: 0 !important;
+
+  box-shadow: none !important;
+
+  filter: none !important;
+}
+
+
+/* =========================================================
+   6. DRAGGED CARD
+   ========================================================= */
+
+#animationLayer .v91-dragging {
+  pointer-events: none !important;
+
+  touch-action: none;
+
+  transform-origin: center center !important;
+
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, .38),
+    0 0 22px rgba(190, 70, 255, .18);
+
+  filter:
+    brightness(1.04)
+    saturate(1.05);
+
+  will-change: transform;
+}
+
+
+#animationLayer .v91-dragging.v91-drag-valid {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, .4),
+    0 0 12px rgba(206, 255, 48, .7),
+    0 0 30px rgba(206, 255, 48, .34);
+
+  filter:
+    brightness(1.08)
+    saturate(1.08);
+}
+
+
+#animationLayer .v91-dragging.v91-drag-invalid {
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, .4),
+    0 0 12px rgba(255, 70, 118, .46);
+
+  filter:
+    brightness(.92)
+    saturate(.88);
+}
+
+
+/* =========================================================
+   7. ANIMATION LAYER
+   ========================================================= */
+
+#animationLayer {
+  pointer-events: none !important;
+
+  overflow: visible !important;
+
+  /*
+    Don't transform this element.
+    v9.1 uses position:fixed coordinates inside it.
+  */
+  transform: none !important;
+}
+
+
+#animationLayer > * {
+  pointer-events: none !important;
+}
+
+
+/* =========================================================
+   8. BOT CARDS
+
+   Same base geometry as player:
+   84 × 126.
+
+   JS only scales/rotates them into the fan.
+   ========================================================= */
+
+#botCards {
+  position: relative;
+
+  width: min(54vw, 350px);
+  height: 138px;
+
+  overflow: visible;
+
+  pointer-events: none;
+}
+
+
+#botCards .v9-bot-card {
+  position: absolute;
+
+  left: 50%;
+  top: 0;
+
+  width: 84px !important;
+  height: 126px !important;
+
+  margin-left: -42px;
+
+  border-radius: 13px;
+
+  transform-origin: 50% 16%;
+
+  transform:
+    translate3d(
+      var(--x, 0px),
+      var(--y, 0px),
+      0
+    )
+    rotate(var(--rot, 0deg))
+    scale(var(--scale, .6));
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(172, 30, 255, .25),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      #12091f 0%,
+      #1b0a31 48%,
+      #090512 100%
+    );
+
+  border:
+    2px solid rgba(222, 171, 255, .82);
+
+  box-shadow:
+    inset 0 0 18px rgba(153, 38, 255, .23),
+    0 0 10px rgba(181, 74, 255, .28);
+
+  pointer-events: none;
+
+  will-change: transform;
+}
+
+
+/* ACID UNO logo on bot backs */
+
+#botCards .v9-bot-card::before,
+.v91-bot-flying::before {
+  content: "ACID\A UNO";
+
+  white-space: pre;
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%)
+    rotate(-4deg);
+
+  text-align: center;
+
+  font-weight: 1000;
+
+  font-style: italic;
+
+  font-size: 15px;
+
+  line-height: .86;
+
+  letter-spacing: -.7px;
+
+  color: #d9ff29;
+
+  text-shadow:
+    0 0 5px rgba(215, 255, 40, .7),
+    0 11px 0 #ff28ca,
+    0 11px 7px rgba(255, 35, 199, .72);
+}
+
+
+/* =========================================================
+   9. BOT ACTIVE STATE
+   ========================================================= */
+
+#botCards.bot-active .v9-bot-card {
+  filter:
+    brightness(1.08)
+    saturate(1.08);
+}
+
+
+/* =========================================================
+   10. BOT FLYING CARD
+   ========================================================= */
+
+.v91-bot-flying {
+  border-radius: 13px;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(172, 30, 255, .25),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      #12091f,
+      #1b0a31 50%,
+      #090512
+    );
+
+  border:
+    2px solid rgba(222, 171, 255, .82);
+
+  box-shadow:
+    0 16px 35px rgba(0, 0, 0, .34),
+    0 0 14px rgba(181, 74, 255, .32);
+
+  transform-origin: center center;
+
+  will-change: transform;
+}
+
+
+/* =========================================================
+   11. BOT AVATAR MUST NEVER BE COVERED
+   ========================================================= */
+
+#bot {
+  position: relative;
+
+  z-index: 20;
+}
+
+
+#bot .botAvatar,
+.botAvatar {
+  position: relative;
+
+  z-index: 24;
+}
+
+
+#botCards {
+  z-index: 10;
+}
+
+
+/*
+  Keep fan away from avatar/name area.
+*/
+
+#botCards {
+  margin-top: 4px;
+}
+
+
+/* =========================================================
+   12. BOT THINKING
+   ========================================================= */
+
+.botAvatar.thinking {
+  animation:
+    v91BotThink 720ms
+    ease-in-out
+    infinite alternate;
+}
+
+
+@keyframes v91BotThink {
+
+  from {
+    filter:
+      brightness(1)
+      drop-shadow(
+        0 0 4px
+        rgba(173, 67, 255, .15)
+      );
+  }
+
+  to {
+    filter:
+      brightness(1.09)
+      drop-shadow(
+        0 0 12px
+        rgba(173, 67, 255, .5)
+      );
+  }
+}
+
+
+/* =========================================================
+   13. BOT UNO CATCH WINDOW
+   ========================================================= */
+
+#bot.catchable {
+  cursor: pointer;
+
+  animation:
+    v91CatchBot
+    260ms ease-in-out
+    infinite alternate;
+}
+
+
+@keyframes v91CatchBot {
+
+  from {
+    filter:
+      drop-shadow(
+        0 0 3px
+        rgba(255, 66, 194, .3)
+      );
+  }
+
+  to {
+    filter:
+      drop-shadow(
+        0 0 17px
+        rgba(255, 66, 194, .9)
+      );
+  }
+}
+
+
+/* =========================================================
+   14. UNO BUTTON
+   ========================================================= */
+
+#unoButton {
+  position: fixed;
+
+  right:
+    max(
+      16px,
+      env(safe-area-inset-right)
+    );
+
+  bottom:
+    max(
+      118px,
+      calc(
+        env(safe-area-inset-bottom)
+        + 94px
+      )
+    );
+
+  z-index: 15000;
+
+  width: 88px;
+  height: 88px;
+
+  padding: 0;
+
+  border:
+    3px solid rgba(255, 255, 255, .88);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at 38% 30%,
+      #ff7598 0%,
+      #ff255f 28%,
+      #da0c48 65%,
+      #8b002c 100%
+    );
+
+  color: white;
+
+  font:
+    1000 22px/1
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  font-style: italic;
+
+  letter-spacing: -1px;
+
+  text-shadow:
+    0 2px 2px
+    rgba(0, 0, 0, .35);
+
+  box-shadow:
+    inset 0 3px 8px
+    rgba(255, 255, 255, .32),
+
+    0 6px 0
+    rgba(80, 0, 30, .8),
+
+    0 12px 28px
+    rgba(0, 0, 0, .36),
+
+    0 0 25px
+    rgba(255, 36, 113, .35);
+
+  opacity: 0;
+
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transform:
+    translateY(14px)
+    scale(.75);
+
+  transition:
+    opacity 130ms ease,
+    transform 180ms
+      cubic-bezier(.18, .82, .2, 1),
+    visibility 0s linear 180ms;
+
+  touch-action: manipulation;
+}
+
+
+#unoButton.show {
+  opacity: 1;
+
+  visibility: visible;
+
+  pointer-events: auto;
+
+  transform:
+    translateY(0)
+    scale(1);
+
+  transition-delay: 0s;
+
+  animation:
+    v91UnoPulse
+    440ms ease-in-out
+    infinite alternate;
+}
+
+
+#unoButton.called {
+  background:
+    radial-gradient(
+      circle at 38% 30%,
+      #dfff60,
+      #9bd600 65%,
+      #507900
+    );
+
+  animation: none;
+}
+
+
+@keyframes v91UnoPulse {
+
+  from {
+    scale: .97;
+  }
+
+  to {
+    scale: 1.05;
+  }
+}
+
+
+/* =========================================================
+   15. SPECIAL CARD BURST
+   ========================================================= */
+
+#v9Burst {
+  position: fixed;
+
+  left: 50%;
+  top: 43%;
+
+  z-index: 20000;
+
+  max-width: 82vw;
+
+  padding:
+    12px 22px;
+
+  border-radius:
+    18px;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transform:
+    translate(-50%, -50%)
+    scale(.45)
+    rotate(-5deg);
+
+  color: white;
+
+  font:
+    1000 clamp(
+      34px,
+      8vw,
+      76px
+    ) / .95
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  font-style: italic;
+
+  letter-spacing:
+    -2px;
+
+  text-align: center;
+
+  text-transform:
+    uppercase;
+
+  -webkit-text-stroke:
+    1px rgba(
+      0,
+      0,
+      0,
+      .24
+    );
+
+  text-shadow:
+    0 4px 0
+      rgba(0, 0, 0, .24),
+
+    0 0 18px
+      rgba(255, 255, 255, .35);
+}
+
+
+#v9Burst.show {
+  animation:
+    v91Burst
+    620ms
+    cubic-bezier(.16, .9, .22, 1)
+    forwards;
+}
+
+
+#v9Burst.acid {
+  color:
+    #dfff2f;
+
+  text-shadow:
+    0 4px 0
+      rgba(76, 0, 101, .6),
+
+    0 0 12px
+      rgba(216, 255, 42, .95),
+
+    0 0 34px
+      rgba(227, 38, 255, .72);
+}
+
+
+#v9Burst.danger {
+  color:
+    #fff;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 37, 100, .96),
+      rgba(176, 0, 80, .9)
+    );
+
+  box-shadow:
+    0 0 24px
+      rgba(255, 30, 100, .6);
+}
+
+
+@keyframes v91Burst {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -50%)
+      scale(.42)
+      rotate(-8deg);
+  }
+
+  18% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.16)
+      rotate(2deg);
+  }
+
+  38% {
+    transform:
+      translate(-50%, -50%)
+      scale(.98)
+      rotate(-1deg);
+  }
+
+  72% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1)
+      rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -56%)
+      scale(.92)
+      rotate(0);
+  }
+}
+
+
+/* =========================================================
+   16. PHONE PORTRAIT
+   ========================================================= */
+
+@media (
+  orientation: portrait
+)
+and (
+  max-width: 700px
+) {
+
+  /*
+    Keep bot completely visible.
+  */
+
+  #botCards {
+    width: 78vw;
+
+    height: 142px;
+
+    margin:
+      0 auto;
+  }
+
+
+  #botCards .v9-bot-card {
+    top: 4px;
+  }
+
+
+  /*
+    Player hand must not disappear below Safari toolbar.
+  */
+
+  #hand {
+    padding-bottom:
+      max(
+        7px,
+        env(
+          safe-area-inset-bottom
+        )
+      );
+  }
+
+
+  #unoButton {
+    width: 78px;
+    height: 78px;
+
+    right: 13px;
+
+    bottom:
+      max(
+        118px,
+        calc(
+          env(
+            safe-area-inset-bottom
+          )
+          + 100px
+        )
+      );
+
+    font-size: 20px;
+  }
+
+}
+
+
+/* =========================================================
+   17. LANDSCAPE — PHONE / SMALL TABLET
+
+   THIS IS THE IMPORTANT v9.1 LANDSCAPE FIX.
+
+   We don't rotate the game.
+   We compact it into the actual viewport.
+   ========================================================= */
+
+@media (
+  orientation: landscape
+)
+and (
+  max-height: 600px
+) {
+
+  html,
+  body {
+    width: 100%;
+
+    min-width: 100%;
+
+    height: 100%;
+
+    min-height: 100%;
+
+    overflow: hidden;
+  }
+
+
+  body {
+    padding-left:
+      env(
+        safe-area-inset-left
+      );
+
+    padding-right:
+      env(
+        safe-area-inset-right
+      );
+  }
+
+
+  /*
+    Reduce header/UI vertical consumption.
+  */
+
+  .logo,
+  #logo {
+    transform:
+      scale(.78);
+
+    transform-origin:
+      left top;
+  }
+
+
+  /*
+    Bot moves into a compact top zone.
+  */
+
+  #bot {
+    z-index: 30;
+  }
+
+
+  #botCards {
+    width:
+      min(
+        40vw,
+        310px
+      );
+
+    height: 92px;
+
+    margin-top: -4px;
+  }
+
+
+  #botCards .v9-bot-card {
+    top: -14px;
+  }
+
+
+  /*
+    Central table gets most of available screen.
+  */
+
+  #center,
+  .center {
+    max-height:
+      58vh;
+
+    min-height: 0;
+  }
+
+
+  /*
+    Hand is deliberately lower and wider.
+  */
+
+  #hand {
+    max-width:
+      76vw;
+
+    transform-origin:
+      center bottom;
+  }
+
+
+  /*
+    Smaller HUD labels in landscape.
+  */
+
+  #status,
+  .status,
+  #turnStatus,
+  .turnStatus {
+    font-size:
+      clamp(
+        9px,
+        1.7vw,
+        13px
+      );
+  }
+
+
+  #unoButton {
+    width: 66px;
+    height: 66px;
+
+    right:
+      max(
+        10px,
+        env(
+          safe-area-inset-right
+        )
+      );
+
+    bottom:
+      max(
+        12px,
+        env(
+          safe-area-inset-bottom
+        )
+      );
+
+    font-size: 17px;
+  }
+
+
+  #v9Burst {
+    top: 45%;
+
+    font-size:
+      clamp(
+        30px,
+        7vh,
+        56px
+      );
+  }
+
+}
+
+
+/* =========================================================
+   18. VERY SHORT LANDSCAPE
+   iPhone Safari with browser bars visible
+   ========================================================= */
+
+@media (
+  orientation: landscape
+)
+and (
+  max-height: 430px
+) {
+
+  #botCards {
+    height: 72px;
+  }
+
+
+  #botCards .v9-bot-card {
+    top: -26px;
+  }
+
+
+  #center,
+  .center {
+    max-height:
+      54vh;
+  }
+
+
+  #unoButton {
+    width: 58px;
+    height: 58px;
+
+    font-size: 15px;
+  }
+
+
+  #v9Burst {
+    top: 42%;
+  }
+
+}
+
+
+/* =========================================================
+   19. TABLET LANDSCAPE
+   ========================================================= */
+
+@media (
+  orientation: landscape
+)
+and (
+  min-height: 601px
+)
+and (
+  max-width: 1400px
+) {
+
+  #botCards {
+    width:
+      min(
+        44vw,
+        360px
+      );
+
+    height: 128px;
+  }
+
+
+  #hand {
+    max-width:
+      82vw;
+  }
+
+}
+
+
+/* =========================================================
+   20. SMALL PHONE PORTRAIT
+   ========================================================= */
+
+@media (
+  orientation: portrait
+)
+and (
+  max-width: 390px
+) {
+
+  #botCards {
+    width: 86vw;
+  }
+
+
+  #unoButton {
+    width: 70px;
+    height: 70px;
+
+    font-size: 18px;
+  }
+
+}
+
+
+/* =========================================================
+   21. REMOVE OLD ROBOT FINGER COMPLETELY
+   ========================================================= */
+
+#robotFinger,
+.robotFinger,
+.robot-finger,
+[data-robot-finger] {
+  display: none !important;
+
+  visibility: hidden !important;
+
+  opacity: 0 !important;
+
+  pointer-events: none !important;
+}
+
+
+/* =========================================================
+   22. REDUCED MOTION
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+
+  .botAvatar.thinking,
+  #bot.catchable,
+  #unoButton.show {
+    animation-duration:
+      1.2s;
+  }
+
+}
