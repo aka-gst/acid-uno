@@ -16,7 +16,14 @@ const COLORS = AcidRules.COLORS;
   Keep visual breakpoints in style.css; keep behaviour thresholds here.
 */
 const ACID_UI = Object.freeze({
-  crowdedHandAt: 14
+  crowdedHandAt: 14,
+
+  /*
+    Доля ширины карты, которая должна остаться видимой,
+    чтобы номинал в середине читался. Ниже — включаются
+    угловые индексы.
+  */
+  crowdedOverlap: 0.75
 });
 
 let deck = [];
@@ -621,9 +628,30 @@ function renderHand() {
   const hand =
     $("hand");
 
+  /*
+    Углы включаются не по числу карт, а по тому, видно ли
+    вообще номинал. Порог в 14 карт был снят с десктопа: на
+    телефоне середина карты закрыта соседкой уже на шести,
+    и рука превращалась в цветные полоски без чисел.
+  */
+  const crowding =
+    getFanLayout(player.length);
+
+  const visibleStep =
+    player.length > 1
+      ? crowding.halfFan * 2 / (player.length - 1)
+      : Infinity;
+
+  const crowdedCardWidth =
+    (parseFloat(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--card-w")
+    ) || 84) * crowding.scale;
+
   hand.classList.toggle(
     "is-crowded",
-    player.length >= ACID_UI.crowdedHandAt
+    player.length >= ACID_UI.crowdedHandAt ||
+    visibleStep < crowdedCardWidth * ACID_UI.crowdedOverlap
   );
 
   hand.innerHTML = "";

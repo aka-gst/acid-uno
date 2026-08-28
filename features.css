@@ -1488,3 +1488,145 @@
     transform: translateY(0);
   }
 }
+
+
+/* =========================================================
+   ЧИТАЕМОСТЬ РУКИ
+
+   На телефоне карты перекрывают друг друга сильнее, чем на
+   десктопе, и середина карты — там, где нарисован номинал —
+   закрыта соседкой. Угловые индексы становятся основным
+   способом прочитать руку, поэтому они крупнее и с подложкой.
+   ========================================================= */
+
+.hand.is-crowded .handCard .cardCorner {
+  display: block;
+
+  min-width: 24px;
+
+  padding: 2px 4px;
+
+  border-radius: 7px;
+
+  background: rgba(12, 6, 24, .82);
+
+  font-size: 17px;
+
+  -webkit-text-stroke: 0;
+
+  text-shadow:
+    0 0 6px rgba(0, 0, 0, .9);
+}
+
+.hand.is-crowded .handCard .cardCornerTop {
+  top: 5px;
+  left: 5px;
+}
+
+/*
+  Нижний угол в веере всегда перекрыт соседней картой —
+  показываем только верхний.
+*/
+.hand.is-crowded .handCard .cardCornerBottom {
+  display: none;
+}
+
+
+/* =========================================================
+   ЧЕМ МОЖНО ХОДИТЬ
+
+   Раньше подходящая карта просто чуть светилась, и на ярком
+   веере разница терялась. Теперь работает контраст: лишние
+   карты приглушаются, и глаз сам находит доступные.
+   ========================================================= */
+
+#hand .handCard.v9-unplayable {
+  /*
+    Приглушаем, но не обесцвечиваем: масть должна оставаться
+    узнаваемой, иначе нельзя прикинуть, чем пойдёшь потом.
+  */
+  filter:
+    brightness(.6)
+    saturate(.62);
+
+  transition: filter .18s ease;
+}
+
+#hand .handCard.v9-playable,
+#hand .handCard.playable {
+  filter:
+    brightness(1.12)
+    saturate(1.18)
+    drop-shadow(0 0 9px rgba(207, 255, 42, .85))
+    drop-shadow(0 0 20px rgba(207, 255, 42, .45));
+
+  transition: filter .18s ease;
+}
+
+
+/* =========================================================
+   СКОЛЬКО КАРТ У СОПЕРНИКА
+
+   Одного числа мало: за столом видно не цифру, а толщину
+   веера. Рубашки за значком показывают её физически.
+   ========================================================= */
+
+.opponentStack {
+  position: absolute;
+
+  inset: 5px 8px auto 8px;
+
+  height: 20px;
+
+  border-radius: 7px;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition: opacity .25s ease;
+}
+
+.opponent[data-stack="1"] .opponentStack,
+.opponent[data-stack="2"] .opponentStack,
+.opponent[data-stack="3"] .opponentStack,
+.opponent[data-stack="4"] .opponentStack,
+.opponent[data-stack="5"] .opponentStack {
+  opacity: 1;
+
+  border:
+    1px solid rgba(186, 73, 255, .55);
+
+  background:
+    linear-gradient(
+      150deg,
+      rgba(139, 61, 255, .55),
+      rgba(255, 43, 214, .3)
+    );
+}
+
+.opponent[data-stack="2"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .42);
+}
+
+.opponent[data-stack="3"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .42),
+    6px -6px 0 -2px rgba(139, 61, 255, .32);
+}
+
+.opponent[data-stack="4"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .42),
+    6px -6px 0 -2px rgba(139, 61, 255, .32),
+    9px -9px 0 -3px rgba(139, 61, 255, .24);
+}
+
+.opponent[data-stack="5"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .42),
+    6px -6px 0 -2px rgba(139, 61, 255, .32),
+    9px -9px 0 -3px rgba(139, 61, 255, .24),
+    12px -12px 0 -4px rgba(139, 61, 255, .18);
+}

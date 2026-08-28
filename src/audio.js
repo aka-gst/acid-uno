@@ -26,17 +26,41 @@ const AcidSound = (() => {
 
   let master = null;
 
-  let on = true;
+  /*
+    Три состояния, а не два: музыка мешает чаще, чем звуки
+    ходов, и выключать её отдельно — обычное желание.
+
+      full  звуки и музыка
+      sfx   только звуки
+      off   тишина
+  */
+  const MODES = ["full", "sfx", "off"];
+
+  let on = "full";
 
 
   try {
-    on =
-      window.localStorage
-        .getItem(STORAGE_KEY) !== "off";
+    const saved =
+      window.localStorage.getItem(STORAGE_KEY);
+
+    if (MODES.includes(saved)) {
+      on = saved;
+
+    } else if (saved === "off") {
+      on = "off";
+    }
 
   } catch (error) {
-    on = true;
+    on = "full";
   }
+
+
+  /* состояние музыкального цикла */
+  const music = {
+    timer: null,
+    step: 0,
+    gain: null
+  };
 
 
   /*
@@ -69,16 +93,74 @@ const AcidSound = (() => {
   }
 
 
+  let unlocked = false;
+
+
+  /*
+    iOS не считает контекст рабочим, пока через него хоть раз
+    что-то не проиграли внутри жеста пользователя — одного
+    resume() мало. Поэтому первым делом пропускаем пустой
+    буфер длиной в один сэмпл.
+
+    Слушатели не одноразовые: система усыпляет контекст при
+    сворачивании вкладки, и после возврата его надо будить
+    снова.
+  */
   function unlock() {
 
     const audio = ensure();
 
-    if (
-      audio &&
-      audio.state === "suspended"
-    ) {
+    if (!audio) {
+      return;
+    }
+
+    if (audio.state === "suspended") {
       audio.resume();
     }
+
+    if (!unlocked) {
+
+      try {
+        const buffer =
+          audio.createBuffer(1, 1, 22050);
+
+        const source =
+          audio.createBufferSource();
+
+        source.buffer = buffer;
+
+        source.connect(audio.destination);
+
+        source.start(0);
+
+        unlocked = true;
+
+      } catch (error) {
+        /* попробуем на следующем касании */
+      }
+    }
+
+    if (
+      on === "full" &&
+      !music.timer
+    ) {
+      startMusic();
+    }
+  }
+
+
+  /*
+    Наружу — чтобы можно было понять, почему тихо: контекст
+    не создан, усыплён системой или выключен самим игроком.
+  */
+  function state() {
+
+    return {
+      mode: on,
+      unlocked,
+      context: ctx ? ctx.state : "нет",
+      music: Boolean(music.timer)
+    };
   }
 
 
@@ -140,7 +222,7 @@ const AcidSound = (() => {
 
     osc.connect(gain);
 
-    gain.connect(master);
+    gain.connect(spec.bus || master);
 
     osc.start(at);
 
@@ -356,13 +438,105 @@ const AcidSound = (() => {
 
 
   /* =======================================================
+     МУЗЫКА
+
+     Ни одного файла: короткий круг из четырёх аккордов,
+     который собирается теми же осцилляторами. Играет тихо
+     и без ударных — это фон для настольной игры, а не трек.
+     ======================================================= */
+
+  /* ля-минорный круг: Am - F - C - G */
+  const CHORDS = [
+    [220.00, 261.63, 329.63],
+    [174.61, 220.00, 261.63],
+    [130.81, 196.00, 261.63],
+    [196.00, 246.94, 293.66]
+  ];
+
+  const STEP_MS = 3200;
+
+
+  function musicStep() {
+
+    const audio = ensure();
+
+    if (
+      !audio ||
+      on !== "full"
+    ) {
+      return;
+    }
+
+    const chord =
+      CHORDS[music.step % CHORDS.length];
+
+    music.step++;
+
+    chord.forEach((frequency, index) =>
+      voice({
+        type: "triangle",
+        from: frequency,
+        to: frequency,
+        length: STEP_MS / 1000 * 1.15,
+        gain: .028,
+        delay: index * .05,
+        bus: music.gain
+      })
+    );
+
+    /* басовая нота на октаву ниже держит круг */
+    voice({
+      type: "sine",
+      from: chord[0] / 2,
+      to: chord[0] / 2,
+      length: STEP_MS / 1000 * 1.1,
+      gain: .05,
+      bus: music.gain
+    });
+  }
+
+
+  function startMusic() {
+
+    const audio = ensure();
+
+    if (
+      !audio ||
+      on !== "full" ||
+      music.timer
+    ) {
+      return;
+    }
+
+    if (!music.gain) {
+      music.gain = audio.createGain();
+      music.gain.gain.value = 1;
+      music.gain.connect(master);
+    }
+
+    musicStep();
+
+    music.timer =
+      setInterval(musicStep, STEP_MS);
+  }
+
+
+  function stopMusic() {
+
+    clearInterval(music.timer);
+
+    music.timer = null;
+  }
+
+
+  /* =======================================================
      ПУБЛИЧНОЕ
      ======================================================= */
 
   function play(name) {
 
     if (
-      !on ||
+      on === "off" ||
       !BANK[name]
     ) {
       return;
@@ -380,56 +554,99 @@ const AcidSound = (() => {
 
 
   function enabled() {
+    return on !== "off";
+  }
+
+
+  function mode() {
     return on;
   }
 
 
   function set(value) {
 
-    on = Boolean(value);
+    on =
+      MODES.includes(value)
+        ? value
+        : "off";
 
     try {
       window.localStorage
-        .setItem(
-          STORAGE_KEY,
-          on ? "on" : "off"
-        );
+        .setItem(STORAGE_KEY, on);
 
     } catch (error) {
       /* приватный режим — просто не запоминаем */
     }
 
-    if (on) {
+    if (on === "full") {
       unlock();
+      startMusic();
+
+    } else {
+      stopMusic();
     }
 
     return on;
   }
 
 
+  /*
+    Кнопка одна, поэтому режимы идут по кругу.
+  */
+  function cycle() {
+
+    return set(
+      MODES[
+        (MODES.indexOf(on) + 1) % MODES.length
+      ]
+    );
+  }
+
+
   function toggle() {
-    return set(!on);
+    return cycle();
   }
 
 
   /*
     Первое касание разблокирует звук на мобильных.
   */
-  ["pointerdown", "keydown"].forEach(type =>
+  ["pointerdown", "touchend", "keydown"].forEach(type =>
     window.addEventListener(
       type,
       unlock,
-      { once: true, passive: true }
+      { passive: true }
     )
+  );
+
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+
+      if (document.hidden) {
+
+        stopMusic();
+
+      } else {
+
+        unlock();
+      }
+    }
   );
 
 
   return {
     play,
     toggle,
+    cycle,
     set,
+    mode,
     enabled,
-    unlock
+    unlock,
+    state,
+    startMusic,
+    stopMusic
   };
 
 })();

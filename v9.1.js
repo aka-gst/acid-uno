@@ -31,6 +31,7 @@
     lastDrawAt: 0,
 
     botRunning: false,
+    botPending: false,
 
     actionDepth: 0,
 
@@ -791,9 +792,16 @@
           seat.hand.length === 1
         );
 
+        /*
+          Толщина стопки за значком: пять слоёв покрывают
+          разницу между «почти выиграл» и «завяз».
+        */
         el.dataset.stack =
           String(
-            Math.min(3, seat.hand.length)
+            Math.min(
+              5,
+              Math.ceil(seat.hand.length / 2)
+            )
           );
       });
   }
@@ -1333,17 +1341,24 @@
     );
 
 
+    /*
+      Пауза между картами должна читаться глазом: при штрафе
+      +6 шесть карт, вылетающих почти одновременно, выглядят
+      как одна вспышка, и непонятно, сколько же ты взял.
+    */
+    const STEP = 145;
+
     cards.forEach(
       (card, index) =>
         flyFromDeck91(
           card,
-          index * 60
+          index * STEP
         )
     );
 
 
     await wait91(
-      235 + (cards.length - 1) * 60
+      235 + (cards.length - 1) * STEP
     );
 
 
@@ -3328,16 +3343,70 @@
 
       if (
         gameOver ||
-        turn !== "bot" ||
-        V91.botRunning
+        turn !== "bot"
       ) {
 
         return;
       }
 
 
-      V91.botRunning =
-        true;
+      /*
+        Ход бота держит флаг до самого конца, включая полёт
+        карты. Раньше флаг снимался ПЕРЕД botPlay, и на время
+        анимации защита была открыта: второй запуск успевал
+        влезть, и за столом из нескольких ботов две цепочки
+        шли внахлёст — карты ложились одна за другой уже в
+        чужой ход.
+
+        Пришедший в это время запуск не теряется, а ждёт
+        своей очереди: иначе цепочка ходов просто обрывалась
+        бы посреди круга.
+      */
+      if (V91.botRunning) {
+
+        V91.botPending = true;
+
+        return;
+      }
+
+
+      V91.botRunning = true;
+
+
+      try {
+
+        await runBotTurn91();
+
+      } finally {
+
+        V91.botRunning = false;
+
+        if (V91.botPending) {
+
+          V91.botPending = false;
+
+          setTimeout(
+            () => {
+
+              if (
+                !gameOver &&
+                turn === "bot"
+              ) {
+
+                botTurn();
+              }
+
+            },
+            40
+          );
+        }
+      }
+    };
+
+
+  async function runBotTurn91() {
+
+
 
 
       /*
@@ -3385,10 +3454,6 @@
             );
 
 
-            V91.botRunning =
-              false;
-
-
             await botPlay(
               fresh,
               true
@@ -3423,10 +3488,6 @@
         turn !== "bot"
       ) {
 
-        V91.botRunning =
-          false;
-
-
         return;
       }
 
@@ -3453,10 +3514,6 @@
             );
 
 
-          V91.botRunning =
-            false;
-
-
           await botPlay(
             choice,
             false
@@ -3479,10 +3536,6 @@
 
 
         if (result.error) {
-
-          V91.botRunning =
-            false;
-
 
           announceTurn91();
 
@@ -3523,10 +3576,6 @@
         /*
           Принять штраф — значит закончить ход.
         */
-
-        V91.botRunning =
-          false;
-
 
         endAction91();
 
@@ -3613,10 +3662,6 @@
         playable.length === 0
       ) {
 
-        V91.botRunning =
-          false;
-
-
         /*
           Ходить нечем и брать неоткуда.
         */
@@ -3639,15 +3684,11 @@
         );
 
 
-      V91.botRunning =
-        false;
-
-
       await botPlay(
         choice,
         false
       );
-    };
+    }
 
 
   /* =======================================================
@@ -4515,6 +4556,10 @@
 
 
       V91.botRunning =
+        false;
+
+
+      V91.botPending =
         false;
 
 

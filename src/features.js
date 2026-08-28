@@ -34,26 +34,42 @@
     $$("sound");
 
 
+  const SOUND_FACE = {
+    full: { icon: "🔊", tip: "ЗВУК И МУЗЫКА" },
+    sfx: { icon: "🔉", tip: "ТОЛЬКО ЗВУКИ" },
+    off: { icon: "🔇", tip: "ТИХО" }
+  };
+
+
   function syncSoundButton() {
 
     if (!soundButton) {
       return;
     }
 
-    const on =
-      AcidSound.enabled();
+    const mode =
+      AcidSound.mode();
 
-    soundButton.textContent =
-      on ? "🔊" : "🔇";
+    const face =
+      SOUND_FACE[mode] || SOUND_FACE.off;
+
+    soundButton.textContent = face.icon;
+
+    soundButton.dataset.tip = face.tip;
 
     soundButton.classList.toggle(
       "muted",
-      !on
+      mode === "off"
+    );
+
+    soundButton.setAttribute(
+      "aria-label",
+      face.tip
     );
 
     soundButton.setAttribute(
       "aria-pressed",
-      String(on)
+      String(mode !== "off")
     );
   }
 
@@ -66,7 +82,7 @@
         event.preventDefault();
         event.stopPropagation();
 
-        AcidSound.toggle();
+        AcidSound.cycle();
 
         syncSoundButton();
 
