@@ -57,8 +57,12 @@ const AcidTransport = (() => {
 
     const settings = options || {};
 
+    /*
+      Путь относительный: на сайте игра живёт в подкаталоге,
+      и абсолютный /api ушёл бы мимо неё в корень домена.
+    */
     const base =
-      `/api/rooms/${encodeURIComponent(settings.room)}`;
+      `api/rooms/${encodeURIComponent(settings.room)}`;
 
 
     let source = null;

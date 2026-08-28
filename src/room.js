@@ -69,18 +69,41 @@
   }
 
 
-  function api(path, body) {
+  /*
+    Игра раздаётся и как чистая статика — тогда сервера комнат
+    рядом нет вовсе. В этом случае запрос не падает молча
+    и не роняет лобби: возвращаем внятную причину.
+  */
+  async function api(path, body) {
 
-    return fetch(path, {
-      method: "POST",
+    try {
 
-      headers: {
-        "content-type": "application/json"
-      },
+      const response =
+        await fetch(path, {
+          method: "POST",
 
-      body: JSON.stringify(body || {})
-    })
-      .then(response => response.json());
+          headers: {
+            "content-type": "application/json"
+          },
+
+          body: JSON.stringify(body || {})
+        });
+
+      if (
+        !response.ok &&
+        response.status >= 500
+      ) {
+        return { error: "сервер комнат не отвечает" };
+      }
+
+      return await response.json();
+
+    } catch (error) {
+
+      return {
+        error: "игра открыта без сервера комнат"
+      };
+    }
   }
 
 
@@ -212,7 +235,7 @@
   async function createRoom(seats, clockOff) {
 
     const answer =
-      await api("/api/rooms", {
+      await api("api/rooms", {
         seats,
         clockOff,
         name: "ХОЗЯИН"
@@ -270,7 +293,7 @@
 
     const answer =
       await api(
-        `/api/rooms/${encodeURIComponent(id)}/join`,
+        `api/rooms/${encodeURIComponent(id)}/join`,
         { name: "ГОСТЬ" }
       );
 
@@ -323,11 +346,19 @@
 
         AcidSound.play("card");
 
-        await createRoom(
-          Number(chosen?.dataset.seats) ||
-            AcidRules.MIN_SEATS,
-          clockOff
-        );
+        const answer =
+          await createRoom(
+            Number(chosen?.dataset.seats) ||
+              AcidRules.MIN_SEATS,
+            clockOff
+          );
+
+        if (answer?.error) {
+
+          $$("lobbyNote").textContent =
+            answer.error.toUpperCase() +
+            " · ИГРАЙ С БОТАМИ";
+        }
       }
     );
 
@@ -340,7 +371,7 @@
 
     const answer =
       await api(
-        `/api/rooms/${encodeURIComponent(state.room)}` +
+        `api/rooms/${encodeURIComponent(state.room)}` +
         `/lobby?token=${encodeURIComponent(state.token)}`,
         { do: what }
       );
