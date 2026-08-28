@@ -210,7 +210,25 @@
         class="direction hidden"
         aria-hidden="true"
       >
-        ↻
+        <!--
+          Две ленты-полукольца со стрелками. Лента сходит на нет
+          к хвосту и расширяется к наконечнику, поэтому видно,
+          в какую сторону идёт ход, даже когда кольцо стоит.
+        -->
+        <svg
+          class="directionArt"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path class="dirRibbon" d="M 56.40 4.45 A 46.0 46.0 0 0 1 84.18 80.78 L 78.61 75.76 A 38.5 38.5 0 0 0 69.25 16.66 Z" />
+          <path class="dirHead" d="M 88.49 83.46 L 71.76 86.22 L 75.28 71.98 Z" />
+
+          <g transform="rotate(180 50 50)">
+            <path class="dirRibbon" d="M 56.40 4.45 A 46.0 46.0 0 0 1 84.18 80.78 L 78.61 75.76 A 38.5 38.5 0 0 0 69.25 16.66 Z" />
+            <path class="dirHead" d="M 88.49 83.46 L 71.76 86.22 L 75.28 71.98 Z" />
+          </g>
+        </svg>
       </div>
 
 

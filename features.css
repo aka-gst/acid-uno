@@ -814,81 +814,69 @@
   left: 50%;
   top: 50%;
 
-  width: 244px;
-  height: 244px;
+  width: 336px;
+  height: 336px;
 
   transform: translate(-50%, -50%);
-
-  border-radius: 50%;
-
-  border: 2px dashed rgba(32, 234, 255, .3);
 
   pointer-events: none;
 
   z-index: 3;
 
-  transition:
-    border-color .4s ease,
-    opacity .4s ease;
+  transition: opacity .4s ease;
 }
 
 .direction.hidden {
   display: none;
 }
 
-/* стрелка на кольце */
-.direction::after {
-  content: "";
+.directionArt {
+  display: block;
 
-  position: absolute;
+  width: 100%;
+  height: 100%;
 
-  left: 50%;
-  top: -9px;
-
-  width: 0;
-  height: 0;
-
-  margin-left: -9px;
-
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 15px solid rgba(32, 234, 255, .75);
-
-  transform: rotate(90deg);
-
-  transform-origin: 50% 60%;
-
-  filter:
-    drop-shadow(0 0 7px rgba(32, 234, 255, .7));
+  fill: currentColor;
 }
 
-.direction.reversed {
-  border-color: rgba(255, 43, 214, .32);
+/* Лента бледнее наконечника: остриё должно читаться первым. */
+.dirRibbon {
+  opacity: .46;
 }
 
-.direction.reversed::after {
-  border-bottom-color: rgba(255, 43, 214, .8);
+.dirHead {
+  opacity: .9;
+}
 
-  transform: rotate(-90deg);
-
-  filter:
-    drop-shadow(0 0 7px rgba(255, 43, 214, .75));
+/*
+  Разворот зеркалит стрелки, а не докручивает кольцо:
+  повёрнутое на 180° кольцо выглядит точно так же, и смены
+  направления никто бы не заметил.
+*/
+.direction.reversed .directionArt {
+  transform: scaleX(-1);
 }
 
 
 @media (max-width: 560px) {
 
   .direction {
-    width: 196px;
-    height: 196px;
+    width: 296px;
+    height: 296px;
   }
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
 
   .direction {
-    width: 180px;
-    height: 180px;
+    /*
+      Стол в альбоме широкий и низкий. Круг, который обошёл бы
+      карты по бокам, вылез бы за стол сверху, поэтому кольцо
+      становится эллипсом. Вращать эллипс нельзя — он качается,
+      и это сразу видно.
+    */
+    width: 304px;
+    height: 186px;
   }
 }
 
@@ -2323,30 +2311,32 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
    ========================================================= */
 
 .direction {
-  border-style: solid;
+  color: var(--turn, var(--cyan));
 
-  border-color: color-mix(in srgb, var(--turn, var(--cyan)) 22%, transparent);
+  filter:
+    drop-shadow(
+      0 0 14px
+      color-mix(in srgb, var(--turn, var(--cyan)) 50%, transparent)
+    );
 
   /* оборот за сорок секунд: движение заметно, но не мельтешит */
   animation: acidTurnSpin 40s linear infinite;
 }
 
-.direction::after {
-  border-left-width: 7px;
-  border-right-width: 7px;
-  border-bottom-width: 12px;
-
-  border-bottom-color:
-    color-mix(in srgb, var(--turn, var(--cyan)) 70%, transparent);
-
-  filter:
-    drop-shadow(0 0 10px var(--turn, var(--cyan)));
-
-  opacity: .8;
-}
-
 .direction.reversed {
   animation-direction: reverse;
+}
+
+/*
+  В альбоме кольцо — эллипс (см. геометрию выше), а вращать
+  эллипс нельзя: он качается. Правило стоит здесь, а не рядом
+  с размерами, иначе объявление анимации выше его перебивает.
+*/
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .direction {
+    animation: none;
+  }
 }
 
 @keyframes acidTurnSpin {
