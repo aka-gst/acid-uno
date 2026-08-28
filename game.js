@@ -374,7 +374,7 @@ function cardFaceHTML(card) {
 
   return `
     <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
-    <div class="value">${label}</div>
+    <div class="value" data-v="${card.value}">${label}</div>
     <span class="cardWord" aria-hidden="true">${cardWord(card.value)}</span>
     <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>
   `;

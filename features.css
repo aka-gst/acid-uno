@@ -3341,3 +3341,91 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
     padding: 7px 11px;
   }
 }
+
+
+/* =========================================================
+   КИСЛОТНЫЕ СПЕЦКАРТЫ — ПИКТОГРАММЫ
+
+   В макете ACID UNO спецкарта опознаётся рисунком, а не
+   глифом: шприц на дозе, противогаз на выбросе, мишень на
+   блоке, встречные стрелки на развороте, трилистник на
+   дикой. Значок — это маска, залитая цветом масти, поэтому
+   светится тем же неоном, что и цифры, и не тянет за собой
+   ни одного файла.
+
+   Номинал никуда не делся: он остаётся в обоих углах и в
+   подписи под рисунком.
+   ========================================================= */
+
+html[data-deck="acid"] .value[data-v="skip"],
+html[data-deck="acid"] .value[data-v="reverse"],
+html[data-deck="acid"] .value[data-v="+2"],
+html[data-deck="acid"] .value[data-v="+4"],
+html[data-deck="acid"] .value[data-v="wild"] {
+
+  /* глиф прячется: его место занимает рисунок */
+  font-size: 0;
+  text-shadow: none;
+
+  width: 54%;
+  aspect-ratio: 1;
+
+  /*
+    Цвет берётся из масти напрямую, а не из currentColor:
+    color здесь пришлось бы гасить, и значок красился бы
+    прозрачным вместе с текстом.
+  */
+  background: var(--suit);
+
+  /*
+    Маска по яркости, а не по альфе. По альфе чёрные детали
+    рисунка — стёкла противогаза, деления шприца — остаются
+    непрозрачными, и значок слипается в пятно.
+  */
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  /*
+    Три тени — предел: с четырьмя браузер перестаёт вывозить
+    маску, и значок темнеет вместо того, чтобы светиться.
+  */
+  filter:
+    drop-shadow(0 0 3px #fff)
+    drop-shadow(0 0 10px var(--suit))
+    drop-shadow(0 0 22px var(--suit));
+}
+
+html[data-deck="acid"] .value[data-v="skip"] {
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8.6' fill='none' stroke='white' stroke-width='2.2'/><circle cx='12' cy='12' r='3' fill='white'/><rect x='11' y='0.4' width='2' height='4.2' fill='white'/><rect x='11' y='19.4' width='2' height='4.2' fill='white'/><rect x='0.4' y='11' width='4.2' height='2' fill='white'/><rect x='19.4' y='11' width='4.2' height='2' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8.6' fill='none' stroke='white' stroke-width='2.2'/><circle cx='12' cy='12' r='3' fill='white'/><rect x='11' y='0.4' width='2' height='4.2' fill='white'/><rect x='11' y='19.4' width='2' height='4.2' fill='white'/><rect x='0.4' y='11' width='4.2' height='2' fill='white'/><rect x='19.4' y='11' width='4.2' height='2' fill='white'/></svg>");
+}
+
+html[data-deck="acid"] .value[data-v="reverse"] {
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4.6 10.4a7.6 7.6 0 0 1 13-3.6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'/><path d='M19.4 13.6a7.6 7.6 0 0 1-13 3.6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'/><path d='M17.9 2.6l1.9 4.6-4.9-.5z' fill='white'/><path d='M6.1 21.4l-1.9-4.6 4.9.5z' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4.6 10.4a7.6 7.6 0 0 1 13-3.6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'/><path d='M19.4 13.6a7.6 7.6 0 0 1-13 3.6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'/><path d='M17.9 2.6l1.9 4.6-4.9-.5z' fill='white'/><path d='M6.1 21.4l-1.9-4.6 4.9.5z' fill='white'/></svg>");
+}
+
+html[data-deck="acid"] .value[data-v="+2"] {
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g transform='rotate(-34 12 12)'><rect x='8.6' y='0.6' width='6.8' height='1.9' rx='.7' fill='white'/><rect x='11' y='2.2' width='2' height='3.4' fill='white'/><rect x='6.9' y='5.4' width='10.2' height='1.9' rx='.7' fill='white'/><rect x='8.8' y='7.2' width='6.4' height='9.4' rx='1' fill='white'/><rect x='9.6' y='9.2' width='2.4' height='1.1' fill='black'/><rect x='9.6' y='11.6' width='2.4' height='1.1' fill='black'/><rect x='9.6' y='14' width='2.4' height='1.1' fill='black'/><rect x='11.2' y='16.4' width='1.6' height='2.4' fill='white'/><rect x='11.5' y='18.6' width='1' height='4.8' fill='white'/></g></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g transform='rotate(-34 12 12)'><rect x='8.6' y='0.6' width='6.8' height='1.9' rx='.7' fill='white'/><rect x='11' y='2.2' width='2' height='3.4' fill='white'/><rect x='6.9' y='5.4' width='10.2' height='1.9' rx='.7' fill='white'/><rect x='8.8' y='7.2' width='6.4' height='9.4' rx='1' fill='white'/><rect x='9.6' y='9.2' width='2.4' height='1.1' fill='black'/><rect x='9.6' y='11.6' width='2.4' height='1.1' fill='black'/><rect x='9.6' y='14' width='2.4' height='1.1' fill='black'/><rect x='11.2' y='16.4' width='1.6' height='2.4' fill='white'/><rect x='11.5' y='18.6' width='1' height='4.8' fill='white'/></g></svg>");
+}
+
+html[data-deck="acid"] .value[data-v="+4"] {
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.4c4.9 0 8.3 3.2 8.3 7.6 0 1.8-.4 3-.4 4.3 0 2.5-3 6.3-7.9 6.3s-7.9-3.8-7.9-6.3c0-1.3-.4-2.5-.4-4.3 0-4.4 3.4-7.6 8.3-7.6z' fill='white'/><circle cx='8.5' cy='9.6' r='2.7' fill='black'/><circle cx='15.5' cy='9.6' r='2.7' fill='black'/><rect x='9.4' y='19' width='5.2' height='4.4' rx='1.2' fill='white'/><rect x='10.9' y='14.4' width='2.2' height='1.6' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.4c4.9 0 8.3 3.2 8.3 7.6 0 1.8-.4 3-.4 4.3 0 2.5-3 6.3-7.9 6.3s-7.9-3.8-7.9-6.3c0-1.3-.4-2.5-.4-4.3 0-4.4 3.4-7.6 8.3-7.6z' fill='white'/><circle cx='8.5' cy='9.6' r='2.7' fill='black'/><circle cx='15.5' cy='9.6' r='2.7' fill='black'/><rect x='9.4' y='19' width='5.2' height='4.4' rx='1.2' fill='white'/><rect x='10.9' y='14.4' width='2.2' height='1.6' fill='black'/></svg>");
+}
+
+html[data-deck="acid"] .value[data-v="wild"] {
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+}
+
