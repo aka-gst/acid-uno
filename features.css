@@ -302,17 +302,22 @@
    Появляется только за минуту до конца.
    ========================================================= */
 
+/*
+  Таймер стоит рядом с логотипом: по центру шапки на него
+  наезжает веер бота.
+*/
+.topbarLead {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
 .matchClock {
-  position: absolute;
-
-  left: 50%;
-  top: calc(var(--safe-top) + 8px);
-
-  transform: translateX(-50%);
-
-  z-index: 40;
-
-  padding: 5px 14px;
+  padding: 5px 12px;
 
   border-radius: var(--ui-cut);
 
