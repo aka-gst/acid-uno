@@ -3,41 +3,19 @@
 /* =========================================================
    ACID UNO — HEADLESS SIM
    ---------------------------------------------------------
-   Партия на 2–7 мест целиком на src/rules.js.
-   Ни DOM, ни таймеров — только правила.
+   Партия на 2–7 мест целиком на редьюсере src/match.js.
+   Симулятор ничего не знает о правилах: он только выбирает
+   действие и складывает время.
 
    Запуск:
-     node test/simulate.js [партий] [мест] [лимит_с] [сек_человек] [сек_бот]
+     node test/simulate.js [партий] [мест] [живых] [лимит_с]
 
-   Лимит по умолчанию берётся из AcidRules.matchLimitFor().
+   Лимит по умолчанию берётся из AcidRules.matchLimitFor();
+   чтобы измерить чистую длительность, передай 999999.
    ========================================================= */
 
 const R = require("../src/rules.js");
-
-
-/* Детерминированный ГПСЧ, чтобы прогон повторялся. */
-function mulberry32(seed) {
-
-  let a = seed >>> 0;
-
-  return function () {
-    a = (a + 0x6D2B79F5) >>> 0;
-
-    let t = Math.imul(
-      a ^ (a >>> 15),
-      1 | a
-    );
-
-    t = (t + Math.imul(
-      t ^ (t >>> 7),
-      61 | t
-    )) ^ t;
-
-    return (
-      (t ^ (t >>> 14)) >>> 0
-    ) / 4294967296;
-  };
-}
+const M = require("../src/match.js");
 
 
 /* =========================================================
@@ -49,7 +27,7 @@ function mulberry32(seed) {
      человек  snapToDiscard91(205) + эффект(180) + время на решение
      добор    addPlayerCardAnimated91(310) / botDrawBack91(~250)
 
-   Живыми считаются первые humans мест, остальные — боты.
+   Живыми считаются первые humans мест.
    ========================================================= */
 
 const TIMING = {
@@ -60,335 +38,102 @@ const TIMING = {
 };
 
 
-const pace = (g, key) =>
-  TIMING[key][
-    g.seat < g.humans ? 0 : 1
-  ];
-
-
 /* =========================================================
-   СОСТОЯНИЕ
+   ПОЛИТИКА
+
+   Одна и та же для всех мест: разница между живым игроком
+   и ботом здесь только во времени на ход.
    ========================================================= */
 
-function createGame(rng, seats, humans) {
+function decide(state, seat, roll) {
 
-  let nextId = 1;
-
-  const roll =
-    max => Math.floor(rng() * max);
+  const moves =
+    M.legalMoves(state, seat);
 
 
-  const deck =
-    R.shuffle(
-      R.createDeck(
-        (color, value) => ({
-          id: nextId++,
-          color,
-          value
-        })
-      ),
-      roll
-    );
+  if (moves.length > 0) {
 
+    const hand =
+      state.seats[seat].hand;
 
-  const hands =
-    Array.from(
-      { length: seats },
-      () => []
-    );
+    const indexes =
+      moves.map(
+        card =>
+          hand.findIndex(one => one.id === card.id)
+      );
 
-  for (let i = 0; i < 7; i++) {
-    hands.forEach(hand => hand.push(deck.pop()));
+    const chosen =
+      hand[
+        R.chooseCard(hand, indexes, roll)
+      ];
+
+    return {
+      type: "play",
+      seat,
+      cardId: chosen.id,
+
+      color:
+        chosen.color === "wild"
+          ? R.bestColor(
+              hand,
+              hand.indexOf(chosen)
+            )
+          : null
+    };
   }
 
 
-  let first = deck.pop();
-
-  while (
-    first &&
-    (
-      first.color === "wild" ||
-      R.ACTION_VALUES.includes(first.value)
-    )
+  /*
+    Ходить нечем: забираем штраф целиком либо тянем
+    по одной, пока не найдётся подходящая.
+  */
+  if (
+    state.deck.length > 0 ||
+    state.discard.length > 1 ||
+    state.drawPenalty > 0
   ) {
-    deck.splice(
-      roll(deck.length + 1),
-      0,
-      first
-    );
-
-    first = deck.pop();
+    return { type: "draw", seat };
   }
 
-
-  return {
-    deck,
-    discard: [first],
-    hands,
-    seats,
-
-    humans:
-      Math.min(
-        seats,
-        Math.max(1, humans || 1)
-      ),
-
-    currentColor: first.color,
-    drawPenalty: 0,
-    penaltyType: null,
-    seat: 0,
-    direction: 1,
-    clock: 0,
-    turns: 0,
-    roll,
-    biggestStack: 0
-  };
-}
-
-
-function view(g) {
-  return {
-    top: g.discard[g.discard.length - 1],
-    currentColor: g.currentColor,
-    drawPenalty: g.drawPenalty,
-    penaltyType: g.penaltyType
-  };
-}
-
-
-/*
-  Во что обойдётся висящий кластер тому, кто его берёт.
-  Считаем по верхушке колоды — это ровно те карты,
-  которые он и получит.
-*/
-function expectedPenaltyPoints(g) {
-
-  if (g.drawPenalty <= 0) {
-    return 0;
-  }
-
-  const slice =
-    g.deck.slice(
-      Math.max(
-        0,
-        g.deck.length - g.drawPenalty
-      )
-    );
-
-  return R.handPoints(slice);
-}
-
-
-function take(g) {
-
-  if (g.deck.length === 0) {
-
-    if (g.discard.length <= 1) {
-      return null;
-    }
-
-    const top = g.discard.pop();
-
-    g.deck = R.shuffle(
-      g.discard.slice(),
-      g.roll
-    );
-
-    g.discard = [top];
-  }
-
-  return g.deck.pop() || null;
-}
-
-
-function play(g, index) {
-
-  const hand = g.hands[g.seat];
-
-  const card = hand[index];
-
-
-  let chosenColor = null;
-
-  if (card.color === "wild") {
-
-    chosenColor =
-      R.bestColor(hand, index);
-
-    g.clock += pace(g, "colorPick");
-  }
-
-
-  hand.splice(index, 1);
-
-  g.discard.push(card);
-
-
-  const next =
-    R.applyCard(
-      view(g),
-      card,
-      chosenColor
-    );
-
-
-  g.currentColor = next.currentColor;
-  g.drawPenalty = next.drawPenalty;
-  g.penaltyType = next.penaltyType;
-
-  g.biggestStack =
-    Math.max(g.biggestStack, g.drawPenalty);
-
-  g.clock += pace(g, "play");
-
-  return card;
-}
-
-
-function passTurn(g, card) {
-
-  const next =
-    R.turnAfterCard(
-      card || { value: "0" },
-      {
-        seat: g.seat,
-        seats: g.seats,
-        direction: g.direction
-      }
-    );
-
-  g.direction = next.direction;
-  g.seat = next.seat;
+  return { type: "pass", seat };
 }
 
 
 /* =========================================================
-   ОДИН ХОД
+   СТОИМОСТЬ ХОДА ПО СОБЫТИЯМ
    ========================================================= */
 
-function step(g) {
+function secondsFor(events, humans) {
 
-  const hand = g.hands[g.seat];
-
-
-  /* --- штраф на столе --- */
-
-  if (g.drawPenalty > 0) {
-
-    const defense =
-      R.playableIndexes(hand, view(g));
+  const pace = (key, seat) =>
+    TIMING[key][seat < humans ? 0 : 1];
 
 
-    if (defense.length > 0) {
+  let seconds = 0;
 
-      const card =
-        play(
-          g,
-          R.chooseCard(hand, defense, g.roll)
-        );
+  events.forEach(event => {
 
-      g.turns++;
+    if (event.type === "played") {
 
-      if (hand.length === 0) {
-        return { over: true, winner: g.seat };
-      }
+      seconds += pace("play", event.seat);
 
-      passTurn(g, card);
-
-      return { over: false };
-    }
-
-
-    const amount = g.drawPenalty;
-
-    for (let i = 0; i < amount; i++) {
-
-      const card = take(g);
-
-      if (!card) {
-        break;
-      }
-
-      hand.push(card);
-    }
-
-    g.clock +=
-      amount * pace(g, "penaltyCard");
-
-    g.drawPenalty = 0;
-    g.penaltyType = null;
-
-    g.turns++;
-
-    /* принять штраф — значит закончить ход */
-    passTurn(g, null);
-
-    return { over: false };
-  }
-
-
-  /* --- обычный ход --- */
-
-  let playable =
-    R.playableIndexes(hand, view(g));
-
-
-  if (playable.length === 0) {
-
-    let safety = 0;
-
-    while (
-      playable.length === 0 &&
-      safety < 150
-    ) {
-      safety++;
-
-      const card = take(g);
-
-      if (!card) {
-        break;
-      }
-
-      hand.push(card);
-
-      g.clock += pace(g, "drawOne");
-
-      if (
-        R.normalPlayable(card, view(g))
-      ) {
-        playable = [hand.length - 1];
+      if (event.card.color === "wild") {
+        seconds += pace("colorPick", event.seat);
       }
     }
-  }
 
+    if (event.type === "drew") {
+      seconds += pace("drawOne", event.seat);
+    }
 
-  if (playable.length === 0) {
+    if (event.type === "penalty") {
+      seconds +=
+        event.cards.length *
+        pace("penaltyCard", event.seat);
+    }
+  });
 
-    g.turns++;
-
-    passTurn(g, null);
-
-    return { over: false };
-  }
-
-
-  const card =
-    play(
-      g,
-      R.chooseCard(hand, playable, g.roll)
-    );
-
-  g.turns++;
-
-
-  if (hand.length === 0) {
-    return { over: true, winner: g.seat };
-  }
-
-
-  passTurn(g, card);
-
-  return { over: false };
+  return seconds;
 }
 
 
@@ -396,50 +141,81 @@ function step(g) {
    ПАРТИЯ
    ========================================================= */
 
+function mulberry32(seed) {
+
+  let a = seed >>> 0;
+
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+
 function playGame(seed, seats, limitSeconds, humans) {
 
-  const g =
-    createGame(
-      mulberry32(seed),
-      seats,
-      humans
-    );
+  const live =
+    Math.min(seats, Math.max(1, humans || 1));
+
+  const roll = mulberry32(seed ^ 0x9E3779B9);
+
+  let state =
+    M.create({ seats, humans: live, seed });
+
+  let clock = 0;
 
   let atLimit = null;
 
-  let result = { over: false };
+  let biggestStack = 0;
 
   let guard = 0;
 
 
   while (
-    !result.over &&
+    !state.over &&
     guard < 8000
   ) {
     guard++;
 
-    /* снимок последнего состояния до отсечки */
-    if (g.clock <= limitSeconds) {
+    if (clock <= limitSeconds) {
 
       atLimit = {
-        clock: g.clock,
-        points: g.hands.map(R.handPoints),
-        sizes: g.hands.map(h => h.length),
-        pendingPenalty: g.drawPenalty,
-        penaltyPoints: expectedPenaltyPoints(g),
-        seat: g.seat
+        clock,
+        points: state.seats.map(s => R.handPoints(s.hand)),
+        pendingPenalty: state.drawPenalty,
+        seat: state.activeSeat
       };
     }
 
-    result = step(g);
+    const result =
+      M.apply(
+        state,
+        decide(state, state.activeSeat, roll)
+      );
+
+    if (result.error) {
+      break;
+    }
+
+    state = result.state;
+
+    clock += secondsFor(result.events, live);
+
+    biggestStack =
+      Math.max(biggestStack, state.drawPenalty);
   }
 
 
   return {
-    winner: result.winner ?? null,
-    turns: g.turns,
-    seconds: g.clock,
-    biggestStack: g.biggestStack,
+    winner: state.winner,
+    turns: state.turns,
+    seconds: clock,
+    biggestStack,
     atLimit
   };
 }
@@ -493,11 +269,9 @@ function run(games, seats, limitSeconds, humans) {
   let timedOut = 0;
   let stackGames = 0;
   let pendingStack = 0;
-
   let draws = 0;
   let agrees = 0;
   let decided = 0;
-  let variantsDisagree = 0;
 
   const gaps = [];
 
@@ -520,20 +294,11 @@ function run(games, seats, limitSeconds, humans) {
 
     timedOut++;
 
-    const snap = r.atLimit;
-
-    const raw = snap.points.slice();
-
-    const settled = snap.points.slice();
-
-    if (snap.pendingPenalty > 0) {
-
+    if (r.atLimit.pendingPenalty > 0) {
       pendingStack++;
-
-      settled[snap.seat] += snap.penaltyPoints;
     }
 
-    const who = leader(settled);
+    const who = leader(r.atLimit.points);
 
     if (who === null) {
       draws++;
@@ -542,17 +307,13 @@ function run(games, seats, limitSeconds, humans) {
       decided++;
 
       const sorted =
-        settled.slice().sort((a, b) => a - b);
+        r.atLimit.points.slice().sort((a, b) => a - b);
 
       gaps.push(sorted[1] - sorted[0]);
 
       if (who === r.winner) {
         agrees++;
       }
-    }
-
-    if (leader(raw) !== who) {
-      variantsDisagree++;
     }
   }
 
@@ -565,6 +326,7 @@ function run(games, seats, limitSeconds, humans) {
   console.log(
     `  длительность, с:  медиана ${percentile(seconds, .5).toFixed(0)}` +
     `   p75 ${percentile(seconds, .75).toFixed(0)}` +
+    `   p84 ${percentile(seconds, .84).toFixed(0)}` +
     `   p90 ${percentile(seconds, .9).toFixed(0)}` +
     `   p99 ${percentile(seconds, .99).toFixed(0)}`
   );
@@ -583,21 +345,18 @@ function run(games, seats, limitSeconds, humans) {
   );
 
   if (timedOut === 0) {
-    return { timedOut: 0, games };
+    return;
   }
 
   console.log(
     `    живой кластер на столе: ${pendingStack} (${pct(pendingStack, timedOut)})` +
-    `   гашение меняет победителя: ${variantsDisagree} (${pct(variantsDisagree, timedOut)})`
+    `   ничьих ${draws} (${pct(draws, timedOut)})`
   );
 
   console.log(
-    `    ничьих ${draws} (${pct(draws, timedOut)})` +
-    `   совпало с реальным победителем ${pct(agrees, decided)}` +
+    `    совпало с реальным победителем ${pct(agrees, decided)}` +
     `   отрыв лидера: медиана ${percentile(gaps, .5)}, p10 ${percentile(gaps, .1)}`
   );
-
-  return { timedOut, games };
 }
 
 
@@ -624,8 +383,6 @@ if (require.main === module) {
 
 module.exports = {
   playGame,
-  createGame,
-  step,
-  run,
+  decide,
   TIMING
 };
