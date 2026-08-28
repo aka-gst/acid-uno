@@ -299,6 +299,39 @@
   }
 
 
+  /*
+    Карта действия обязана звучать крупнее цифры. В мобильном
+    UNO разрыв между ними примерно в пятнадцать децибел и
+    вдвое-втрое большая длина: одинаковый щелчок на «5» и на
+    «+4» съедает единственную подсказку, что случилось что-то
+    важное — а на телефоне игрок часто слышит раньше, чем
+    успевает разглядеть эффект.
+  */
+  function cueFor(card) {
+
+    if (card.value === "reverse") {
+      return "reverse";
+    }
+
+    if (card.value === "skip") {
+      return "skip";
+    }
+
+    if (
+      card.value === "+2" ||
+      card.value === "+4"
+    ) {
+      return "strike";
+    }
+
+    if (card.color === "wild") {
+      return "wild";
+    }
+
+    return "card";
+  }
+
+
   AcidStore.subscribe(events => {
 
     let penalty = false;
@@ -308,9 +341,7 @@
       if (event.type === "played") {
 
         AcidSound.play(
-          event.card.value === "reverse"
-            ? "reverse"
-            : "card"
+          cueFor(event.card)
         );
 
         if (event.card.color === "wild") {

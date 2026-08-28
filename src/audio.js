@@ -389,6 +389,84 @@ const AcidSound = (() => {
       });
     },
 
+    /* карта пропуска: резкая отсечка */
+    skip() {
+      voice({
+        type: "square",
+        from: 880,
+        to: 220,
+        length: .18,
+        gain: .18
+      });
+
+      noise({
+        length: .14,
+        frequency: 1200,
+        gain: .15,
+        delay: .02
+      });
+
+      voice({
+        type: "triangle",
+        from: 170,
+        to: 120,
+        length: .22,
+        gain: .13,
+        delay: .12
+      });
+    },
+
+    /*
+      Положили +2 или +4. Звук идёт вверх — стопка растёт;
+      забирают её вниз, звуком penalty.
+    */
+    strike() {
+      voice({
+        type: "sawtooth",
+        from: 180,
+        to: 520,
+        length: .2,
+        gain: .16
+      });
+
+      voice({
+        type: "square",
+        from: 360,
+        to: 1040,
+        length: .22,
+        gain: .12,
+        delay: .06
+      });
+
+      noise({
+        length: .16,
+        frequency: 900,
+        gain: .12,
+        delay: .06
+      });
+    },
+
+    /* чёрная карта: сейчас сменится цвет */
+    wild() {
+      [0, 1, 2, 3].forEach(i =>
+        voice({
+          type: "triangle",
+          from: [330, 415, 494, 622][i],
+          to: [660, 830, 988, 1244][i],
+          length: .26,
+          gain: .1,
+          delay: i * .05
+        })
+      );
+
+      noise({
+        length: .2,
+        frequency: 3000,
+        gain: .09,
+        delay: .04
+      });
+    },
+
     /* прилетел штраф */
     penalty() {
       voice({
@@ -407,18 +485,40 @@ const AcidSound = (() => {
       });
     },
 
-    /* победа */
+    /*
+      Победа. В мобильном UNO финал — единственное место, где
+      звук держится секундами и заметно громче игровых: сначала
+      разбег по аккорду, потом выдержанное трезвучие.
+    */
     win() {
-      [0, 1, 2, 3].forEach(i =>
+      [0, 1, 2, 3, 4].forEach(i =>
         voice({
           type: "triangle",
-          from: [523, 659, 784, 1047][i],
-          to: [523, 659, 784, 1047][i],
-          length: .3,
+          from: [523, 659, 784, 1047, 1319][i],
+          to: [523, 659, 784, 1047, 1319][i],
+          length: .26,
           gain: .17,
-          delay: i * .11
+          delay: i * .1
         })
       );
+
+      [523, 784, 1047].forEach((hz, i) =>
+        voice({
+          type: "triangle",
+          from: hz,
+          to: hz,
+          length: .9,
+          gain: .13,
+          delay: .5 + i * .02
+        })
+      );
+
+      noise({
+        length: .5,
+        frequency: 4200,
+        gain: .08,
+        delay: .5
+      });
     },
 
     /* поражение */
