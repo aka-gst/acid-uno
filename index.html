@@ -14,10 +14,10 @@
   <title>ACID UNO</title>
 
     
-  <link rel="stylesheet" href="style.css?v=13">
-  <link rel="stylesheet" href="effects.css?v=13">
-  <link rel="stylesheet" href="v9.1.css?v=13">
-  <link rel="stylesheet" href="features.css?v=13">
+  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="effects.css?v=16">
+  <link rel="stylesheet" href="v9.1.css?v=16">
+  <link rel="stylesheet" href="features.css?v=16">
   
 </head>
 
@@ -69,6 +69,15 @@
 
 
     <div class="topbarActions">
+
+      <button
+        id="tableButton"
+        class="iconButton"
+        aria-label="Стол"
+      >
+        ♟
+      </button>
+
 
       <button
         id="sound"
@@ -138,6 +147,19 @@
 
 
   <!-- ======================================
+       СОПЕРНИКИ
+
+       Ряд появляется на столе от трёх мест.
+       На двоих играет секция #bot выше.
+  ======================================= -->
+
+  <div
+    id="opponents"
+    class="opponents hidden"
+  ></div>
+
+
+  <!-- ======================================
        TABLE
   ======================================= -->
 
@@ -151,6 +173,17 @@
 
       <div class="tableLogo">
         ACID
+      </div>
+
+
+      <!-- НАПРАВЛЕНИЕ ХОДА -->
+
+      <div
+        id="direction"
+        class="direction hidden"
+        aria-hidden="true"
+      >
+        ↻
       </div>
 
 
@@ -421,6 +454,70 @@
 
 
 <!-- ========================================
+     LOBBY
+========================================= -->
+
+<div
+  id="lobby"
+  class="overlay hidden"
+>
+
+  <div class="window lobbyWindow">
+
+    <div class="windowEyebrow">
+      СТОЛ
+    </div>
+
+    <h2>
+      СКОЛЬКО ИГРОКОВ
+    </h2>
+
+
+    <div
+      id="seatPicker"
+      class="seatPicker"
+    >
+
+      <button class="seatPick" data-seats="2">2</button>
+      <button class="seatPick" data-seats="3">3</button>
+      <button class="seatPick" data-seats="4">4</button>
+      <button class="seatPick" data-seats="5">5</button>
+      <button class="seatPick" data-seats="6">6</button>
+      <button class="seatPick" data-seats="7">7</button>
+
+    </div>
+
+
+    <button
+      id="clockToggle"
+      class="clockToggle"
+      type="button"
+      aria-pressed="false"
+    >
+
+      <span class="clockToggleBox"></span>
+
+      <span>ИГРАТЬ БЕЗ ТАЙМЕРА</span>
+
+    </button>
+
+
+    <div
+      id="lobbyNote"
+      class="lobbyNote"
+    ></div>
+
+
+    <button id="lobbyStart">
+      НАЧАТЬ
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================
      END SCREEN
 ========================================= -->
 
@@ -465,12 +562,12 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/rules.js?v=13"></script>
-<script src="src/audio.js?v=13"></script>
-<script src="animations.js?v=13"></script>
-<script src="game.js?v=13"></script>
-<script src="v9.1.js?v=13"></script>
-<script src="src/features.js?v=13"></script>
+<script src="src/rules.js?v=16"></script>
+<script src="src/audio.js?v=16"></script>
+<script src="animations.js?v=16"></script>
+<script src="game.js?v=16"></script>
+<script src="v9.1.js?v=16"></script>
+<script src="src/features.js?v=16"></script>
 
 </body>
 </html>

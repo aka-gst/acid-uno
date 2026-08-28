@@ -281,6 +281,15 @@
     });
 
 
+  /*
+    Часы выключаются единогласным решением живых игроков.
+    Пока живой игрок один, единогласие — это его галочка
+    в лобби; с приходом мультиплеера здесь появится
+    настоящее голосование.
+  */
+  let clockOff = false;
+
+
   let lastTick = 0;
 
   let tickTimer = null;
@@ -332,6 +341,13 @@
 
   function startClock() {
 
+    clock.limit =
+      clockOff
+        ? Infinity
+        : AcidRules.matchLimitFor(
+            seatCount()
+          );
+
     clock.start();
 
     lastTick = performance.now();
@@ -361,7 +377,7 @@
      ИТОГ ПО ОЧКАМ
      ======================================================= */
 
-  function renderScore(points, playerWon) {
+  function renderScore(points, leaders) {
 
     const box = $$("endScore");
 
@@ -369,17 +385,19 @@
       return;
     }
 
-    box.innerHTML = `
-      <div class="endScoreRow${playerWon ? "" : " lost"}">
-        <span>ТЫ</span>
-        <b>${points.player}</b>
-      </div>
-
-      <div class="endScoreRow${playerWon ? " lost" : ""}">
-        <span>ACID BOT</span>
-        <b>${points.bot}</b>
-      </div>
-    `;
+    box.innerHTML =
+      points
+        .map((value, index) => `
+          <div class="endScoreRow${
+            leaders.includes(index)
+              ? ""
+              : " lost"
+          }">
+            <span>${seatName(index)}</span>
+            <b>${value}</b>
+          </div>
+        `)
+        .join("");
 
     box.classList.remove("hidden");
   }
@@ -404,17 +422,11 @@
     */
     if (drawPenalty > 0) {
 
-      const cards =
-        takeMany(drawPenalty);
+      seats[activeSeat].hand.push(
+        ...takeMany(drawPenalty)
+      );
 
-      const hand =
-        turn === "player"
-          ? player
-          : bot;
-
-      hand.push(...cards);
-
-      if (turn === "player") {
+      if (activeSeat === 0) {
         AcidRules.sortHand(player);
       }
 
@@ -423,20 +435,30 @@
     }
 
 
-    const points = {
-      player:
-        AcidRules.handPoints(player),
+    const hands = {};
 
-      bot:
-        AcidRules.handPoints(bot)
-    };
+    seats.forEach(seat => {
+      hands[seat.index] = seat.hand;
+    });
 
 
     const outcome =
-      AcidRules.timeoutResult({
-        player,
-        bot
-      });
+      AcidRules.timeoutResult(hands);
+
+
+    const leaders =
+      outcome.leaders.map(Number);
+
+
+    const points =
+      seats.map(
+        seat =>
+          AcidRules.handPoints(seat.hand)
+      );
+
+
+    const playerWon =
+      leaders.includes(0);
 
 
     render();
@@ -444,27 +466,27 @@
     AcidFX.status("ВРЕМЯ ВЫШЛО");
 
     await AcidFX.flash(
-      outcome.winner === "player"
+      playerWon
         ? "green"
         : "purple"
     );
 
     AcidSound.play(
-      outcome.winner === "player"
+      playerWon
         ? "win"
         : "lose"
     );
 
     $$("endText").textContent =
-      outcome.draw
+      outcome.draw && playerWon
         ? "ВРЕМЯ ВЫШЛО — НИЧЬЯ"
-        : outcome.winner === "player"
+        : playerWon
           ? "ВРЕМЯ ВЫШЛО — ТЫ ВЫИГРАЛ"
-          : "ВРЕМЯ ВЫШЛО — БОТ ВЫИГРАЛ";
+          : `ВРЕМЯ ВЫШЛО — ${seatName(leaders[0])} ВЫИГРАЛ`;
 
     renderScore(
       points,
-      outcome.winner === "player"
+      leaders
     );
 
     $$("endScreen")
@@ -512,12 +534,146 @@
 
 
   /* =======================================================
+     ЛОББИ
+
+     Размер стола и часы выбираются до раздачи.
+     ======================================================= */
+
+  const lobby =
+    $$("lobby");
+
+
+  let chosenSeats =
+    AcidRules.MIN_SEATS;
+
+
+  function paintLobby() {
+
+    document
+      .querySelectorAll(".seatPick")
+      .forEach(button =>
+        button.classList.toggle(
+          "chosen",
+          Number(button.dataset.seats) ===
+            chosenSeats
+        )
+      );
+
+
+    const toggle =
+      $$("clockToggle");
+
+    toggle
+      ?.classList
+      .toggle("on", clockOff);
+
+    toggle
+      ?.setAttribute(
+        "aria-pressed",
+        String(clockOff)
+      );
+
+
+    const note =
+      $$("lobbyNote");
+
+    if (note) {
+
+      note.textContent =
+        clockOff
+          ? "БЕЗ ЧАСОВ — ДО ПОСЛЕДНЕЙ КАРТЫ"
+          : `ТАЙМЕР ${
+              AcidRules.formatClock(
+                AcidRules.matchLimitFor(chosenSeats)
+              )
+            } · ПОТОМ СЧИТАЕМ ОЧКИ`;
+    }
+  }
+
+
+  function openLobby() {
+
+    chosenSeats =
+      Math.max(
+        AcidRules.MIN_SEATS,
+        seatCount() || AcidRules.MIN_SEATS
+      );
+
+    stopClock();
+
+    paintLobby();
+
+    lobby?.classList.remove("hidden");
+  }
+
+
+  function closeLobby() {
+    lobby?.classList.add("hidden");
+  }
+
+
+  document
+    .querySelectorAll(".seatPick")
+    .forEach(button =>
+      button.addEventListener(
+        "click",
+        () => {
+
+          chosenSeats =
+            Number(button.dataset.seats);
+
+          AcidSound.play("card");
+
+          paintLobby();
+        }
+      )
+    );
+
+
+  $$("clockToggle")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        clockOff = !clockOff;
+
+        AcidSound.play("draw");
+
+        paintLobby();
+      }
+    );
+
+
+  $$("lobbyStart")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        tableSize = chosenSeats;
+
+        closeLobby();
+
+        $$("endScreen")
+          ?.classList
+          .add("hidden");
+
+        startGame();
+      }
+    );
+
+
+  $$("tableButton")
+    ?.addEventListener(
+      "click",
+      openLobby
+    );
+
+
+  /* =======================================================
      СТАРТ
      ======================================================= */
 
-  startClock();
-
-  render();
+  openLobby();
 
 
   /*
@@ -530,9 +686,27 @@
     stopClock,
 
     disableClock() {
+
+      clockOff = true;
+
       clock.disable();
 
       paintClock(clock.advance(0));
+    },
+
+    enableClock() {
+
+      clockOff = false;
+
+      startClock();
+    },
+
+    get off() {
+      return clockOff;
+    },
+
+    set off(value) {
+      clockOff = Boolean(value);
     }
   };
 

@@ -42,7 +42,8 @@
     botUnoCalled: false,
     botUnoVulnerable: false,
     botUnoTimer: null,
-    botCatchTimer: null
+    botCatchTimer: null,
+    botUnoSeat: -1
 
   };
 
@@ -590,8 +591,162 @@
   }
 
 
+  /* =======================================================
+     СОПЕРНИКИ
+
+     На двоих играет привычная секция #bot с большим веером.
+     От трёх мест веер заменяется рядом компактных значков:
+     шесть вееров на телефон не помещаются, а число карт
+     читать надо у всех сразу.
+     ======================================================= */
+
+  const OPPONENT_FACES = [
+    "🤖",
+    "👾",
+    "🎃",
+    "👽",
+    "🦾",
+    "🐙"
+  ];
+
+
+  function multiSeat91() {
+    return seatCount() > 2;
+  }
+
+
+  function renderOpponents91() {
+
+    const row =
+      $("opponents");
+
+    const solo =
+      $("bot");
+
+
+    if (!row) {
+      return;
+    }
+
+
+    const multi =
+      multiSeat91();
+
+
+    row.classList.toggle(
+      "hidden",
+      !multi
+    );
+
+    solo
+      ?.classList
+      .toggle(
+        "hidden",
+        multi
+      );
+
+
+    if (!multi) {
+
+      row.innerHTML = "";
+
+      return;
+    }
+
+
+    row.dataset.count =
+      String(seatCount() - 1);
+
+
+    /*
+      Значки пересобираются только когда меняется состав
+      стола: иначе анимация «поймал UNO» сбрасывалась бы
+      на каждой перерисовке.
+    */
+    if (
+      row.childElementCount !== seatCount() - 1
+    ) {
+
+      row.innerHTML =
+        seats
+          .slice(1)
+          .map(
+            seat => `
+              <button
+                class="opponent"
+                type="button"
+                data-seat="${seat.index}"
+                aria-label="${seatName(seat.index)}"
+              >
+                <span class="opponentGlow"></span>
+
+                <span class="opponentStack"></span>
+
+                <span class="opponentFace">${
+                  OPPONENT_FACES[
+                    (seat.index - 1) %
+                    OPPONENT_FACES.length
+                  ]
+                }</span>
+
+                <span class="opponentName">${
+                  seatName(seat.index)
+                }</span>
+
+                <span class="opponentCount">0</span>
+              </button>
+            `
+          )
+          .join("");
+    }
+
+
+    seats
+      .slice(1)
+      .forEach(seat => {
+
+        const el =
+          row.querySelector(
+            `.opponent[data-seat="${seat.index}"]`
+          );
+
+        if (!el) {
+          return;
+        }
+
+        el.querySelector(".opponentCount")
+          .textContent =
+            String(seat.hand.length);
+
+        el.classList.toggle(
+          "is-active",
+          seat.index === activeSeat &&
+          !gameOver
+        );
+
+        el.classList.toggle(
+          "is-low",
+          seat.hand.length === 1
+        );
+
+        el.dataset.stack =
+          String(
+            Math.min(3, seat.hand.length)
+          );
+      });
+  }
+
+
   renderBot =
     function () {
+
+      renderOpponents91();
+
+
+      if (multiSeat91()) {
+        return;
+      }
+
 
       const countEl =
         $("botCount");
@@ -686,6 +841,9 @@
      ======================================================= */
 
   function visualTurn91(side) {
+
+    renderOpponents91();
+
 
     const playerGlow =
       $("playerTurnGlow");
@@ -911,6 +1069,36 @@
      RENDER WRAPPER
      ======================================================= */
 
+  /*
+    Направление хода имеет смысл только от трёх мест:
+    на двоих разворот работает как пропуск.
+  */
+  function renderDirection91() {
+
+    const el =
+      $("direction");
+
+    if (!el) {
+      return;
+    }
+
+    el.classList.toggle(
+      "hidden",
+      !multiSeat91()
+    );
+
+    el.textContent =
+      direction === 1
+        ? "↻"
+        : "↺";
+
+    el.classList.toggle(
+      "reversed",
+      direction === -1
+    );
+  }
+
+
   const baseRender91 =
     render;
 
@@ -923,6 +1111,8 @@
       bindV91Hand();
 
       updatePlayableGlow91();
+
+      renderDirection91();
 
       syncUno91();
     };
@@ -2175,6 +2365,103 @@
 
 
   /* =======================================================
+     ПЕРЕДАЧА ХОДА
+
+     Одно место на всю игру, где ход уходит дальше по кругу.
+     На столе из семи мест подряд может сходить до шести
+     ботов, поэтому следующего соперника запускаем сами.
+     ======================================================= */
+
+  /*
+    Пропуск и разворот на двоих возвращают ход тебе,
+    на большом столе — уводят дальше по кругу.
+  */
+  function specialTurnStatus91(card) {
+
+    if (
+      card.value !== "skip" &&
+      card.value !== "reverse"
+    ) {
+
+      return null;
+    }
+
+    const preview =
+      AcidRules.turnAfterCard(
+        card,
+        {
+          seat: activeSeat,
+          seats: seatCount(),
+          direction
+        }
+      );
+
+    if (preview.again) {
+
+      return card.value === "skip"
+        ? "ПРОПУСК — ХОДИШЬ СНОВА"
+        : "РАЗВОРОТ — ХОДИШЬ СНОВА";
+    }
+
+    return card.value === "skip"
+      ? "ПРОПУСК"
+      : "РАЗВОРОТ";
+  }
+
+
+  function turnStatus91() {
+
+    if (turn === "player") {
+
+      return drawPenalty > 0
+        ? `ШТРАФ +${drawPenalty}`
+        : "ТВОЙ ХОД";
+    }
+
+    return drawPenalty > 0
+      ? `${seatName(activeSeat)}: ШТРАФ +${drawPenalty}`
+      : seatCount() > 2
+        ? `ХОДИТ ${seatName(activeSeat)}`
+        : "ХОД БОТА";
+  }
+
+
+  function handOverTurn91(card, options) {
+
+    const settings = options || {};
+
+    advanceTurn(card);
+
+    visualTurn91(turn);
+
+    AcidFX.status(
+      settings.status || turnStatus91()
+    );
+
+    render();
+
+    if (turn !== "bot") {
+      return;
+    }
+
+    setTimeout(
+      () => {
+
+        if (
+          !gameOver &&
+          turn === "bot"
+        ) {
+
+          botTurn();
+        }
+
+      },
+      settings.delay ?? 90
+    );
+  }
+
+
+  /* =======================================================
      PLAYER FINISH PLAY
      ======================================================= */
 
@@ -2238,10 +2525,6 @@
         "ПЕРЕХВАТ!",
         "acid"
       );
-
-
-      turn =
-        "player";
     }
 
 
@@ -2302,75 +2585,27 @@
     handlePlayerUnoAfterPlay91();
 
 
-    if (
-      card.value === "skip" ||
-      card.value === "reverse"
-    ) {
-
-      turn =
-        "player";
-
-
-      visualTurn91(
-        "player"
-      );
-
-
-      AcidFX.status(
-        card.value === "skip"
-          ? "БОТ ПРОПУСКАЕТ — ТВОЙ ХОД"
-          : "РАЗВОРОТ — ТВОЙ ХОД"
-      );
-
-
-      render();
-
-
-      endAction91();
-
-
-      return true;
+    /*
+      Перехват возвращает ход перехватившему,
+      дальше круг считается от него.
+    */
+    if (intercept) {
+      setActiveSeat(0);
     }
 
 
-    turn =
-      "bot";
+    handOverTurn91(
+      card,
+      {
+        status:
+          specialTurnStatus91(card),
 
-
-    visualTurn91(
-      "bot"
+        delay: 85
+      }
     );
-
-
-    AcidFX.status(
-      drawPenalty > 0
-        ? `БОТ: ШТРАФ +${drawPenalty}`
-        : intercept
-          ? "ПЕРЕХВАТ — БОТ ОТВЕЧАЕТ"
-          : "ХОД БОТА"
-    );
-
-
-    render();
 
 
     endAction91();
-
-
-    setTimeout(
-      () => {
-
-        if (
-          !gameOver &&
-          turn === "bot"
-        ) {
-
-          botTurn();
-        }
-
-      },
-      85
-    );
 
 
     return true;
@@ -2674,37 +2909,7 @@
         }
 
 
-        turn =
-          "bot";
-
-
-        visualTurn91(
-          "bot"
-        );
-
-
-        AcidFX.status(
-          "ХОД БОТА"
-        );
-
-
-        render();
-
-
-        setTimeout(
-          () => {
-
-            if (
-              !gameOver &&
-              turn === "bot"
-            ) {
-
-              botTurn();
-            }
-
-          },
-          90
-        );
+        handOverTurn91(null);
 
 
         return;
@@ -2737,8 +2942,7 @@
       );
 
 
-      turn =
-        "player";
+      setActiveSeat(0);
 
 
       render();
@@ -2809,6 +3013,9 @@
 
 
     const botArea =
+      opponentElement91(
+        activeSeat
+      ) ||
       $("botCards");
 
 
@@ -3011,8 +3218,8 @@
 
       AcidFX.status(
         intercept
-          ? "БОТ: ПЕРЕХВАТ"
-          : "БОТ ХОДИТ"
+          ? `${seatName(activeSeat)}: ПЕРЕХВАТ`
+          : `ХОДИТ ${seatName(activeSeat)}`
       );
 
 
@@ -3069,68 +3276,15 @@
       }
 
 
-      if (
-        card.value === "skip" ||
-        card.value === "reverse"
-      ) {
+      handOverTurn91(
+        card,
+        {
+          status:
+            specialTurnStatus91(card),
 
-        turn =
-          "bot";
-
-
-        visualTurn91(
-          "bot"
-        );
-
-
-        AcidFX.status(
-          "БОТ ХОДИТ ЕЩЁ РАЗ"
-        );
-
-
-        render();
-
-
-        endAction91();
-
-
-        setTimeout(
-          () => {
-
-            if (
-              !gameOver &&
-              turn === "bot"
-            ) {
-
-              botTurn();
-            }
-
-          },
-          85
-        );
-
-
-        return;
-      }
-
-
-      turn =
-        "player";
-
-
-      visualTurn91(
-        "player"
+          delay: 85
+        }
       );
-
-
-      AcidFX.status(
-        drawPenalty > 0
-          ? `ШТРАФ +${drawPenalty}`
-          : "ТВОЙ ХОД"
-      );
-
-
-      render();
 
 
       endAction91();
@@ -3172,7 +3326,7 @@
       ) {
 
         AcidFX.status(
-          "БОТ ЗАМЕТИЛ ПЕРЕХВАТ..."
+          `${seatName(activeSeat)} ЗАМЕТИЛ ПЕРЕХВАТ...`
         );
 
 
@@ -3224,7 +3378,7 @@
       */
 
       AcidFX.status(
-        "БОТ ДУМАЕТ..."
+        `${seatName(activeSeat)} ДУМАЕТ...`
       );
 
 
@@ -3304,7 +3458,7 @@
 
 
         burst91(
-          `БОТ +${cards.length}`,
+          `${seatName(activeSeat)} +${cards.length}`,
           "danger"
         );
 
@@ -3338,28 +3492,14 @@
           accepting penalty ENDS bot turn.
       */
 
-        turn =
-          "player";
-
-
-        visualTurn91(
-          "player"
-        );
-
-
-        AcidFX.status(
-          "ТВОЙ ХОД"
-        );
-
-
         V91.botRunning =
           false;
 
 
-        render();
-
-
         endAction91();
+
+
+        handOverTurn91(null);
 
 
         return;
@@ -3379,7 +3519,7 @@
       ) {
 
         AcidFX.status(
-          "БОТ ДОБИРАЕТ..."
+          `${seatName(activeSeat)} ДОБИРАЕТ...`
         );
 
 
@@ -3458,25 +3598,11 @@
         playable.length === 0
       ) {
 
-        turn =
-          "player";
-
-
-        visualTurn91(
-          "player"
-        );
-
-
-        AcidFX.status(
-          "ТВОЙ ХОД"
-        );
-
-
         V91.botRunning =
           false;
 
 
-        render();
+        handOverTurn91(null);
 
 
         return;
@@ -3695,10 +3821,6 @@
 
       if (intercept) {
 
-        turn =
-          "player";
-
-
         burst91(
           "ПЕРЕХВАТ!",
           "acid"
@@ -3746,73 +3868,23 @@
       handlePlayerUnoAfterPlay91();
 
 
-      if (
-        card.value === "skip" ||
-        card.value === "reverse"
-      ) {
-
-        turn =
-          "player";
-
-
-        visualTurn91(
-          "player"
-        );
-
-
-        AcidFX.status(
-          card.value === "skip"
-            ? "БОТ ПРОПУСКАЕТ — ТВОЙ ХОД"
-            : "РАЗВОРОТ — ТВОЙ ХОД"
-        );
-
-
-        render();
-
-
-        endAction91();
-
-
-        return;
+      if (intercept) {
+        setActiveSeat(0);
       }
 
 
-      turn =
-        "bot";
+      handOverTurn91(
+        card,
+        {
+          status:
+            specialTurnStatus91(card),
 
-
-      visualTurn91(
-        "bot"
+          delay: 85
+        }
       );
-
-
-      AcidFX.status(
-        drawPenalty > 0
-          ? `БОТ: ШТРАФ +${drawPenalty}`
-          : "ХОД БОТА"
-      );
-
-
-      render();
 
 
       endAction91();
-
-
-      setTimeout(
-        () => {
-
-          if (
-            !gameOver &&
-            turn === "bot"
-          ) {
-
-            botTurn();
-          }
-
-        },
-        85
-      );
     };
 
 
@@ -4044,8 +4116,23 @@
 
 
   /* =======================================================
-     UNO BOT
+     UNO СОПЕРНИКА
+
+     Ловить можно любого соперника: уязвимым становится тот,
+     кто только что скинулся до одной карты, и только он.
      ======================================================= */
+
+  function opponentElement91(seat) {
+
+    if (!multiSeat91()) {
+      return $("bot");
+    }
+
+    return document.querySelector(
+      `.opponent[data-seat="${seat}"]`
+    );
+  }
+
 
   function clearBotUno91() {
 
@@ -4067,28 +4154,41 @@
       false;
 
 
-    $("bot")
-      ?.classList
-      .remove(
-        "catchable"
+    document
+      .querySelectorAll(
+        ".catchable"
+      )
+      .forEach(
+        el =>
+          el.classList.remove("catchable")
       );
+
+
+    V91.botUnoSeat =
+      -1;
   }
 
 
   function prepareBotUno91() {
 
+    const seat =
+      activeSeat;
+
+
     clearBotUno91();
+
+
+    V91.botUnoSeat =
+      seat;
 
 
     V91.botUnoVulnerable =
       true;
 
 
-    $("bot")
+    opponentElement91(seat)
       ?.classList
-      .add(
-        "catchable"
-      );
+      .add("catchable");
 
 
     V91.botUnoTimer =
@@ -4098,7 +4198,7 @@
           if (
             gameOver ||
             !V91.botUnoVulnerable ||
-            bot.length !== 1
+            seats[seat]?.hand.length !== 1
           ) {
 
             return;
@@ -4113,21 +4213,19 @@
             false;
 
 
-          $("bot")
+          opponentElement91(seat)
             ?.classList
-            .remove(
-              "catchable"
-            );
+            .remove("catchable");
 
 
           burst91(
-            "БОТ: UNO!",
+            `${seatName(seat)}: UNO!`,
             "acid"
           );
 
 
           AcidFX.status(
-            "БОТ: UNO!"
+            `${seatName(seat)}: UNO!`
           );
 
         },
@@ -4146,11 +4244,9 @@
             false;
 
 
-          $("bot")
+          opponentElement91(seat)
             ?.classList
-            .remove(
-              "catchable"
-            );
+            .remove("catchable");
 
         },
         900
@@ -4158,65 +4254,93 @@
   }
 
 
+  async function catchBotUno91(seat) {
+
+    if (
+      gameOver ||
+      !V91.botUnoVulnerable ||
+      V91.botUnoCalled ||
+      V91.botUnoSeat !== seat ||
+      seats[seat]?.hand.length !== 1
+    ) {
+
+      return;
+    }
+
+
+    clearBotUno91();
+
+
+    burst91(
+      "ПОЙМАЛ! +2",
+      "danger"
+    );
+
+
+    AcidFX.status(
+      `${seatName(seat)} НЕ СКАЗАЛ UNO — +2`
+    );
+
+
+    const cards =
+      takeMany(2);
+
+
+    beginAction91();
+
+
+    for (
+      const card of cards
+    ) {
+
+      await botDrawBack91();
+
+
+      seats[seat].hand.push(
+        card
+      );
+
+
+      render();
+
+
+      await wait91(
+        25
+      );
+    }
+
+
+    endAction91();
+  }
+
+
   $("bot")
     ?.addEventListener(
       "click",
-      async () => {
+      () =>
+        catchBotUno91(
+          V91.botUnoSeat
+        )
+    );
 
-        if (
-          gameOver ||
-          !V91.botUnoVulnerable ||
-          V91.botUnoCalled ||
-          bot.length !== 1
-        ) {
 
+  $("opponents")
+    ?.addEventListener(
+      "click",
+      event => {
+
+        const pod =
+          event.target.closest?.(
+            ".opponent"
+          );
+
+        if (!pod) {
           return;
         }
 
-
-        clearBotUno91();
-
-
-        burst91(
-          "ПОЙМАЛ! +2",
-          "danger"
+        catchBotUno91(
+          Number(pod.dataset.seat)
         );
-
-
-        AcidFX.status(
-          "БОТ НЕ СКАЗАЛ UNO — +2"
-        );
-
-
-        const cards =
-          takeMany(2);
-
-
-        beginAction91();
-
-
-        for (
-          const card of cards
-        ) {
-
-          await botDrawBack91();
-
-
-          bot.push(
-            card
-          );
-
-
-          render();
-
-
-          await wait91(
-            25
-          );
-        }
-
-
-        endAction91();
       }
     );
 

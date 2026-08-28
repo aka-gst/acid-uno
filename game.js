@@ -20,9 +20,31 @@ const ACID_UI = Object.freeze({
 });
 
 let deck = [];
+let discard = [];
+
+/*
+  Стол — кольцо из 2..7 мест. Место 0 всегда живое.
+  seats[i] = { index, kind, hand, uno }
+*/
+let seats = [];
+
+let tableSize = 2;
+
+let activeSeat = 0;
+
+let direction = 1;
+
+/*
+  player и bot — это не копии, а ссылки на руки из seats.
+  player всегда указывает на руку места 0, bot — на руку
+  того соперника, который ходит прямо сейчас.
+
+  turn остаётся строкой из двух значений: на неё завязана
+  вся отрисовка и весь ход партии. "player" — ходит место 0,
+  "bot" — ходит любой соперник; кто именно, знает activeSeat.
+*/
 let player = [];
 let bot = [];
-let discard = [];
 
 let turn = "player";
 let currentColor = "red";
@@ -83,6 +105,80 @@ function tableView() {
     penaltyType
   };
 }
+
+/* =========================================================
+   МЕСТА
+   ========================================================= */
+
+/*
+  Имя места. Соперники нумеруются с единицы, чтобы
+  «БОТ 3» на экране совпадал с третьим значком сверху.
+*/
+function seatName(index) {
+
+  if (index === 0) {
+    return "ТЫ";
+  }
+
+  return seats.length > 2
+    ? `БОТ ${index}`
+    : "ACID BOT";
+}
+
+function seatCount() {
+  return seats.length;
+}
+
+function humanSeats() {
+  return seats.filter(
+    seat => seat.kind === "human"
+  );
+}
+
+function activeSeatObject() {
+  return seats[activeSeat] || seats[0];
+}
+
+function setActiveSeat(index) {
+
+  activeSeat = index;
+
+  if (
+    seats[index] &&
+    index !== 0
+  ) {
+    bot = seats[index].hand;
+  }
+
+  turn =
+    index === 0
+      ? "player"
+      : "bot";
+}
+
+/*
+  Передать ход после выложенной карты.
+  card = null — ход просто уходит соседу.
+*/
+function advanceTurn(card) {
+
+  const next =
+    AcidRules.turnAfterCard(
+      card || { value: "0" },
+      {
+        seat: activeSeat,
+        seats: seats.length,
+        direction
+      }
+    );
+
+  direction = next.direction;
+
+  setActiveSeat(next.seat);
+
+  return next;
+}
+
 
 function topCard() {
   return (
@@ -299,10 +395,18 @@ function startGame() {
   cancelDrag(true);
 
   deck = [];
-  player = [];
-  bot = [];
   discard = [];
 
+  seats =
+    AcidRules.createSeats(
+      tableSize
+    );
+
+  player = seats[0].hand;
+  bot = seats[1].hand;
+
+  activeSeat = 0;
+  direction = 1;
   turn = "player";
 
   currentColor = "red";
@@ -317,15 +421,14 @@ function startGame() {
 
   createDeck();
 
-  player.push(
-    ...takeMany(7)
+  seats.forEach(
+    seat =>
+      seat.hand.push(
+        ...takeMany(7)
+      )
   );
 
   AcidRules.sortHand(player);
-
-  bot.push(
-    ...takeMany(7)
-  );
 
 
   /*
@@ -2543,7 +2646,7 @@ async function finish(
   $("endText").textContent =
     playerWon
       ? "ТЫ ВЫИГРАЛ"
-      : "БОТ ВЫИГРАЛ";
+      : `${seatName(activeSeat)} ВЫИГРАЛ`;
 
   $("endScreen")
     .classList

@@ -581,6 +581,123 @@ class UnoCall {
 
 
 /* =========================================================
+   МЕСТА И НАПРАВЛЕНИЕ ХОДА
+
+   Стол — это кольцо мест от 2 до 7. Направление хода
+   1 (по часовой) или -1.
+   ========================================================= */
+
+const MIN_SEATS = 2;
+
+const MAX_SEATS = 7;
+
+
+/*
+  Место за столом. Место 0 всегда живое — это ты.
+
+  uno у каждого своё: на столе из семи ловить «не сказал UNO»
+  можно у любого соперника независимо.
+*/
+function createSeats(count, options) {
+
+  const settings = options || {};
+
+  const total =
+    Math.min(
+      MAX_SEATS,
+      Math.max(MIN_SEATS, count || MIN_SEATS)
+    );
+
+  const humans =
+    Math.min(
+      total,
+      Math.max(1, settings.humans || 1)
+    );
+
+
+  return Array.from(
+    { length: total },
+    (ignored, index) => ({
+      index,
+
+      kind:
+        index < humans
+          ? "human"
+          : "bot",
+
+      hand: [],
+
+      uno: new UnoCall()
+    })
+  );
+}
+
+
+function nextSeat(seat, seats, direction, step) {
+
+  const shift =
+    direction * (step === undefined ? 1 : step);
+
+  return (
+    (seat + shift) % seats + seats
+  ) % seats;
+}
+
+
+/*
+  Куда уходит ход после выложенной карты.
+
+  На двоих разворот работает как пропуск — это и есть
+  классическое правило, и именно так игра ведёт себя
+  сейчас. На троих и больше разворот меняет направление.
+*/
+function turnAfterCard(card, state) {
+
+  let direction = state.direction;
+
+  let step = 1;
+
+
+  if (card.value === "reverse") {
+
+    if (state.seats === 2) {
+      step = 2;
+
+    } else {
+      direction = -direction;
+    }
+  }
+
+
+  if (card.value === "skip") {
+    step = 2;
+  }
+
+
+  return {
+    direction,
+
+    seat:
+      nextSeat(
+        state.seat,
+        state.seats,
+        direction,
+        step
+      ),
+
+    /* ход остался у того же игрока */
+    again:
+      nextSeat(
+        state.seat,
+        state.seats,
+        direction,
+        step
+      ) === state.seat
+  };
+}
+
+
+/* =========================================================
    ВЫБОР КАРТЫ БОТОМ
    ========================================================= */
 
@@ -694,82 +811,6 @@ function chooseCard(hand, indexes, noise) {
 
 
   return best;
-}
-
-
-/* =========================================================
-   МЕСТА И НАПРАВЛЕНИЕ ХОДА
-
-   Стол — это кольцо мест от 2 до 7. Направление хода
-   1 (по часовой) или -1.
-   ========================================================= */
-
-const MIN_SEATS = 2;
-
-const MAX_SEATS = 7;
-
-
-function nextSeat(seat, seats, direction, step) {
-
-  const shift =
-    direction * (step === undefined ? 1 : step);
-
-  return (
-    (seat + shift) % seats + seats
-  ) % seats;
-}
-
-
-/*
-  Куда уходит ход после выложенной карты.
-
-  На двоих разворот работает как пропуск — это и есть
-  классическое правило, и именно так игра ведёт себя
-  сейчас. На троих и больше разворот меняет направление.
-*/
-function turnAfterCard(card, state) {
-
-  let direction = state.direction;
-
-  let step = 1;
-
-
-  if (card.value === "reverse") {
-
-    if (state.seats === 2) {
-      step = 2;
-
-    } else {
-      direction = -direction;
-    }
-  }
-
-
-  if (card.value === "skip") {
-    step = 2;
-  }
-
-
-  return {
-    direction,
-
-    seat:
-      nextSeat(
-        state.seat,
-        state.seats,
-        direction,
-        step
-      ),
-
-    /* ход остался у того же игрока */
-    again:
-      nextSeat(
-        state.seat,
-        state.seats,
-        direction,
-        step
-      ) === state.seat
-  };
 }
 
 
@@ -1058,6 +1099,7 @@ return {
 
   MIN_SEATS,
   MAX_SEATS,
+  createSeats,
   nextSeat,
   turnAfterCard,
 

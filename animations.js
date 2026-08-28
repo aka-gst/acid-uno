@@ -51,7 +51,16 @@ const AcidFX = (() => {
   }
 
   function botRect() {
-    const el = $("botCards");
+
+    /*
+      От трёх мест веер соперника заменён рядом значков —
+      карта должна вылетать из значка того, кто ходит.
+    */
+    const el =
+      document.querySelector(
+        ".opponent.is-active"
+      ) ||
+      $("botCards");
 
     if (!el) return null;
 

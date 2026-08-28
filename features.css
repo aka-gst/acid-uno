@@ -455,3 +455,501 @@
 .penalty {
   display: none;
 }
+
+
+/* =========================================================
+   СОПЕРНИКИ
+
+   Ряд значков вместо веера. Появляется от трёх мест:
+   шесть вееров на телефон не помещаются, а число карт
+   у всех надо видеть одновременно.
+   ========================================================= */
+
+.opponents {
+  position: absolute;
+
+  left: 8px;
+  right: 8px;
+
+  top: calc(var(--safe-top) + 48px);
+
+  height: 96px;
+
+  z-index: 14;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+}
+
+.opponents.hidden {
+  display: none;
+}
+
+
+.opponent {
+  position: relative;
+
+  flex: 0 1 96px;
+
+  min-width: 0;
+
+  height: 96px;
+
+  padding: 0;
+
+  display: grid;
+
+  place-items: center;
+
+  align-content: center;
+
+  gap: 1px;
+
+  border-radius: 18px;
+
+  border:
+    1px solid rgba(181, 93, 255, .42);
+
+  background:
+    linear-gradient(
+      158deg,
+      rgba(38, 14, 64, .92),
+      rgba(10, 5, 20, .92)
+    );
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, .45);
+
+  color: var(--white);
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease,
+    transform .25s ease;
+}
+
+
+.opponentFace {
+  font-size: 26px;
+
+  line-height: 1;
+
+  filter:
+    drop-shadow(0 0 10px rgba(50, 235, 255, .4));
+}
+
+.opponentName {
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: .12em;
+
+  color: rgba(255, 255, 255, .6);
+
+  white-space: nowrap;
+}
+
+.opponentCount {
+  font-size: 22px;
+  font-weight: 1000;
+
+  line-height: 1;
+
+  letter-spacing: -.02em;
+
+  color: var(--acid);
+
+  text-shadow:
+    0 0 14px rgba(183, 255, 36, .55);
+}
+
+
+/*
+  Стопка рубашек за значком — сколько карт, столько слоёв,
+  но не больше трёх: дальше читается число.
+*/
+.opponentStack {
+  position: absolute;
+
+  inset: 6px 10px auto 10px;
+
+  height: 22px;
+
+  border-radius: 8px;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition: opacity .25s ease;
+}
+
+.opponent[data-stack="1"] .opponentStack,
+.opponent[data-stack="2"] .opponentStack,
+.opponent[data-stack="3"] .opponentStack {
+  opacity: 1;
+
+  border:
+    1px solid rgba(186, 73, 255, .5);
+
+  background:
+    linear-gradient(
+      150deg,
+      rgba(139, 61, 255, .5),
+      rgba(255, 43, 214, .28)
+    );
+}
+
+.opponent[data-stack="2"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .38);
+}
+
+.opponent[data-stack="3"] .opponentStack {
+  box-shadow:
+    3px -3px 0 -1px rgba(139, 61, 255, .38),
+    6px -6px 0 -2px rgba(139, 61, 255, .26);
+}
+
+
+/* чей ход */
+.opponent.is-active {
+  border-color: rgba(183, 255, 36, .7);
+
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 0 12px rgba(183, 255, 36, .35),
+    0 0 34px rgba(139, 61, 255, .4),
+    0 10px 24px rgba(0, 0, 0, .5);
+}
+
+
+/* осталась одна карта */
+.opponent.is-low .opponentCount {
+  color: var(--magenta);
+
+  text-shadow:
+    0 0 16px rgba(255, 43, 214, .8);
+}
+
+
+/* не сказал UNO — можно ловить */
+.opponent.catchable {
+  border-color: rgba(255, 49, 88, .85);
+
+  animation:
+    acidCatchable .6s ease-in-out infinite;
+}
+
+@keyframes acidCatchable {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(255, 49, 88, .45),
+      0 10px 24px rgba(0, 0, 0, .5);
+  }
+
+  50% {
+    box-shadow:
+      0 0 26px rgba(255, 49, 88, .95),
+      0 10px 24px rgba(0, 0, 0, .5);
+  }
+}
+
+
+.opponents[data-count="5"] .opponent,
+.opponents[data-count="6"] .opponent {
+  flex-basis: 74px;
+
+  height: 86px;
+}
+
+.opponents[data-count="5"] .opponentFace,
+.opponents[data-count="6"] .opponentFace {
+  font-size: 21px;
+}
+
+.opponents[data-count="5"] .opponentCount,
+.opponents[data-count="6"] .opponentCount {
+  font-size: 18px;
+}
+
+
+@media (max-width: 520px) {
+
+  .opponents {
+    gap: 5px;
+  }
+
+  .opponent {
+    flex-basis: 72px;
+
+    height: 84px;
+  }
+
+  .opponentFace {
+    font-size: 20px;
+  }
+
+  .opponentCount {
+    font-size: 18px;
+  }
+
+  .opponentName {
+    font-size: 8px;
+
+    letter-spacing: .08em;
+  }
+
+  .opponents[data-count="5"] .opponent,
+  .opponents[data-count="6"] .opponent {
+    flex-basis: 54px;
+
+    height: 78px;
+  }
+}
+
+
+@media (orientation: landscape) and (max-height: 460px) {
+
+  .opponents {
+    top: calc(var(--safe-top) + 44px);
+
+    height: 74px;
+  }
+
+  .opponent {
+    height: 66px;
+
+    flex-basis: 66px;
+  }
+
+  .opponentStack {
+    height: 14px;
+  }
+}
+
+
+/* =========================================================
+   НАПРАВЛЕНИЕ ХОДА
+
+   Имеет смысл только от трёх мест: на двоих разворот
+   работает как пропуск.
+   ========================================================= */
+
+.direction {
+  position: absolute;
+
+  left: 14px;
+  top: 12px;
+
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  border:
+    1px solid rgba(186, 73, 255, .5);
+
+  background: rgba(10, 5, 22, .6);
+
+  font-size: 19px;
+  font-weight: 900;
+
+  color: var(--cyan);
+
+  text-shadow:
+    0 0 14px rgba(32, 234, 255, .7);
+
+  pointer-events: none;
+
+  z-index: 6;
+
+  transition: transform .4s ease;
+}
+
+.direction.hidden {
+  display: none;
+}
+
+.direction.reversed {
+  color: var(--magenta);
+
+  text-shadow:
+    0 0 14px rgba(255, 43, 214, .8);
+
+  transform: rotateY(180deg);
+}
+
+
+/* =========================================================
+   ЛОББИ
+   ========================================================= */
+
+.seatPicker {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 9px;
+
+  margin: 16px 0 14px;
+}
+
+.seatPick {
+  height: 52px;
+
+  border-radius: 15px;
+
+  border:
+    1px solid rgba(181, 93, 255, .45);
+
+  background: rgba(255, 255, 255, .04);
+
+  color: var(--white);
+
+  font-family: inherit;
+  font-size: 21px;
+  font-weight: 1000;
+
+  cursor: pointer;
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    color .2s ease;
+}
+
+.seatPick.chosen {
+  border-color: rgba(183, 255, 36, .8);
+
+  color: var(--acid);
+
+  box-shadow:
+    0 0 12px rgba(183, 255, 36, .3),
+    inset 0 0 18px rgba(183, 255, 36, .12);
+}
+
+
+.clockToggle {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 13px;
+
+  border-radius: 15px;
+
+  border:
+    1px solid rgba(181, 93, 255, .35);
+
+  background: rgba(255, 255, 255, .03);
+
+  color: rgba(255, 255, 255, .74);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .12em;
+
+  cursor: pointer;
+
+  transition:
+    border-color .2s ease,
+    color .2s ease;
+}
+
+.clockToggleBox {
+  width: 17px;
+  height: 17px;
+
+  flex: none;
+
+  border-radius: 6px;
+
+  border:
+    1px solid rgba(181, 93, 255, .6);
+}
+
+.clockToggle.on {
+  border-color: rgba(183, 255, 36, .7);
+
+  color: var(--acid);
+}
+
+.clockToggle.on .clockToggleBox {
+  border-color: rgba(183, 255, 36, .9);
+
+  background: var(--acid);
+
+  box-shadow:
+    0 0 12px rgba(183, 255, 36, .6);
+}
+
+
+.lobbyNote {
+  margin: 12px 0 16px;
+
+  min-height: 15px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: .12em;
+
+  color: rgba(255, 255, 255, .5);
+}
+
+
+/*
+  Кнопка запуска повторяет #again из style.css:
+  на экранах итога и лобби главное действие выглядит одинаково.
+*/
+#lobbyStart {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid rgba(255, 255, 255, .65);
+
+  background:
+    linear-gradient(
+      90deg,
+      #7e2cff,
+      #e527d9
+    );
+
+  color: var(--white);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 1000;
+
+  letter-spacing: 1px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 20px rgba(211, 39, 255, .34);
+}
