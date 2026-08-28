@@ -327,7 +327,12 @@ function cardWord(value) {
       return "ВЫБРОС";
 
     default:
-      return "ACID UNO";
+      /*
+        У числовой карты имени нет: «ACID UNO» на каждой
+        из семидесяти шести — шум, который мешает читать
+        сам номинал.
+      */
+      return "";
   }
 }
 

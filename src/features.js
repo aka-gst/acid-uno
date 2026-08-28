@@ -200,6 +200,31 @@
   }
 
 
+  /*
+    Колода должна выглядеть на своё количество: одна карта
+    на восемьдесят оставшихся не говорит ничего.
+  */
+  function paintDeck() {
+
+    const el = $$("deck");
+
+    if (!el) {
+      return;
+    }
+
+    const left = deck.length;
+
+    el.dataset.thick =
+      String(
+        left === 0 ? 0 :
+        left < 12 ? 1 :
+        left < 30 ? 2 :
+        left < 55 ? 3 :
+        left < 80 ? 4 : 5
+      );
+  }
+
+
   const baseRender = render;
 
   render = function () {
@@ -209,6 +234,8 @@
     paintAura();
 
     paintStack();
+
+    paintDeck();
   };
 
 

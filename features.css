@@ -512,7 +512,7 @@
 
   transform: translate(-50%, -50%);
 
-  width: 104px;
+  width: 132px;
 
   padding: 0;
 
@@ -547,7 +547,7 @@
 
   width: 100%;
 
-  height: 38px;
+  height: 50px;
 }
 
 .opponentBack {
@@ -556,10 +556,10 @@
   left: 50%;
   top: 0;
 
-  width: 23px;
-  height: 34px;
+  width: 30px;
+  height: 44px;
 
-  margin-left: -11.5px;
+  margin-left: -15px;
 
   border-radius: 4px;
 
@@ -584,7 +584,7 @@
 
   transform:
     translateX(
-      calc((var(--i) - var(--half)) * 11px)
+      calc((var(--i) - var(--half)) * 14px)
     )
     rotate(
       calc((var(--i) - var(--half)) * 7deg)
@@ -603,9 +603,9 @@
 
   gap: 6px;
 
-  padding: 4px 9px 4px 5px;
+  padding: 5px 11px 5px 6px;
 
-  border-radius: 12px;
+  border-radius: 14px;
 
   border:
     1px solid rgba(181, 93, 255, .45);
@@ -621,13 +621,13 @@
 }
 
 .opponentFace {
-  font-size: 17px;
+  font-size: 22px;
 
   line-height: 1;
 }
 
 .opponentName {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 900;
 
   letter-spacing: .1em;
@@ -638,9 +638,9 @@
 }
 
 .opponentCount {
-  min-width: 17px;
+  min-width: 22px;
 
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 1000;
 
   line-height: 1;
@@ -2139,24 +2139,36 @@ html[data-deck="acid"] .flyingCard::after {
 }
 
 
+/*
+  Настоящий неон светится белым ядром с цветным ореолом.
+  Цифра, залитая цветом масти, на чёрном читается плоско и
+  тускло — именно так и вышло с первого раза.
+*/
 html[data-deck="acid"] .card .value,
 html[data-deck="acid"] .handCard .value,
 html[data-deck="acid"] .flyingCard .value {
-  color: currentColor;
+  color: #fff;
+
+  font-size: 44px;
 
   text-shadow:
-    0 0 6px currentColor,
-    0 0 18px currentColor;
+    0 0 3px #fff,
+    0 0 9px var(--suit),
+    0 0 20px var(--suit),
+    0 0 38px var(--suit);
 }
 
 
 html[data-deck="acid"] .cardCorner {
-  color: currentColor;
+  color: #fff;
+
+  font-size: 19px;
 
   -webkit-text-stroke: 0;
 
   text-shadow:
-    0 0 6px currentColor;
+    0 0 3px #fff,
+    0 0 10px var(--suit);
 }
 
 
@@ -2164,11 +2176,15 @@ html[data-deck="acid"] .cardCorner {
   Масть задаёт currentColor — от него кормятся и рамка,
   и номинал, и подпись.
 */
-html[data-deck="acid"] .red { color: var(--red); }
-html[data-deck="acid"] .yellow { color: var(--yellow); }
-html[data-deck="acid"] .green { color: var(--green); }
-html[data-deck="acid"] .blue { color: var(--blue); }
-html[data-deck="acid"] .wild { color: var(--acid); }
+/*
+  --suit кормит и рамку, и ореол цифры, и подпись.
+  color оставляем ему же: от него живут рамка и имя карты.
+*/
+html[data-deck="acid"] .red { --suit: var(--red); color: var(--red); }
+html[data-deck="acid"] .yellow { --suit: var(--yellow); color: var(--yellow); }
+html[data-deck="acid"] .green { --suit: var(--green); color: var(--green); }
+html[data-deck="acid"] .blue { --suit: var(--blue); color: var(--blue); }
+html[data-deck="acid"] .wild { --suit: var(--magenta); color: var(--acid); }
 
 
 html[data-deck="acid"] .card.red,
@@ -2295,4 +2311,235 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
   background: rgba(183, 255, 36, .1);
 
   color: var(--acid);
+}
+
+
+/* =========================================================
+   КОЛЬЦО НАПРАВЛЕНИЯ — ЦВЕТ И ВРАЩЕНИЕ
+
+   Кольцо красится текущим цветом и медленно крутится в ту
+   сторону, куда идёт ход. Так и цвет, и направление видно
+   не переводя взгляд с центра стола.
+   ========================================================= */
+
+.direction {
+  border-color: color-mix(in srgb, var(--turn, var(--cyan)) 45%, transparent);
+
+  animation: acidTurnSpin 16s linear infinite;
+}
+
+.direction::after {
+  border-bottom-color: var(--turn, var(--cyan));
+
+  filter:
+    drop-shadow(0 0 8px var(--turn, var(--cyan)));
+}
+
+.direction.reversed {
+  animation-direction: reverse;
+}
+
+@keyframes acidTurnSpin {
+  to {
+    transform:
+      translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .direction {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   КОЛОДА ТОЛЩИНОЙ ПО ЧИСЛУ КАРТ
+   ========================================================= */
+
+#deck {
+  transition: box-shadow .4s ease;
+}
+
+#deck[data-thick="1"] {
+  box-shadow:
+    3px 3px 0 -1px rgba(120, 60, 210, .55);
+}
+
+#deck[data-thick="2"] {
+  box-shadow:
+    3px 3px 0 -1px rgba(120, 60, 210, .55),
+    6px 6px 0 -2px rgba(110, 52, 195, .45);
+}
+
+#deck[data-thick="3"] {
+  box-shadow:
+    3px 3px 0 -1px rgba(120, 60, 210, .55),
+    6px 6px 0 -2px rgba(110, 52, 195, .45),
+    9px 9px 0 -3px rgba(96, 44, 175, .36);
+}
+
+#deck[data-thick="4"] {
+  box-shadow:
+    3px 3px 0 -1px rgba(120, 60, 210, .55),
+    6px 6px 0 -2px rgba(110, 52, 195, .45),
+    9px 9px 0 -3px rgba(96, 44, 175, .36),
+    12px 12px 0 -4px rgba(84, 38, 155, .3);
+}
+
+#deck[data-thick="5"] {
+  box-shadow:
+    3px 3px 0 -1px rgba(120, 60, 210, .55),
+    6px 6px 0 -2px rgba(110, 52, 195, .45),
+    9px 9px 0 -3px rgba(96, 44, 175, .36),
+    12px 12px 0 -4px rgba(84, 38, 155, .3),
+    15px 15px 0 -5px rgba(72, 32, 135, .24);
+}
+
+
+/* =========================================================
+   ЛОГОТИП
+
+   Был мелкой подписью в углу. Игра называется ACID UNO —
+   это должно быть видно.
+   ========================================================= */
+
+.logoAcid {
+  font-size: 30px;
+
+  background:
+    linear-gradient(
+      170deg,
+      var(--acid),
+      #6ee7ff
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+
+  filter:
+    drop-shadow(0 0 10px rgba(183, 255, 36, .55));
+}
+
+.logoUno {
+  font-size: 30px;
+
+  color: var(--white);
+
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, .55),
+    0 0 22px var(--magenta);
+}
+
+@media (max-width: 560px) {
+
+  .logoAcid,
+  .logoUno {
+    font-size: 24px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .logoAcid,
+  .logoUno {
+    font-size: 21px;
+  }
+}
+
+
+/* =========================================================
+   ПОЯСНЕНИЯ В СТАРТОВОМ МЕНЮ
+
+   Заголовков мало: «ИГРОКОВ» не говорит, считать ли себя,
+   а две кнопки внизу молчат о том, чем отличаются. Каждая
+   строка объясняет себя одной фразой.
+   ========================================================= */
+
+.lobbyLabel em {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+
+  letter-spacing: .04em;
+
+  text-transform: none;
+
+  color: rgba(255, 255, 255, .3);
+}
+
+.lobbyHint {
+  margin: 2px 0 8px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: .18em;
+
+  color: rgba(255, 255, 255, .32);
+}
+
+#lobbyStart em,
+.lobbyOnline em {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+
+  letter-spacing: .04em;
+
+  text-transform: none;
+
+  opacity: .72;
+}
+
+#lobbyStart {
+  line-height: 1.25;
+}
+
+.lobbyOnline {
+  line-height: 1.25;
+}
+
+
+/* =========================================================
+   ТЕСНАЯ РУКА: ЧИТАЕМ УГОЛ, А НЕ ПРИЗРАК
+
+   Базовый стиль гасил центральный номинал до 48%, когда
+   включались угловые индексы. На неоновой карте это читается
+   не как «отошло на второй план», а как сбой отрисовки —
+   тусклая цифра поверх чёрного поля.
+
+   Убираем совсем: раз читаем угол, пусть он и будет крупным.
+   Подписи спецкарт тоже прячем — соседняя карта всё равно
+   срезает их на полуслове.
+   ========================================================= */
+
+.hand.is-crowded .handCard .value {
+  opacity: 0;
+}
+
+.hand.is-crowded .handCard .cardWord {
+  display: none;
+}
+
+.hand.is-crowded .handCard .cardCorner {
+  font-size: 21px;
+
+  min-width: 27px;
+
+  padding: 3px 5px;
+}
+
+html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
+  font-size: 22px;
 }
