@@ -2323,16 +2323,26 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
    ========================================================= */
 
 .direction {
-  border-color: color-mix(in srgb, var(--turn, var(--cyan)) 45%, transparent);
+  border-style: solid;
 
-  animation: acidTurnSpin 16s linear infinite;
+  border-color: color-mix(in srgb, var(--turn, var(--cyan)) 22%, transparent);
+
+  /* оборот за сорок секунд: движение заметно, но не мельтешит */
+  animation: acidTurnSpin 40s linear infinite;
 }
 
 .direction::after {
-  border-bottom-color: var(--turn, var(--cyan));
+  border-left-width: 7px;
+  border-right-width: 7px;
+  border-bottom-width: 12px;
+
+  border-bottom-color:
+    color-mix(in srgb, var(--turn, var(--cyan)) 70%, transparent);
 
   filter:
-    drop-shadow(0 0 8px var(--turn, var(--cyan)));
+    drop-shadow(0 0 10px var(--turn, var(--cyan)));
+
+  opacity: .8;
 }
 
 .direction.reversed {
@@ -2524,8 +2534,21 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
    срезает их на полуслове.
    ========================================================= */
 
+/*
+  Номинал в середине не прячем.
+
+  Сначала я его убрал, потому что базовый стиль гасил его до
+  48% и он висел призраком за угловым индексом. Но у кислотной
+  карты нет светлого овала, и без цифры она превращалась в
+  пустую рамку — карты буквально пропали с руки.
+
+  Правильно иначе: цифра всегда на месте и в полную силу,
+  соседняя карта просто закрывает её край. Ровно так и
+  устроен веер настоящих карт, а угол дублирует номинал для
+  тех, что закрыты целиком.
+*/
 .hand.is-crowded .handCard .value {
-  opacity: 0;
+  opacity: 1;
 }
 
 .hand.is-crowded .handCard .cardWord {
@@ -2542,4 +2565,113 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
 html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
   font-size: 22px;
+}
+
+
+/* =========================================================
+   НА ГЛАВНУЮ
+
+   Игра лежит в подкаталоге сайта, и уйти из неё было некуда,
+   кроме кнопки «назад» браузера.
+   ========================================================= */
+
+#homeLink {
+  display: grid;
+
+  place-items: center;
+
+  font-size: 21px;
+
+  line-height: 1;
+
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   ПРОКРУТКА В ПРАВИЛАХ
+
+   macOS показывает полосу только во время самой прокрутки —
+   её ширина ноль, и правила выглядят обрезанными. Рисуем
+   свою: она видна всегда, а затемнение у нижней кромки
+   гаснет, когда докрутили до конца.
+   ========================================================= */
+
+.rulesScroller {
+  position: relative;
+
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+}
+
+.rulesBody {
+  flex: 1;
+
+  margin: 14px 0;
+
+  padding-right: 16px;
+
+  scrollbar-width: none;
+}
+
+.rulesBody::-webkit-scrollbar {
+  display: none;
+}
+
+.rulesRail {
+  position: absolute;
+
+  top: 14px;
+  bottom: 14px;
+  right: 0;
+
+  width: 4px;
+
+  border-radius: 2px;
+
+  background: rgba(255, 255, 255, .07);
+
+  pointer-events: none;
+
+  transition: opacity .25s ease;
+}
+
+.rulesThumb {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  border-radius: 2px;
+
+  background: rgba(183, 255, 36, .6);
+
+  box-shadow:
+    0 0 8px rgba(183, 255, 36, .45);
+}
+
+.rulesFade {
+  position: absolute;
+
+  left: 0;
+  right: 10px;
+  bottom: 14px;
+
+  height: 46px;
+
+  border-radius: 0 0 10px 10px;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(15, 8, 28, .96),
+      rgba(15, 8, 28, 0)
+    );
+
+  pointer-events: none;
+
+  transition: opacity .25s ease;
 }

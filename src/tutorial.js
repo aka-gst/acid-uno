@@ -199,6 +199,8 @@
 
         <h2>ПРАВИЛА</h2>
 
+        <div class="rulesScroller">
+
         <div class="rulesBody">
           ${SECTIONS
             .map(section => `
@@ -215,6 +217,14 @@
               </section>
             `)
             .join("")}
+        </div>
+
+        <div class="rulesRail" aria-hidden="true">
+          <i class="rulesThumb"></i>
+        </div>
+
+        <div class="rulesFade" aria-hidden="true"></div>
+
         </div>
 
         <button id="rulesClose">
@@ -234,12 +244,87 @@
   const screen = build();
 
 
+  /*
+    Полосу прокрутки macOS показывает только во время самой
+    прокрутки — её ширина ноль, и правила выглядят так, будто
+    обрываются на середине. Рисуем свою: она видна всегда и
+    сразу говорит, сколько текста осталось.
+  */
+  const body =
+    screen.querySelector(".rulesBody");
+
+  const rail =
+    screen.querySelector(".rulesRail");
+
+  const thumb =
+    screen.querySelector(".rulesThumb");
+
+  const fade =
+    screen.querySelector(".rulesFade");
+
+
+  function paintScroll() {
+
+    if (!body || !thumb) {
+      return;
+    }
+
+    const visible =
+      body.clientHeight;
+
+    const total =
+      body.scrollHeight;
+
+    if (total <= visible + 1) {
+
+      rail.style.opacity = "0";
+      fade.style.opacity = "0";
+
+      return;
+    }
+
+    rail.style.opacity = "1";
+
+    const share =
+      visible / total;
+
+    thumb.style.height =
+      `${Math.max(share * 100, 12)}%`;
+
+    thumb.style.top =
+      `${(body.scrollTop / total) * 100}%`;
+
+    /*
+      Затемнение у нижней кромки гаснет, когда докрутили.
+    */
+    const left =
+      total - visible - body.scrollTop;
+
+    fade.style.opacity =
+      String(Math.min(left / 40, 1));
+  }
+
+
+  body?.addEventListener(
+    "scroll",
+    paintScroll,
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "resize",
+    paintScroll
+  );
+
+
   function open() {
 
     screen.classList.remove("hidden");
 
     screen.querySelector(".rulesBody")
       .scrollTop = 0;
+
+    requestAnimationFrame(paintScroll);
   }
 
 
