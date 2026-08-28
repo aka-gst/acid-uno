@@ -698,6 +698,82 @@ function chooseCard(hand, indexes, noise) {
 
 
 /* =========================================================
+   МЕСТА И НАПРАВЛЕНИЕ ХОДА
+
+   Стол — это кольцо мест от 2 до 7. Направление хода
+   1 (по часовой) или -1.
+   ========================================================= */
+
+const MIN_SEATS = 2;
+
+const MAX_SEATS = 7;
+
+
+function nextSeat(seat, seats, direction, step) {
+
+  const shift =
+    direction * (step === undefined ? 1 : step);
+
+  return (
+    (seat + shift) % seats + seats
+  ) % seats;
+}
+
+
+/*
+  Куда уходит ход после выложенной карты.
+
+  На двоих разворот работает как пропуск — это и есть
+  классическое правило, и именно так игра ведёт себя
+  сейчас. На троих и больше разворот меняет направление.
+*/
+function turnAfterCard(card, state) {
+
+  let direction = state.direction;
+
+  let step = 1;
+
+
+  if (card.value === "reverse") {
+
+    if (state.seats === 2) {
+      step = 2;
+
+    } else {
+      direction = -direction;
+    }
+  }
+
+
+  if (card.value === "skip") {
+    step = 2;
+  }
+
+
+  return {
+    direction,
+
+    seat:
+      nextSeat(
+        state.seat,
+        state.seats,
+        direction,
+        step
+      ),
+
+    /* ход остался у того же игрока */
+    again:
+      nextSeat(
+        state.seat,
+        state.seats,
+        direction,
+        step
+      ) === state.seat
+  };
+}
+
+
+/* =========================================================
    ЧАСЫ ПАРТИИ
 
    Партия ограничена по времени. Часы ничего не знают ни про
@@ -708,6 +784,44 @@ function chooseCard(hand, indexes, noise) {
 const MATCH_LIMIT_SECONDS = 240;
 
 const MATCH_WARN_SECONDS = 60;
+
+
+/*
+  Лимит на стол. Это округлённый 84-й процентиль реальной
+  длительности партии, снятый с test/simulate.js для
+  расклада «один живой игрок против ботов»: он держит долю
+  партий, доигранных по очкам, около 16% на любом столе.
+
+  Скачок 2 -> 3 большой, потому что на троих разворот
+  перестаёт работать как пропуск и партия удлиняется почти
+  на четверть по числу ходов. Дальше лишние места добавляют
+  мало: боты ходят быстро.
+
+  Когда появится мультиплеер и за столом будет несколько
+  живых игроков, таблицу надо пересчитать:
+
+    node test/simulate.js 3000 <мест> <лимит> 2.4 2.4
+*/
+const MATCH_LIMIT_BY_SEATS = {
+  2: 240,
+  3: 290,
+  4: 300,
+  5: 300,
+  6: 310,
+  7: 320
+};
+
+
+function matchLimitFor(seats) {
+
+  const count =
+    Math.min(
+      MAX_SEATS,
+      Math.max(MIN_SEATS, seats || MIN_SEATS)
+    );
+
+  return MATCH_LIMIT_BY_SEATS[count];
+}
 
 
 function formatClock(seconds) {
@@ -942,8 +1056,15 @@ return {
   scoreboard,
   timeoutResult,
 
+  MIN_SEATS,
+  MAX_SEATS,
+  nextSeat,
+  turnAfterCard,
+
   MATCH_LIMIT_SECONDS,
   MATCH_WARN_SECONDS,
+  MATCH_LIMIT_BY_SEATS,
+  matchLimitFor,
   formatClock,
   MatchClock
 
