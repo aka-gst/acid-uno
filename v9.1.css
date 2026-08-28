@@ -107,7 +107,9 @@ html.v91-action #hand .handCard.v9-unplayable {
 
 
 #hand.v91-receiving {
-  transform: scale(1.018);
+  transform:
+    translateX(-50%)
+    scale(1.018);
 }
 
 
@@ -218,8 +220,8 @@ html.v91-action #hand .handCard.v9-unplayable {
 #botCards {
   position: relative;
 
-  width: min(54vw, 350px);
-  height: 138px;
+  width: min(88vw, 520px);
+  height: 156px;
 
   overflow: visible;
 
@@ -233,10 +235,11 @@ html.v91-action #hand .handCard.v9-unplayable {
   left: 50%;
   top: 0;
 
-  width: 84px !important;
-  height: 126px !important;
+  width: var(--card-w) !important;
+  height: var(--card-h) !important;
 
-  margin-left: -42px;
+  margin-left:
+    calc(var(--card-w) / -2);
 
   border-radius: 13px;
 
@@ -252,6 +255,12 @@ html.v91-action #hand .handCard.v9-unplayable {
     scale(var(--scale, .6));
 
   background:
+    linear-gradient(
+      90deg,
+      transparent 48%,
+      rgba(185, 255, 40, .12) 49%,
+      transparent 51%
+    ),
     radial-gradient(
       circle at 50% 42%,
       rgba(172, 30, 255, .25),
@@ -265,7 +274,19 @@ html.v91-action #hand .handCard.v9-unplayable {
     );
 
   border:
-    2px solid rgba(222, 171, 255, .82);
+    2px solid rgba(222, 171, 255, .9);
+
+  clip-path:
+    polygon(
+      0 8px,
+      8px 0,
+      calc(100% - 8px) 0,
+      100% 8px,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      8px 100%,
+      0 calc(100% - 8px)
+    );
 
   box-shadow:
     inset 0 0 18px rgba(153, 38, 255, .23),
@@ -770,7 +791,7 @@ and (
   */
 
   #botCards {
-    width: 78vw;
+    width: 88vw;
 
     height: 142px;
 
@@ -891,8 +912,8 @@ and (
   #botCards {
     width:
       min(
-        40vw,
-        310px
+        38vw,
+        300px
       );
 
     height: 92px;
@@ -902,7 +923,7 @@ and (
 
 
   #botCards .v9-bot-card {
-    top: -14px;
+    top: -34px;
   }
 
 
@@ -924,8 +945,7 @@ and (
   */
 
   #hand {
-    max-width:
-      76vw;
+    max-width: 82vw;
 
     transform-origin:
       center bottom;
@@ -988,6 +1008,24 @@ and (
 
 
 /* =========================================================
+   DESKTOP FAN BOUNDS
+   Keep the bot on the upper table rim and away from the
+   playable centre. Player fan width is calculated in game.js.
+   ========================================================= */
+
+@media (min-width: 900px) and (min-height: 620px) {
+  #botCards {
+    top: -68px;
+    height: 150px;
+  }
+
+  #botCards .v9-bot-card {
+    top: 0;
+  }
+}
+
+
+/* =========================================================
    18. VERY SHORT LANDSCAPE
    iPhone Safari with browser bars visible
    ========================================================= */
@@ -1005,7 +1043,7 @@ and (
 
 
   #botCards .v9-bot-card {
-    top: -26px;
+    top: -44px;
   }
 
 
@@ -1013,6 +1051,22 @@ and (
   .center {
     max-height:
       54vh;
+  }
+
+  .actionHUD {
+    left:
+      max(
+        12px,
+        env(safe-area-inset-left)
+      );
+
+    bottom: 42%;
+
+    min-width: 0;
+
+    transform: none;
+
+    justify-content: flex-start;
   }
 
 

@@ -7,6 +7,14 @@
 
 const COLORS = ["red", "yellow", "green", "blue"];
 
+/*
+  The small set of values most often tuned while polishing the UI.
+  Keep visual breakpoints in style.css; keep behaviour thresholds here.
+*/
+const ACID_UI = Object.freeze({
+  crowdedHandAt: 14
+});
+
 let deck = [];
 let player = [];
 let bot = [];
@@ -521,12 +529,20 @@ function startGame() {
    CARD HTML
    ========================================================= */
 
+function cardFaceHTML(card) {
+  const label = cardLabel(card.value);
+
+  return `
+    <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
+    <div class="value">${label}</div>
+    <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>
+  `;
+}
+
 function cardHTML(card) {
   return `
     <div class="card ${card.color}">
-      <div class="value">
-        ${cardLabel(card.value)}
-      </div>
+      ${cardFaceHTML(card)}
     </div>
   `;
 }
@@ -631,28 +647,46 @@ function getFanLayout(count) {
       window.innerWidth
     );
 
-  let scale = 1;
+  const desktop =
+    screenWidth >= 900 &&
+    window.innerHeight >= 620;
+
+  const phoneLandscape =
+    window.innerWidth > window.innerHeight &&
+    window.innerHeight <= 600;
+
+  let scale = desktop ? 1.08 : 1;
 
   if (count <= 7) {
-    scale = 1;
+    scale = desktop ? 1.08 : 1;
   } else if (count <= 10) {
-    scale = .93;
+    scale = desktop ? 1 : .93;
   } else if (count <= 14) {
-    scale = .84;
+    scale = desktop ? .91 : .84;
   } else if (count <= 18) {
-    scale = .75;
+    scale = desktop ? .82 : .75;
   } else if (count <= 24) {
-    scale = .65;
+    scale = desktop ? .72 : .65;
   } else if (count <= 32) {
-    scale = .56;
+    scale = desktop ? .63 : .56;
   } else if (count <= 42) {
-    scale = .48;
+    scale = desktop ? .54 : .48;
   } else {
-    scale = .42;
+    scale = desktop ? .47 : .42;
   }
 
+  if (phoneLandscape) {
+    scale *= .78;
+  }
+
+  const rootStyle =
+    getComputedStyle(document.documentElement);
+
+  const baseCardWidth =
+    parseFloat(rootStyle.getPropertyValue("--card-w")) || 84;
+
   const cardWidth =
-    84 * scale;
+    baseCardWidth * scale;
 
   const maxHalf =
     screenWidth / 2 -
@@ -662,14 +696,34 @@ function getFanLayout(count) {
   let desiredHalf;
 
   if (count <= 3) {
-    desiredHalf = 75;
+    desiredHalf = desktop ? 110 : 75;
   } else if (count <= 5) {
-    desiredHalf = 110;
+    desiredHalf = desktop ? 175 : 110;
   } else if (count <= 7) {
-    desiredHalf = 145;
+    desiredHalf = desktop ? 245 : 145;
+  } else if (count <= 10 && desktop) {
+    desiredHalf = Math.min(
+      screenWidth * .29,
+      520
+    );
+  } else if (count <= 14 && desktop) {
+    desiredHalf = Math.min(
+      screenWidth * .33,
+      590
+    );
   } else {
     desiredHalf =
-      screenWidth * .46;
+      desktop
+        ? Math.min(
+            screenWidth * .4,
+            720
+          )
+        : screenWidth * .46;
+  }
+
+  if (phoneLandscape) {
+    desiredHalf =
+      screenWidth * .31;
   }
 
   const halfFan =
@@ -702,6 +756,10 @@ function fanPosition(
   index,
   count
 ) {
+  const phoneLandscape =
+    window.innerWidth > window.innerHeight &&
+    window.innerHeight <= 600;
+
   if (count <= 1) {
     return {
       x: 0,
@@ -729,8 +787,9 @@ function fanPosition(
     n * n;
 
   const y =
-    -40 +
-    curve * 47;
+    phoneLandscape
+      ? -12 + curve * 24
+      : -40 + curve * 47;
 
   const rot =
     n *
@@ -764,6 +823,11 @@ function renderHand() {
   const hand =
     $("hand");
 
+  hand.classList.toggle(
+    "is-crowded",
+    player.length >= ACID_UI.crowdedHandAt
+  );
+
   hand.innerHTML = "";
 
   player.forEach(
@@ -793,11 +857,8 @@ function renderHand() {
         );
       }
 
-      el.innerHTML = `
-        <div class="value">
-          ${cardLabel(card.value)}
-        </div>
-      `;
+      el.innerHTML =
+        cardFaceHTML(card);
 
       const pos =
         fanPosition(

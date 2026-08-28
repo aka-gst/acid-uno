@@ -439,46 +439,77 @@
     count
   ) {
 
-    let scale;
+    const desktop =
+      window.innerWidth >= 900 &&
+      window.innerHeight >= 620;
 
+    const phoneLandscape =
+      window.innerWidth > window.innerHeight &&
+      window.innerHeight <= 600;
 
-    if (count <= 3) {
+    let scale = desktop ? .76 : .74;
 
+    if (desktop && count > 5) {
       scale = .72;
-
-    } else if (count <= 5) {
-
-      scale = .66;
-
-    } else if (count <= 7) {
-
-      scale = .6;
-
-    } else if (count <= 10) {
-
-      scale = .53;
-
-    } else if (count <= 14) {
-
-      scale = .46;
-
-    } else if (count <= 20) {
-
-      scale = .39;
-
-    } else {
-
-      scale = .34;
     }
 
+    if (count > 7) {
+      scale = desktop ? .68 : .66;
+    }
+
+    if (count > 10) {
+      scale = desktop ? .62 : .57;
+    }
+
+    if (count > 14) {
+      scale = desktop ? .56 : .49;
+    }
+
+    if (count > 20) {
+      scale = desktop ? .49 : .42;
+    }
+
+    if (phoneLandscape) {
+      scale *= .82;
+    }
+
+    const rootStyle =
+      getComputedStyle(
+        document.documentElement
+      );
+
+    const cardWidth =
+      (parseFloat(
+        rootStyle.getPropertyValue(
+          "--card-w"
+        )
+      ) || 84) * scale;
+
+    const maxWidth = desktop ? 520 : 330;
 
     const available =
       Math.min(
-        Math.max(
-          window.innerWidth * .54,
-          180
-        ),
-        350
+        window.innerWidth *
+          (phoneLandscape ? .38 : .8),
+        maxWidth
+      );
+
+    const naturalStep =
+      cardWidth * .56;
+
+    const fittedStep =
+      count <= 1
+        ? 0
+        : Math.max(
+            cardWidth * .28,
+            (available - cardWidth) /
+              (count - 1)
+          );
+
+    const step =
+      Math.min(
+        naturalStep,
+        fittedStep
       );
 
 
@@ -487,16 +518,14 @@
       scale,
 
       halfFan:
-        Math.max(
-          34,
-          available / 2
-        ),
+        step *
+        Math.max(0, count - 1) /
+        2,
 
       angle:
         Math.min(
-          22,
-          7 +
-          count * 1.25
+          desktop ? 19 : 22,
+          6 + count * 1.15
         )
 
     };
@@ -547,7 +576,7 @@
       y:
         n *
         n *
-        11,
+        (window.innerWidth >= 900 ? 18 : 12),
 
       rot:
         n *

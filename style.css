@@ -1,6 +1,9 @@
 /* =========================================================
-   ACID UNO v7
-   NEON ARCADE UI / iPHONE FIRST
+   ACID UNO — EDITABLE DESIGN TOKENS
+
+   Start here when changing the look. Layout rules live at
+   the bottom of this file and in v9.1.css; game rules live
+   in game.js. Card ratio is always 2:3.
    ========================================================= */
 
 :root {
@@ -25,6 +28,12 @@
 
   --card-w: 84px;
   --card-h: 126px;
+
+  --table-max-w: 940px;
+  --table-max-h: 520px;
+  --panel-line: rgba(183, 255, 36, .24);
+  --panel-line-purple: rgba(186, 73, 255, .42);
+  --ui-cut: 14px;
 }
 
 
@@ -104,10 +113,22 @@ button {
     ),
     linear-gradient(
       180deg,
-      #090312 0%,
-      #05020a 46%,
-      #0a0312 100%
+      #070a0d 0%,
+      #040309 46%,
+      #09030f 100%
     );
+}
+
+#game::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .72;
+  clip-path: polygon(0 var(--ui-cut), var(--ui-cut) 0, calc(100% - var(--ui-cut)) 0, 100% var(--ui-cut), 100% calc(100% - var(--ui-cut)), calc(100% - var(--ui-cut)) 100%, var(--ui-cut) 100%, 0 calc(100% - var(--ui-cut)));
+  border: 1px solid var(--panel-line-purple);
+  box-shadow: inset 0 0 28px rgba(114, 34, 189, .08);
 }
 
 
@@ -1152,6 +1173,43 @@ button {
     0 1px 0 rgba(255,255,255,.3);
 }
 
+.cardCorner {
+  position: absolute;
+  z-index: 6;
+  display: none;
+  min-width: 22px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: -1px;
+  text-align: center;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, .72);
+  text-shadow: 0 1px 2px #000, 0 0 8px rgba(255,255,255,.48);
+  pointer-events: none;
+}
+
+.cardCornerTop {
+  top: 8px;
+  left: 7px;
+}
+
+.cardCornerBottom {
+  right: 7px;
+  bottom: 8px;
+  transform: rotate(180deg);
+}
+
+/* At 14+ cards the centres overlap; persistent corner values
+   keep every card identifiable without opening the hand. */
+.hand.is-crowded .handCard .cardCorner {
+  display: block;
+}
+
+.hand.is-crowded .handCard .value {
+  opacity: .48;
+}
+
 
 /* =========================================================
    CARD COLORS
@@ -1929,4 +1987,110 @@ button {
     transition-duration: .25s;
   }
 
+}
+
+
+/* =========================================================
+   DESKTOP / LARGE TABLET
+   Spacious screen = larger physical cards, wider table and
+   a shallower, easier-to-read hand fan.
+   ========================================================= */
+
+@media (min-width: 900px) and (min-height: 620px) {
+  :root {
+    --card-w: 112px;
+    --card-h: 168px;
+  }
+
+  .topbar {
+    padding: 22px 30px;
+  }
+
+  .logo {
+    font-size: 34px;
+  }
+
+  .botZone {
+    top: calc(var(--safe-top) + 74px);
+    height: 178px;
+  }
+
+  .botTitle {
+    left: 30px;
+    top: 16px;
+  }
+
+  .botAvatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    font-size: 27px;
+  }
+
+  .botInfo strong {
+    font-size: 15px;
+  }
+
+  #botCount {
+    font-size: 11px;
+  }
+
+  #table {
+    top: 45%;
+    width: min(66vw, var(--table-max-w));
+    height: min(56vh, var(--table-max-h));
+    min-height: 390px;
+  }
+
+  #center {
+    width: 320px;
+    height: 245px;
+    gap: 34px;
+  }
+
+  .deckArea {
+    width: 112px;
+  }
+
+  #deck {
+    width: 104px;
+    height: 156px;
+  }
+
+  .discardPile,
+  .discardPile .card {
+    width: 112px;
+    height: 168px;
+  }
+
+  .playerZoneBottom {
+    height: 286px;
+  }
+
+  .hand {
+    height: 250px;
+    bottom: 2px;
+  }
+
+  .actionHUD {
+    bottom: calc(var(--safe-bottom) + 254px);
+  }
+
+  .status {
+    padding: 9px 16px;
+    font-size: 11px;
+  }
+
+  .playerHUD {
+    left: 28px;
+    right: 28px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 1500px) and (min-height: 760px) {
+  :root {
+    --card-w: 122px;
+    --card-h: 183px;
+  }
 }
