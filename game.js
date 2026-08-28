@@ -754,21 +754,21 @@ function renderPenalty() {
 
 function renderColor() {
 
-  const colors = {
-    red: "#ff3158",
-    yellow: "#ffe83d",
-    green: "#48ff77",
-    blue: "#32a8ff"
-  };
+  /*
+    Цвет берётся из токена, а не из копии значения: палитра
+    живёт в одном месте, иначе перекраска забывает точку.
+  */
+  const shade =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(`--${currentColor}`)
+      .trim();
 
   const dot =
     $("currentColorDot");
 
-  dot.style.background =
-    colors[currentColor];
+  dot.style.background = shade;
 
-  dot.style.color =
-    colors[currentColor];
+  dot.style.color = shade;
 
   const table =
     document.querySelector(

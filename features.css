@@ -1828,3 +1828,202 @@
     top: 58%;
   }
 }
+
+
+/* =========================================================
+   ПЕРЕКРАСКА — ВАРИАНТ 1
+
+   Компоновка карты остаётся классической: цветное поле,
+   светлый овал, крупный номинал, индексы по углам. Меняется
+   палитра — кислотный неон вместо ярмарочных красного,
+   жёлтого, зелёного и синего.
+
+   Фиолетовый в мастях не участвует: он держит фон, стол и
+   интерфейс, и карта того же цвета сливалась бы со столом.
+
+   Имена мастей (red/yellow/green/blue) остаются прежними —
+   на них завязаны правила, тесты и сохранённые партии.
+   Меняется только то, как они выглядят.
+   ========================================================= */
+
+:root {
+  /* малиновый вместо красного */
+  --red: #ff2d78;
+  --red-light: #ff74a8;
+  --red-deep: #a3004b;
+
+  /* кислотный жёлтый */
+  --yellow: #f5d020;
+  --yellow-light: #ffe97e;
+  --yellow-deep: #8f7200;
+
+  /* кислотный зелёный — основной цвет игры */
+  --green: #a6f42a;
+  --green-light: #ccff74;
+  --green-deep: #4b8a00;
+
+  /* холодная бирюза вместо синего */
+  --blue: #22d3ee;
+  --blue-light: #8beeff;
+  --blue-deep: #00697f;
+}
+
+
+.card.red,
+.handCard.red,
+.flyingCard.red {
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      var(--red-light),
+      var(--red) 35%,
+      var(--red-deep) 100%
+    );
+
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, .12),
+    0 0 7px rgba(255, 45, 120, .75),
+    0 0 18px rgba(255, 45, 120, .32),
+    0 11px 18px rgba(0, 0, 0, .42);
+}
+
+.card.yellow,
+.handCard.yellow,
+.flyingCard.yellow {
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      var(--yellow-light),
+      var(--yellow) 35%,
+      var(--yellow-deep) 100%
+    );
+
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, .12),
+    0 0 7px rgba(245, 208, 32, .7),
+    0 0 18px rgba(245, 208, 32, .3),
+    0 11px 18px rgba(0, 0, 0, .42);
+}
+
+.card.green,
+.handCard.green,
+.flyingCard.green {
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      var(--green-light),
+      var(--green) 35%,
+      var(--green-deep) 100%
+    );
+
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, .12),
+    0 0 7px rgba(166, 244, 42, .72),
+    0 0 18px rgba(166, 244, 42, .32),
+    0 11px 18px rgba(0, 0, 0, .42);
+}
+
+.card.blue,
+.handCard.blue,
+.flyingCard.blue {
+  background:
+    radial-gradient(
+      circle at 30% 18%,
+      var(--blue-light),
+      var(--blue) 35%,
+      var(--blue-deep) 100%
+    );
+
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, .12),
+    0 0 7px rgba(34, 211, 238, .72),
+    0 0 18px rgba(34, 211, 238, .32),
+    0 11px 18px rgba(0, 0, 0, .42);
+}
+
+
+/* чёрная карта показывает все четыре масти */
+
+.card.wild,
+.handCard.wild,
+.flyingCard.wild {
+  background:
+    conic-gradient(
+      from -30deg,
+      var(--red),
+      var(--red) 24%,
+      var(--yellow) 25%,
+      var(--yellow) 49%,
+      var(--green) 50%,
+      var(--green) 74%,
+      var(--blue) 75%,
+      var(--blue) 100%
+    );
+
+  box-shadow:
+    0 0 7px rgba(255, 255, 255, .7),
+    0 0 22px rgba(166, 244, 42, .5),
+    0 11px 18px rgba(0, 0, 0, .42);
+}
+
+
+/* аура активного цвета вокруг сброса */
+
+.discardPile[data-color="red"] {
+  --aura: var(--red);
+  --aura-strong: rgba(255, 45, 120, .78);
+  --aura-soft: rgba(255, 45, 120, .3);
+}
+
+.discardPile[data-color="yellow"] {
+  --aura: var(--yellow);
+  --aura-strong: rgba(245, 208, 32, .72);
+  --aura-soft: rgba(245, 208, 32, .27);
+}
+
+.discardPile[data-color="green"] {
+  --aura: var(--green);
+  --aura-strong: rgba(166, 244, 42, .76);
+  --aura-soft: rgba(166, 244, 42, .3);
+}
+
+.discardPile[data-color="blue"] {
+  --aura: var(--blue);
+  --aura-strong: rgba(34, 211, 238, .78);
+  --aura-soft: rgba(34, 211, 238, .3);
+}
+
+
+/* реакция стола на текущий цвет */
+
+.tableInner.color-red {
+  box-shadow:
+    inset 0 0 50px rgba(255, 45, 120, .15),
+    0 0 10px rgba(255, 45, 120, .5),
+    0 0 34px rgba(150, 45, 255, .34),
+    0 25px 60px rgba(0, 0, 0, .62);
+}
+
+.tableInner.color-yellow {
+  box-shadow:
+    inset 0 0 50px rgba(245, 208, 32, .13),
+    0 0 10px rgba(245, 208, 32, .45),
+    0 0 34px rgba(150, 45, 255, .34),
+    0 25px 60px rgba(0, 0, 0, .62);
+}
+
+.tableInner.color-green {
+  box-shadow:
+    inset 0 0 50px rgba(166, 244, 42, .14),
+    0 0 10px rgba(166, 244, 42, .5),
+    0 0 34px rgba(150, 45, 255, .34),
+    0 25px 60px rgba(0, 0, 0, .62);
+}
+
+.tableInner.color-blue {
+  box-shadow:
+    inset 0 0 50px rgba(34, 211, 238, .16),
+    0 0 10px rgba(34, 211, 238, .5),
+    0 0 34px rgba(150, 45, 255, .34),
+    0 25px 60px rgba(0, 0, 0, .62);
+}
