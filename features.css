@@ -719,22 +719,54 @@
 }
 
 
+/*
+  Телефон в альбоме: по высоте нет места на колонку значков,
+  поэтому соперники сжимаются в строку фишек «лицо + число»
+  и уходят в верхнюю полосу между логотипом и кнопками.
+*/
 @media (orientation: landscape) and (max-height: 460px) {
 
   .opponents {
-    top: calc(var(--safe-top) + 44px);
+    top: calc(var(--safe-top) + 6px);
 
-    height: 74px;
+    left: 150px;
+    right: 130px;
+
+    height: 38px;
+
+    gap: 6px;
   }
 
   .opponent {
-    height: 66px;
+    flex: 0 1 60px;
 
-    flex-basis: 66px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    border-radius: 11px;
   }
 
+  .opponent.is-active {
+    transform: none;
+  }
+
+  .opponentFace {
+    font-size: 15px;
+  }
+
+  .opponentCount {
+    font-size: 15px;
+  }
+
+  .opponentName,
   .opponentStack {
-    height: 14px;
+    display: none;
   }
 }
 
