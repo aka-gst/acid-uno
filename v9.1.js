@@ -809,10 +809,30 @@
       Значки пересобираются только когда меняется состав
       стола: иначе анимация «поймал UNO» сбрасывалась бы
       на каждой перерисовке.
+
+      Состав — это кто сидит и как его зовут, а не сколько
+      их. По одному числу за столом на двоих ничего никогда
+      не менялось: до входа в комнату клиент считает себя
+      нулевым местом и рисует соперником первое, а когда
+      комната выдаёт место и имена, соперник по-прежнему
+      один — и живой человек навсегда остаётся подписан
+      «ACID BOT» на чужом месте.
     */
+    const lineup =
+      others
+        .map(
+          seat =>
+            `${seat.index}:${seatName(seat.index)}`
+        )
+        .join(",");
+
+
     if (
+      row.dataset.lineup !== lineup ||
       row.childElementCount !== others.length
     ) {
+
+      row.dataset.lineup = lineup;
 
       row.innerHTML =
         others
@@ -2589,7 +2609,7 @@
 
     return drawPenalty > 0
       ? `${seatName(activeSeat)}: ШТРАФ +${drawPenalty}`
-      : seatCount() > 2
+      : seatCount() > 2 || AcidStore.online()
         ? `ХОДИТ ${seatName(activeSeat)}`
         : "ХОД БОТА";
   }
