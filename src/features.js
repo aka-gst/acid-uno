@@ -689,10 +689,10 @@
 
 
   /*
-    Ручка для отладки и будущего режима на 2–7 игроков:
-    живой стол сможет выключить часы единогласно.
+    Ручка для отладки. Имя AcidMatch занято редьюсером
+    партии в src/match.js.
   */
-  window.AcidMatch = {
+  window.AcidClock = {
     clock,
     startClock,
     stopClock,
