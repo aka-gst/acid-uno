@@ -685,12 +685,52 @@ function getFanLayout(count) {
   const baseCardWidth =
     parseFloat(rootStyle.getPropertyValue("--card-w")) || 84;
 
+  const baseCardHeight =
+    parseFloat(rootStyle.getPropertyValue("--card-h")) || 126;
+
   const cardWidth =
     baseCardWidth * scale;
 
+  const cardHeight =
+    baseCardHeight * scale;
+
+  let angle =
+    Math.min(
+      29,
+      8 + count * 1.45
+    );
+
+  if (count > 18) {
+    angle = 25;
+  }
+
+  /*
+    Крайние карты веера повёрнуты на ±angle,
+    поэтому в экран должен помещаться габарит
+    ПОВЁРНУТОЙ карты, а не cardWidth / 2.
+
+    Точка вращения задана в v9.1.css:
+    #hand .handCard { transform-origin: 50% 100% },
+    то есть низ карты по центру. Значит наружу
+    карта выступает на
+
+      (cardWidth / 2) * cos(angle) +
+      cardHeight * sin(angle)
+
+    (высота берётся целиком, а не пополам, —
+    пивот на нижней кромке, а не в центре).
+  */
+
+  const angleRad =
+    angle * Math.PI / 180;
+
+  const rotatedHalfWidth =
+    cardWidth / 2 * Math.cos(angleRad) +
+    cardHeight * Math.sin(angleRad);
+
   const maxHalf =
     screenWidth / 2 -
-    cardWidth / 2 -
+    rotatedHalfWidth -
     7;
 
   let desiredHalf;
@@ -734,16 +774,6 @@ function getFanLayout(count) {
         desiredHalf
       )
     );
-
-  let angle =
-    Math.min(
-      29,
-      8 + count * 1.45
-    );
-
-  if (count > 18) {
-    angle = 25;
-  }
 
   return {
     scale,
