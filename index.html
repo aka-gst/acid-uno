@@ -511,127 +511,175 @@
 
     <div id="lobbyMain">
 
-    <div class="windowEyebrow">
-      ACID UNO
+    <div class="lobbyHead">
+
+      <div class="windowEyebrow">
+        ACID UNO
+      </div>
+
+      <h2>
+        НОВАЯ ИГРА
+      </h2>
+
     </div>
 
-    <h2>
-      НОВАЯ ИГРА
-    </h2>
 
+    <!--
+      Две двери: сперва выбираешь, с кем играть. Настройки
+      стола общие для обоих режимов, поэтому блок один и его
+      переносит features.js внутрь выбранной двери — так не
+      приходится держать две копии одних и тех же кнопок.
+    -->
 
-    <!-- НАСТРОЙКА -->
+    <div class="doors" id="doors">
 
-    <div class="lobbySetup">
+      <section class="door chosen" data-door="bots">
 
-      <div class="lobbyRow">
-
-        <span class="lobbyLabel">
-          ИГРОКОВ
-          <em>всего за столом, считая тебя</em>
-        </span>
-
-        <div
-          id="seatPicker"
-          class="seatPicker"
-        >
-
-          <button class="seatPick" data-seats="2">2</button>
-          <button class="seatPick" data-seats="3">3</button>
-          <button class="seatPick" data-seats="4">4</button>
-          <button class="seatPick" data-seats="5">5</button>
-          <button class="seatPick" data-seats="6">6</button>
-          <button class="seatPick" data-seats="7">7</button>
-
-        </div>
-
-      </div>
-
-
-      <div class="lobbyRow">
-
-        <span class="lobbyLabel">
-          КОЛОДА
-          <em>как выглядят карты</em>
-        </span>
-
-        <div
-          id="deckPicker"
-          class="deckPicker"
-        >
-
-          <button
-            class="deckPick"
-            data-deck="classic"
-            type="button"
-          >
-            КЛАССИКА
-          </button>
-
-          <button
-            class="deckPick"
-            data-deck="acid"
-            type="button"
-          >
-            КИСЛОТА
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <div class="lobbyRow">
-
-        <span class="lobbyLabel">
-          ВРЕМЯ
-          <em>кто не успел — считаем очки</em>
-        </span>
-
-        <button
-          id="clockToggle"
-          class="clockToggle"
-          type="button"
-          aria-pressed="false"
-        >
-
-          <span class="clockToggleBox"></span>
-
-          <span>ИГРАТЬ БЕЗ ТАЙМЕРА</span>
-
+        <button class="doorPick" type="button">
+          <b>С БОТАМИ</b>
+          <em>стол соберётся сразу</em>
         </button>
 
-        <div
-          id="lobbyNote"
-          class="lobbyNote"
-        ></div>
+        <div class="doorBody">
 
-      </div>
+          <p class="doorText">
+            Соперников выбираешь числом. Стол собирается
+            сразу — ждать никого не нужно.
+          </p>
+
+          <div class="doorSlot">
+
+        <div class="lobbySetup">
+
+          <div class="lobbyRow">
+
+            <span class="lobbyLabel">
+              ИГРОКОВ
+              <em>всего за столом, считая тебя</em>
+            </span>
+
+            <div
+              id="seatPicker"
+              class="seatPicker"
+            >
+
+              <button class="seatPick" data-seats="2">2</button>
+              <button class="seatPick" data-seats="3">3</button>
+              <button class="seatPick" data-seats="4">4</button>
+              <button class="seatPick" data-seats="5">5</button>
+              <button class="seatPick" data-seats="6">6</button>
+              <button class="seatPick" data-seats="7">7</button>
+
+            </div>
+
+          </div>
+
+
+          <div class="lobbyRow">
+
+            <span class="lobbyLabel">
+              КОЛОДА
+              <em>как выглядят карты</em>
+            </span>
+
+            <div
+              id="deckPicker"
+              class="deckPicker"
+            >
+
+              <button
+                class="deckPick"
+                data-deck="classic"
+                type="button"
+              >
+                КЛАССИКА
+              </button>
+
+              <button
+                class="deckPick"
+                data-deck="acid"
+                type="button"
+              >
+                КИСЛОТА
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="lobbyRow">
+
+            <span class="lobbyLabel">
+              ВРЕМЯ
+              <em>кто не успел — считаем очки</em>
+            </span>
+
+            <button
+              id="clockToggle"
+              class="clockToggle"
+              type="button"
+              aria-pressed="false"
+            >
+
+              <span class="clockToggleBox"></span>
+
+              <span>ИГРАТЬ БЕЗ ТАЙМЕРА</span>
+
+            </button>
+
+            <div
+              id="lobbyNote"
+              class="lobbyNote"
+            ></div>
+
+          </div>
+
+        </div>
+
+          </div>
+
+          <button id="lobbyStart">
+            НАЧАТЬ ПАРТИЮ
+            <em>играем прямо сейчас</em>
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <section class="door" data-door="live">
+
+        <button class="doorPick" type="button">
+          <b>С ЖИВЫМИ</b>
+          <em>по ссылке, с любого устройства</em>
+        </button>
+
+        <div class="doorBody">
+
+          <div class="doorSlot"></div>
+
+          <p class="doorText">
+            Дам код комнаты и ссылку. Кто её откроет — сядет
+            за твой стол. Пустые места можно добить ботами
+            или начать раньше.
+          </p>
+
+          <button
+            id="lobbyOnline"
+            class="lobbyOnline"
+            type="button"
+          >
+            ПОЗВАТЬ ДРУГА ПО ССЫЛКЕ
+            <em>дам код и ссылку</em>
+          </button>
+
+        </div>
+
+      </section>
 
     </div>
-
-
-    <!-- ДЕЙСТВИЕ -->
-
-    <div class="lobbyHint">
-      ВЫБЕРИ, С КЕМ ИГРАТЬ
-    </div>
-
-
-    <button id="lobbyStart">
-      ИГРАТЬ С БОТАМИ
-      <em>начнём сразу</em>
-    </button>
-
-
-    <button
-      id="lobbyOnline"
-      class="lobbyOnline"
-      type="button"
-    >
-      ПОЗВАТЬ ДРУГА ПО ССЫЛКЕ
-      <em>дам код и ссылку, ждём живых</em>
-    </button>
 
 
     <button

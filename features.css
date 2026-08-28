@@ -2783,3 +2783,363 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
     animation: none;
   }
 }
+
+
+/* =========================================================
+   СТАРТОВОЕ МЕНЮ — ДВЕ ДВЕРИ
+
+   Прежнее меню было одной колонкой: настройки, а под ними
+   две почти одинаковые кнопки. С кем ты вообще играешь,
+   становилось понятно только из мелкой подписи.
+
+   Теперь первым делом выбирается дверь — боты или живые, —
+   и настройки стола переезжают внутрь выбранной. На телефоне
+   закрытая дверь сворачивается в одну строку, на большом
+   экране двери стоят рядом.
+   ========================================================= */
+
+.lobbyHead {
+  text-align: center;
+}
+
+.doors {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-top: 16px;
+
+  text-align: left;
+}
+
+.door {
+  border: 1px solid rgba(181, 93, 255, .28);
+
+  border-radius: 20px;
+
+  padding: 16px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(139, 61, 255, .10),
+      rgba(12, 6, 25, .55)
+    );
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    opacity .2s ease;
+}
+
+.door.chosen {
+  border-color: rgba(255, 43, 214, .6);
+
+  box-shadow:
+    0 0 0 1px rgba(255, 43, 214, .2),
+    0 16px 44px rgba(255, 43, 214, .14);
+}
+
+.door[data-door="live"].chosen {
+  border-color: rgba(32, 234, 255, .55);
+
+  box-shadow:
+    0 0 0 1px rgba(32, 234, 255, .18),
+    0 16px 44px rgba(32, 234, 255, .12);
+}
+
+.doorPick {
+  display: block;
+
+  width: 100%;
+
+  padding: 0;
+
+  border: 0;
+
+  background: none;
+
+  color: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  font: inherit;
+}
+
+.doorPick b {
+  display: block;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  letter-spacing: .06em;
+}
+
+.doorPick em {
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+
+  letter-spacing: .02em;
+
+  color: rgba(248, 247, 255, .5);
+}
+
+.door[data-door="bots"].chosen .doorPick b {
+  color: var(--magenta);
+}
+
+.door[data-door="live"].chosen .doorPick b {
+  color: var(--cyan);
+}
+
+.doorBody {
+  margin-top: 14px;
+}
+
+/*
+  Закрытая дверь на телефоне — одна строка: иначе меню снова
+  становится длинной лентой, по которой надо листать.
+*/
+.door:not(.chosen) .doorBody {
+  display: none;
+}
+
+.doorText {
+  margin: 0 0 14px;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: rgba(248, 247, 255, .52);
+}
+
+.door .lobbySetup {
+  margin: 0 0 14px;
+}
+
+
+/* большой экран: двери встают рядом и всё крупнеет */
+@media (min-width: 780px) {
+
+  .lobbyWindow {
+    width:
+      min(
+        980px,
+        calc(100vw - 64px)
+      );
+
+    padding: 34px 32px 28px;
+  }
+
+  .lobbyWindow h2 {
+    font-size: 34px;
+  }
+
+  .doors {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+    align-items: start;
+
+    margin-top: 24px;
+  }
+
+  /*
+    Рядом стоящая закрытая дверь должна остаться читаемой:
+    иначе про живую игру опять никто не узнает.
+  */
+  /*
+    Двери одной высоты, а действие у каждой прижато к низу:
+    иначе закрытая дверь выглядит огрызком рядом с открытой.
+  */
+  .door {
+    padding: 22px;
+
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+  }
+
+  .doorBody {
+    display: flex;
+
+    flex-direction: column;
+
+    flex: 1;
+  }
+
+  .doorBody #lobbyStart,
+  .doorBody .lobbyOnline {
+    margin-top: auto;
+  }
+
+  .door:not(.chosen) {
+    opacity: .62;
+  }
+
+  /*
+    Закрытая дверь на большом экране остаётся раскрытой, но
+    без настроек — иначе про живую игру снова никто не узнает.
+    Раскладка та же, чтобы действие стояло на одной высоте.
+  */
+  .door:not(.chosen) .doorBody {
+    display: flex;
+  }
+
+  .doorPick b {
+    font-size: 24px;
+  }
+
+  .doorPick em {
+    font-size: 13px;
+  }
+
+  .doorText {
+    font-size: 14px;
+  }
+
+  .lobbyLabel {
+    font-size: 11px;
+  }
+
+  .lobbyLabel em {
+    font-size: 12px;
+  }
+
+  .lobbyRow {
+    padding: 16px 16px 17px;
+  }
+
+  #lobbyStart,
+  .lobbyOnline {
+    font-size: 17px;
+
+    padding: 18px 20px;
+  }
+
+  #lobbyStart em,
+  .lobbyOnline em {
+    font-size: 12px;
+  }
+
+  .seatPick {
+    width: 46px;
+    height: 46px;
+
+    font-size: 19px;
+  }
+
+  .rulesOpen {
+    margin-top: 22px;
+
+    font-size: 13px;
+  }
+}
+
+
+/*
+  Телефон: двери прибавили заголовок и поясняющую строку, и
+  меню перестало влезать в экран. Пояснение здесь лишнее —
+  название двери и так всё говорит, — а отступы ужимаются.
+*/
+@media (max-width: 779px) {
+
+  .lobbyWindow {
+    padding: 18px 16px 16px;
+  }
+
+  .doorText {
+    display: none;
+  }
+
+  .doors {
+    gap: 10px;
+
+    margin-top: 12px;
+  }
+
+  .door {
+    padding: 13px 14px;
+  }
+
+  .doorBody {
+    margin-top: 11px;
+  }
+
+  .rulesOpen {
+    margin-top: 12px;
+  }
+}
+
+
+/*
+  Окна поверх стола центрируются гридом. Когда содержимое выше
+  экрана, центрирование срезает его сразу с двух сторон, и низ
+  становится недостижим — прокрутки при этом нет. safe center
+  на таком экране прижимает окно к верху, а не по центру.
+*/
+.overlay {
+  place-items: safe center;
+
+  overflow-y: auto;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/*
+  ПРАВИЛА НА БОЛЬШОМ ЭКРАНЕ
+
+  Узкая колонка в 420 пикселей на мониторе превращала правила
+  в длинную ленту, по которой надо долго крутить. Окно
+  расширяется, а разделы встают в две колонки — читать
+  становится нечего листать.
+*/
+@media (min-width: 780px) {
+
+  .rulesWindow {
+    width:
+      min(
+        920px,
+        calc(100vw - 64px)
+      );
+
+    padding: 30px 28px 24px;
+  }
+
+  .rulesWindow h2 {
+    font-size: 32px;
+  }
+
+  .rulesBody {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 4px 28px;
+
+    align-items: start;
+  }
+
+  .rulesSection {
+    break-inside: avoid;
+  }
+
+  .rulesSection p {
+    font-size: 15px;
+  }
+}

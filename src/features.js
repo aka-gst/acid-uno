@@ -859,6 +859,72 @@
     );
 
 
+  /* =======================================================
+     ДВЕРИ СТАРТОВОГО МЕНЮ
+
+     Настройки стола общие для обоих режимов, поэтому блок
+     настроек один и переезжает внутрь выбранной двери.
+     Две копии держать нельзя — обработчики ищут кнопки по
+     идентификаторам, а те обязаны быть единственными.
+     ======================================================= */
+
+  function pickDoor(which) {
+
+    const setup =
+      document.querySelector(".lobbySetup");
+
+    document
+      .querySelectorAll(".door")
+      .forEach(door => {
+
+        const on =
+          door.dataset.door === which;
+
+        door.classList.toggle("chosen", on);
+
+        if (on && setup) {
+
+          door
+            .querySelector(".doorSlot")
+            ?.appendChild(setup);
+        }
+      });
+
+    paintLobby();
+  }
+
+
+  document
+    .querySelectorAll(".door")
+    .forEach(door =>
+
+      door.addEventListener(
+        "click",
+        event => {
+
+          if (
+            door.classList.contains("chosen")
+          ) {
+            return;
+          }
+
+          /*
+            Перехват на погружении: нажатие на действие внутри
+            закрытой двери сначала открывает её, а не запускает
+            игру. Иначе на большом экране, где видны обе двери,
+            можно случайно начать не тот режим.
+          */
+          event.stopPropagation();
+
+          event.preventDefault();
+
+          pickDoor(door.dataset.door);
+        },
+        true
+      )
+    );
+
+
   $$("tableButton")
     ?.addEventListener(
       "click",
