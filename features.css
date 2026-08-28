@@ -1,0 +1,452 @@
+/* =========================================================
+   ACID UNO — FEATURE LAYER
+
+   Свечение активного цвета вокруг карты на столе,
+   крупный счётчик кластера +2/+4,
+   таймер партии и кнопка звука.
+
+   Базовый дизайн и токены — в style.css.
+   ========================================================= */
+
+
+/* =========================================================
+   АУРА АКТИВНОГО ЦВЕТА
+
+   Свечение живёт вокруг верхней карты сброса и всегда
+   показывает цвет, которым сейчас ходят, а не цвет самой
+   карты: после Wild аура окрашивается в выбранный цвет.
+   ========================================================= */
+
+.discardPile {
+  --aura: var(--purple);
+  --aura-strong: rgba(139, 61, 255, .70);
+  --aura-soft: rgba(139, 61, 255, .26);
+}
+
+.discardPile[data-color="red"] {
+  --aura: var(--red);
+  --aura-strong: rgba(255, 49, 88, .78);
+  --aura-soft: rgba(255, 49, 88, .30);
+}
+
+.discardPile[data-color="yellow"] {
+  --aura: var(--yellow);
+  --aura-strong: rgba(255, 232, 61, .70);
+  --aura-soft: rgba(255, 232, 61, .26);
+}
+
+.discardPile[data-color="green"] {
+  --aura: var(--green);
+  --aura-strong: rgba(72, 255, 119, .74);
+  --aura-soft: rgba(72, 255, 119, .28);
+}
+
+.discardPile[data-color="blue"] {
+  --aura: var(--blue);
+  --aura-strong: rgba(50, 168, 255, .78);
+  --aura-soft: rgba(50, 168, 255, .30);
+}
+
+
+.discardPile::after {
+  content: "";
+
+  position: absolute;
+  inset: -13px -11px -11px -13px;
+
+  border-radius: 24px;
+
+  z-index: -2;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      var(--aura-soft) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+
+  box-shadow:
+    0 0 18px 2px var(--aura-strong),
+    0 0 46px 12px var(--aura-soft);
+
+  opacity: .95;
+
+  transition:
+    box-shadow .32s ease,
+    background .32s ease;
+
+  animation:
+    acidAuraBreath 3.1s ease-in-out infinite;
+}
+
+
+@keyframes acidAuraBreath {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: .82;
+  }
+
+  50% {
+    transform: scale(1.045);
+    opacity: 1;
+  }
+}
+
+
+/*
+  Смена цвета — короткая вспышка ауры.
+*/
+.discardPile.aura-shift::after {
+  animation:
+    acidAuraShift .52s ease-out,
+    acidAuraBreath 3.1s ease-in-out .52s infinite;
+}
+
+@keyframes acidAuraShift {
+  0% {
+    transform: scale(.86);
+    opacity: .25;
+  }
+
+  55% {
+    transform: scale(1.22);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: .9;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .discardPile::after,
+  .discardPile.aura-shift::after {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   КЛАСТЕР +2 / +4
+
+   Крупное число: сколько карт заберёшь, если не покроешь.
+   ========================================================= */
+
+.stackHUD {
+  position: absolute;
+
+  left: 50%;
+  top: 8px;
+
+  transform: translateX(-50%);
+
+  z-index: 9;
+
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+
+  pointer-events: none;
+
+  text-align: center;
+
+  transition:
+    opacity .22s ease,
+    transform .22s ease;
+}
+
+.stackHUD.hidden {
+  display: grid;
+
+  opacity: 0;
+
+  transform:
+    translateX(-50%) scale(.7);
+}
+
+.stackHUDLabel {
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .18em;
+
+  color: rgba(255, 255, 255, .72);
+
+  text-shadow:
+    0 0 12px rgba(255, 43, 214, .8);
+}
+
+.stackHUDValue {
+  font-size: 74px;
+  line-height: .86;
+  font-weight: 900;
+
+  letter-spacing: -.03em;
+
+  color: var(--white);
+
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, .55),
+    0 0 26px var(--magenta),
+    0 0 58px rgba(255, 43, 214, .7);
+}
+
+.stackHUDCards {
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .16em;
+
+  color: rgba(255, 255, 255, .55);
+}
+
+
+/*
+  Кластер вырос — число ударяет.
+*/
+.stackHUD.bump .stackHUDValue {
+  animation: acidStackBump .42s cubic-bezier(.2, .9, .2, 1);
+}
+
+@keyframes acidStackBump {
+  0% {
+    transform: scale(.55);
+    opacity: .2;
+  }
+
+  50% {
+    transform: scale(1.32);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+/*
+  Кластер направлен в тебя — число становится тревожным.
+*/
+.stackHUD.mine .stackHUDValue {
+  color: #fff0f4;
+
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, .6),
+    0 0 26px var(--red),
+    0 0 62px rgba(255, 49, 88, .8);
+}
+
+.stackHUD.mine .stackHUDLabel {
+  color: #ffd8e0;
+
+  text-shadow:
+    0 0 12px rgba(255, 49, 88, .9);
+}
+
+
+/*
+  В альбомной ориентации веер бота свисает на верхнюю кромку
+  стола, поэтому счётчик уходит на свободное правое поле.
+*/
+@media (orientation: landscape) {
+
+  .stackHUD {
+    left: auto;
+    right: 4%;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+  }
+
+  .stackHUD.hidden {
+    transform:
+      translateY(-50%) scale(.7);
+  }
+}
+
+
+@media (max-width: 520px),
+       (max-height: 460px) {
+
+  .stackHUDValue {
+    font-size: 52px;
+  }
+
+  .stackHUD {
+    top: 4px;
+  }
+}
+
+
+@media (orientation: landscape) and (max-height: 460px) {
+
+  .stackHUD {
+    top: 50%;
+  }
+
+  .stackHUDValue {
+    font-size: 46px;
+  }
+}
+
+
+/* =========================================================
+   ТАЙМЕР ПАРТИИ
+
+   Появляется только за минуту до конца.
+   ========================================================= */
+
+.matchClock {
+  position: absolute;
+
+  left: 50%;
+  top: calc(var(--safe-top) + 8px);
+
+  transform: translateX(-50%);
+
+  z-index: 40;
+
+  padding: 5px 14px;
+
+  border-radius: var(--ui-cut);
+
+  border:
+    1px solid var(--panel-line-purple);
+
+  background: rgba(10, 5, 22, .72);
+
+  backdrop-filter: blur(8px);
+
+  font-size: 20px;
+  font-weight: 900;
+
+  letter-spacing: .06em;
+
+  font-variant-numeric: tabular-nums;
+
+  color: var(--white);
+
+  text-shadow:
+    0 0 14px rgba(183, 255, 36, .55);
+
+  pointer-events: none;
+
+  transition: opacity .3s ease;
+}
+
+.matchClock.hidden {
+  display: none;
+}
+
+.matchClock.urgent {
+  border-color: rgba(255, 49, 88, .6);
+
+  color: #ffe4ea;
+
+  text-shadow:
+    0 0 16px rgba(255, 49, 88, .9);
+
+  animation: acidClockPulse 1s steps(1) infinite;
+}
+
+@keyframes acidClockPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .45;
+  }
+}
+
+
+/* =========================================================
+   ЗВУК
+   ========================================================= */
+
+/*
+  Кнопки справа держатся вместе: у .topbar
+  justify-content: space-between, и одиночная кнопка
+  уехала бы в центр.
+*/
+.topbarActions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.soundButton {
+  font-size: 17px;
+}
+
+.soundButton.muted {
+  opacity: .42;
+}
+
+
+/* =========================================================
+   ИТОГ ПО ОЧКАМ
+   ========================================================= */
+
+.endScore {
+  display: grid;
+  gap: 8px;
+
+  margin: 12px 0 6px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  letter-spacing: .1em;
+
+  color: rgba(255, 255, 255, .74);
+}
+
+.endScore.hidden {
+  display: none;
+}
+
+.endScoreRow {
+  display: flex;
+
+  align-items: baseline;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+.endScoreRow b {
+  font-size: 19px;
+
+  color: var(--acid);
+
+  text-shadow:
+    0 0 14px rgba(183, 255, 36, .5);
+}
+
+.endScoreRow.lost b {
+  color: var(--magenta);
+
+  text-shadow:
+    0 0 14px rgba(255, 43, 214, .5);
+}
+
+
+/* =========================================================
+   Мелкая плашка «ШТРАФ +N» из топбара заменена крупным
+   счётчиком над столом (.stackHUD) — оставлять обе значит
+   показывать одно и то же дважды.
+   ========================================================= */
+
+.penalty {
+  display: none;
+}

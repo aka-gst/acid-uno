@@ -949,6 +949,8 @@
 
       player.push(card);
 
+      AcidRules.sortHand(player);
+
       notePlayerHandGrew91();
 
       render();
@@ -978,6 +980,9 @@
     */
 
     player.push(card);
+
+
+    AcidRules.sortHand(player);
 
 
     notePlayerHandGrew91();

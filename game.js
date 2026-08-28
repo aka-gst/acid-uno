@@ -321,6 +321,8 @@ function startGame() {
     ...takeMany(7)
   );
 
+  AcidRules.sortHand(player);
+
   bot.push(
     ...takeMany(7)
   );

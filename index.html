@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="style.css?v=10">
   <link rel="stylesheet" href="effects.css?v=10">
   <link rel="stylesheet" href="v9.1.css?v=10">
+  <link rel="stylesheet" href="features.css?v=11">
   
 </head>
 
@@ -38,6 +39,15 @@
        TOP BAR
   ======================================= -->
 
+  <div
+    id="matchClock"
+    class="matchClock hidden"
+    aria-live="polite"
+  >
+    1:00
+  </div>
+
+
   <header class="topbar">
 
     <div class="logo">
@@ -54,13 +64,27 @@
     </div>
 
 
-    <button
-      id="restart"
-      class="iconButton"
-      aria-label="Начать заново"
-    >
-      ↻
-    </button>
+    <div class="topbarActions">
+
+      <button
+        id="sound"
+        class="iconButton soundButton"
+        aria-label="Звук"
+        aria-pressed="true"
+      >
+        🔊
+      </button>
+
+
+      <button
+        id="restart"
+        class="iconButton"
+        aria-label="Начать заново"
+      >
+        ↻
+      </button>
+
+    </div>
 
   </header>
 
@@ -123,6 +147,32 @@
 
       <div class="tableLogo">
         ACID
+      </div>
+
+
+      <!-- КЛАСТЕР +2 / +4 -->
+
+      <div
+        id="stackHUD"
+        class="stackHUD hidden"
+        aria-live="polite"
+      >
+
+        <div class="stackHUDLabel">
+          ВОЗЬМЁШЬ
+        </div>
+
+        <div
+          id="stackHUDValue"
+          class="stackHUDValue"
+        >
+          +4
+        </div>
+
+        <div class="stackHUDCards">
+          КАРТ
+        </div>
+
       </div>
 
 
@@ -387,6 +437,12 @@
     </h1>
 
 
+    <div
+      id="endScore"
+      class="endScore hidden"
+    ></div>
+
+
     <div class="endLine"></div>
 
 
@@ -406,9 +462,11 @@
 ========================================= -->
 
 <script src="src/rules.js?v=11"></script>
+<script src="src/audio.js?v=11"></script>
 <script src="animations.js?v=10"></script>
 <script src="game.js?v=10"></script>
 <script src="v9.1.js?v=10"></script>
+<script src="src/features.js?v=11"></script>
 
 </body>
 </html>

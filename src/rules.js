@@ -113,13 +113,15 @@ function cardPoints(card) {
     return 40;
   }
 
-  const number =
-    Number(card.value);
-
+  /*
+    Только чистые цифры идут по номиналу.
+    Проверка обязана быть строгой: Number("+2") === 2,
+    и штрафная карта тихо подешевела бы до двух очков.
+  */
   if (
-    Number.isFinite(number)
+    /^[0-9]$/.test(card.value)
   ) {
-    return number;
+    return Number(card.value);
   }
 
   return 20;
@@ -696,6 +698,149 @@ function chooseCard(hand, indexes, noise) {
 
 
 /* =========================================================
+   ЧАСЫ ПАРТИИ
+
+   Партия ограничена по времени. Часы ничего не знают ни про
+   DOM, ни про setInterval: снаружи в них просто досыпают
+   прошедшие секунды.
+   ========================================================= */
+
+const MATCH_LIMIT_SECONDS = 180;
+
+const MATCH_WARN_SECONDS = 60;
+
+
+function formatClock(seconds) {
+
+  const total =
+    Math.max(0, Math.ceil(seconds));
+
+  const minutes =
+    Math.floor(total / 60);
+
+  const rest =
+    total % 60;
+
+  return (
+    minutes +
+    ":" +
+    String(rest).padStart(2, "0")
+  );
+}
+
+
+class MatchClock {
+
+  constructor(options) {
+
+    const settings = options || {};
+
+    this.limit =
+      settings.limitSeconds ??
+      MATCH_LIMIT_SECONDS;
+
+    this.warn =
+      settings.warnSeconds ??
+      MATCH_WARN_SECONDS;
+
+    this.elapsed = 0;
+    this.running = false;
+    this.expired = false;
+  }
+
+
+  start() {
+
+    this.elapsed = 0;
+    this.running = true;
+    this.expired = false;
+
+    return this;
+  }
+
+
+  stop() {
+
+    this.running = false;
+
+    return this;
+  }
+
+
+  /*
+    Часы можно выключить целиком — в живой игре так делают
+    единогласным решением стола.
+  */
+  disable() {
+
+    this.limit = Infinity;
+
+    return this;
+  }
+
+
+  get disabled() {
+    return !Number.isFinite(this.limit);
+  }
+
+
+  remaining() {
+
+    return Math.max(
+      0,
+      this.limit - this.elapsed
+    );
+  }
+
+
+  /*
+    Досыпать delta секунд.
+    Возвращает снимок для отрисовки.
+  */
+  advance(delta) {
+
+    if (
+      this.running &&
+      !this.disabled
+    ) {
+      this.elapsed += Math.max(0, delta || 0);
+    }
+
+    const left = this.remaining();
+
+    const justExpired =
+      this.running &&
+      !this.disabled &&
+      !this.expired &&
+      left <= 0;
+
+    if (justExpired) {
+      this.expired = true;
+      this.running = false;
+    }
+
+    return {
+      remaining: left,
+
+      label: formatClock(left),
+
+      /* таймер показывается только за минуту до конца */
+      visible:
+        !this.disabled &&
+        this.running &&
+        left <= this.warn,
+
+      urgent:
+        !this.disabled &&
+        left <= 10,
+
+      expired: justExpired
+    };
+  }
+}
+
+
+/* =========================================================
    ИТОГ ПО ВРЕМЕНИ
 
    Партия не закончилась за отведённое время —
@@ -795,7 +940,12 @@ return {
   BOT_PRIORITY,
 
   scoreboard,
-  timeoutResult
+  timeoutResult,
+
+  MATCH_LIMIT_SECONDS,
+  MATCH_WARN_SECONDS,
+  formatClock,
+  MatchClock
 
 };
 
