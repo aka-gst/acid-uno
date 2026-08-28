@@ -345,7 +345,8 @@
       clockOff
         ? Infinity
         : AcidRules.matchLimitFor(
-            seatCount()
+            seatCount(),
+            humanSeats().length
           );
 
     clock.start();
@@ -547,6 +548,14 @@
     AcidRules.MIN_SEATS;
 
 
+  /*
+    Живых игроков пока всегда один. Значение уже участвует
+    в расчёте лимита, поэтому мультиплееру останется только
+    его выставить.
+  */
+  let chosenHumans = 1;
+
+
   function paintLobby() {
 
     document
@@ -584,7 +593,10 @@
           ? "БЕЗ ЧАСОВ — ДО ПОСЛЕДНЕЙ КАРТЫ"
           : `ТАЙМЕР ${
               AcidRules.formatClock(
-                AcidRules.matchLimitFor(chosenSeats)
+                AcidRules.matchLimitFor(
+                  chosenSeats,
+                  chosenHumans
+                )
               )
             } · ПОТОМ СЧИТАЕМ ОЧКИ`;
     }

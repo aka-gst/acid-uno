@@ -822,46 +822,92 @@ function chooseCard(hand, indexes, noise) {
    прошедшие секунды.
    ========================================================= */
 
-const MATCH_LIMIT_SECONDS = 240;
+const MATCH_LIMIT_SECONDS = 240;   /* стол на двоих, один живой */
 
 const MATCH_WARN_SECONDS = 60;
 
 
 /*
-  Лимит на стол. Это округлённый 84-й процентиль реальной
-  длительности партии, снятый с test/simulate.js для
-  расклада «один живой игрок против ботов»: он держит долю
-  партий, доигранных по очкам, около 16% на любом столе.
+  Лимит партии считается из физики стола, а не берётся из
+  таблицы:
 
-  Скачок 2 -> 3 большой, потому что на троих разворот
-  перестаёт работать как пропуск и партия удлиняется почти
-  на четверть по числу ходов. Дальше лишние места добавляют
-  мало: боты ходят быстро.
+    лимит = сколько ходов обычно нужно, чтобы партия кончилась
+            × сколько в среднем стоит один ход за этим столом
 
-  Когда появится мультиплеер и за столом будет несколько
-  живых игроков, таблицу надо пересчитать:
+  Второй множитель и есть зависимость от числа живых игроков:
+  доля живых мест за столом — это доля ходов, которые кто-то
+  обдумывает руками, а не разыгрывает мгновенно.
 
-    node test/simulate.js 3000 <мест> <лимит> 2.4 2.4
+  Все три набора чисел сняты с test/simulate.js: ходы — 84-й
+  процентиль реальной длительности партии, секунды на ход —
+  подгонка по сетке 2..7 мест × 1..7 живых. Худшая ошибка
+  модели на этой сетке — 0.5%.
+
+  Пересчитать после правок в скорости анимаций или в ИИ бота:
+
+    node test/simulate.js 3000 <мест> <живых> 999999
 */
-const MATCH_LIMIT_BY_SEATS = {
-  2: 240,
-  3: 290,
-  4: 300,
-  5: 300,
-  6: 310,
-  7: 320
+
+const TURNS_TO_FINISH = {
+  2: 119,
+  3: 161,
+  4: 174,
+  5: 182,
+  6: 195,
+  7: 203
 };
 
 
-function matchLimitFor(seats) {
+const SECONDS_PER_TURN = {
+  bot: 1.37,
+  human: 2.66
+};
 
-  const count =
+
+/* показываем ровные значения: 4:00, а не 3:59 */
+const LIMIT_STEP_SECONDS = 5;
+
+
+function seatsInRange(seats) {
+
+  return Math.min(
+    MAX_SEATS,
+    Math.max(MIN_SEATS, seats || MIN_SEATS)
+  );
+}
+
+
+function matchLimitFor(seats, humans) {
+
+  const total =
+    seatsInRange(seats);
+
+  const live =
     Math.min(
-      MAX_SEATS,
-      Math.max(MIN_SEATS, seats || MIN_SEATS)
+      total,
+      Math.max(1, humans || 1)
     );
 
-  return MATCH_LIMIT_BY_SEATS[count];
+
+  const secondsPerTurn =
+    SECONDS_PER_TURN.bot +
+
+    (
+      SECONDS_PER_TURN.human -
+      SECONDS_PER_TURN.bot
+    ) *
+    live / total;
+
+
+  const limit =
+    TURNS_TO_FINISH[total] *
+    secondsPerTurn;
+
+
+  return (
+    Math.round(limit / LIMIT_STEP_SECONDS) *
+    LIMIT_STEP_SECONDS
+  );
 }
 
 
@@ -1105,7 +1151,8 @@ return {
 
   MATCH_LIMIT_SECONDS,
   MATCH_WARN_SECONDS,
-  MATCH_LIMIT_BY_SEATS,
+  TURNS_TO_FINISH,
+  SECONDS_PER_TURN,
   matchLimitFor,
   formatClock,
   MatchClock

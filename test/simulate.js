@@ -49,7 +49,7 @@ function mulberry32(seed) {
      человек  snapToDiscard91(205) + эффект(180) + время на решение
      добор    addPlayerCardAnimated91(310) / botDrawBack91(~250)
 
-   Место 0 — человек, остальные — боты.
+   Живыми считаются первые humans мест, остальные — боты.
    ========================================================= */
 
 const TIMING = {
@@ -60,15 +60,17 @@ const TIMING = {
 };
 
 
-const pace = (key, seat) =>
-  TIMING[key][seat === 0 ? 0 : 1];
+const pace = (g, key) =>
+  TIMING[key][
+    g.seat < g.humans ? 0 : 1
+  ];
 
 
 /* =========================================================
    СОСТОЯНИЕ
    ========================================================= */
 
-function createGame(rng, seats) {
+function createGame(rng, seats, humans) {
 
   let nextId = 1;
 
@@ -124,6 +126,13 @@ function createGame(rng, seats) {
     discard: [first],
     hands,
     seats,
+
+    humans:
+      Math.min(
+        seats,
+        Math.max(1, humans || 1)
+      ),
+
     currentColor: first.color,
     drawPenalty: 0,
     penaltyType: null,
@@ -206,7 +215,7 @@ function play(g, index) {
     chosenColor =
       R.bestColor(hand, index);
 
-    g.clock += pace("colorPick", g.seat);
+    g.clock += pace(g, "colorPick");
   }
 
 
@@ -230,7 +239,7 @@ function play(g, index) {
   g.biggestStack =
     Math.max(g.biggestStack, g.drawPenalty);
 
-  g.clock += pace("play", g.seat);
+  g.clock += pace(g, "play");
 
   return card;
 }
@@ -304,7 +313,7 @@ function step(g) {
     }
 
     g.clock +=
-      amount * pace("penaltyCard", g.seat);
+      amount * pace(g, "penaltyCard");
 
     g.drawPenalty = 0;
     g.penaltyType = null;
@@ -342,7 +351,7 @@ function step(g) {
 
       hand.push(card);
 
-      g.clock += pace("drawOne", g.seat);
+      g.clock += pace(g, "drawOne");
 
       if (
         R.normalPlayable(card, view(g))
@@ -387,10 +396,14 @@ function step(g) {
    ПАРТИЯ
    ========================================================= */
 
-function playGame(seed, seats, limitSeconds) {
+function playGame(seed, seats, limitSeconds, humans) {
 
   const g =
-    createGame(mulberry32(seed), seats);
+    createGame(
+      mulberry32(seed),
+      seats,
+      humans
+    );
 
   let atLimit = null;
 
@@ -472,7 +485,7 @@ function leader(points) {
 }
 
 
-function run(games, seats, limitSeconds) {
+function run(games, seats, limitSeconds, humans) {
 
   const seconds = [];
   const turns = [];
@@ -491,7 +504,8 @@ function run(games, seats, limitSeconds) {
 
   for (let seed = 1; seed <= games; seed++) {
 
-    const r = playGame(seed, seats, limitSeconds);
+    const r =
+      playGame(seed, seats, limitSeconds, humans);
 
     seconds.push(r.seconds);
     turns.push(r.turns);
@@ -544,7 +558,8 @@ function run(games, seats, limitSeconds) {
 
 
   console.log(
-    `\nМЕСТ ${seats}   ПАРТИЙ ${games}   ЛИМИТ ${limitSeconds}s`
+    `\nМЕСТ ${seats}   ЖИВЫХ ${humans || 1}` +
+    `   ПАРТИЙ ${games}   ЛИМИТ ${limitSeconds}s`
   );
 
   console.log(
@@ -594,21 +609,16 @@ if (require.main === module) {
   const seats =
     Number(process.argv[3] || 2);
 
+  const humans =
+    Number(process.argv[4] || 1);
+
   const limit =
     Number(
-      process.argv[4] ||
-      R.matchLimitFor(seats)
+      process.argv[5] ||
+      R.matchLimitFor(seats, humans)
     );
 
-  if (process.argv[5]) {
-    TIMING.play[0] = Number(process.argv[5]);
-  }
-
-  if (process.argv[6]) {
-    TIMING.play[1] = Number(process.argv[6]);
-  }
-
-  run(games, seats, limit);
+  run(games, seats, limit, humans);
 }
 
 

@@ -132,3 +132,77 @@ test("лимит растёт вместе со столом и не выход�
   assert.equal(R.matchLimitFor(99), R.matchLimitFor(7));
   assert.equal(R.matchLimitFor(undefined), R.matchLimitFor(2));
 });
+
+
+/* =========================================================
+   ЛИМИТ ОТ ЧИСЛА ЖИВЫХ ИГРОКОВ
+
+   Лимит считается как «ходов до конца × средняя цена хода».
+   Живое место обдумывает ход руками, бот разыгрывает его
+   мгновенно, поэтому доля живых мест двигает вторую часть.
+   ========================================================= */
+
+test("стол на двоих против бота остаётся четырьмя минутами", () => {
+
+  assert.equal(R.matchLimitFor(2, 1), 240);
+  assert.equal(R.formatClock(R.matchLimitFor(2, 1)), "4:00");
+});
+
+
+test("каждый живой игрок добавляет времени", () => {
+
+  for (
+    let seats = R.MIN_SEATS;
+    seats <= R.MAX_SEATS;
+    seats++
+  ) {
+    for (
+      let humans = 1;
+      humans < seats;
+      humans++
+    ) {
+      assert.ok(
+        R.matchLimitFor(seats, humans + 1) >
+        R.matchLimitFor(seats, humans),
+        `${seats} мест: ${humans + 1} живых должно быть дольше, чем ${humans}`
+      );
+    }
+  }
+});
+
+
+test("живых не может быть больше, чем мест", () => {
+
+  assert.equal(
+    R.matchLimitFor(3, 99),
+    R.matchLimitFor(3, 3)
+  );
+
+  assert.equal(
+    R.matchLimitFor(4, 0),
+    R.matchLimitFor(4, 1)
+  );
+});
+
+
+test("полностью живой стол дороже полностью ботовского", () => {
+
+  /* один живой среди шести ботов против семи живых */
+  assert.ok(
+    R.matchLimitFor(7, 7) >
+    R.matchLimitFor(7, 1) * 1.5
+  );
+});
+
+
+test("лимит кратен пяти секундам — на экране ровные значения", () => {
+
+  for (let seats = 2; seats <= 7; seats++) {
+    for (let humans = 1; humans <= seats; humans++) {
+      assert.equal(
+        R.matchLimitFor(seats, humans) % 5,
+        0
+      );
+    }
+  }
+});
