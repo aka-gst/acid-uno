@@ -1,0 +1,28 @@
+# Комнаты ACID UNO.
+#
+# Статику игры отдаёт Caddy из /srv/acid — сюда приходят только запросы
+# комнаты. Зависимостей у сервера нет, поэтому образ берём голый и
+# монтируем исходники только на чтение: собирать нечего.
+services:
+  acid-uno:
+    image: node:24-alpine
+    container_name: acid-uno
+    restart: unless-stopped
+    working_dir: /app
+    command: node server/server.js
+    environment:
+      PORT: "4173"
+      HOST: "0.0.0.0"
+    volumes:
+      - /opt/zakriva/apps/acid-uno:/app:ro
+    networks:
+      - zakriva-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:4173/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  zakriva-net:
+    external: true
