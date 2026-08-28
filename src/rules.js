@@ -705,7 +705,7 @@ function chooseCard(hand, indexes, noise) {
    прошедшие секунды.
    ========================================================= */
 
-const MATCH_LIMIT_SECONDS = 180;
+const MATCH_LIMIT_SECONDS = 240;
 
 const MATCH_WARN_SECONDS = 60;
 

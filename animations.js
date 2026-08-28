@@ -93,11 +93,15 @@ const AcidFX = (() => {
     el.className =
       `flyingCard ${card.color}`;
 
-    el.innerHTML = `
-      <div class="value">
-        ${label(card.value)}
-      </div>
-    `;
+    /*
+      Лицо строится тем же кодом, что и карта в руке,
+      иначе у летящей карты нет угловых индексов
+      и она читается как другая карта.
+    */
+    el.innerHTML =
+      typeof cardFaceHTML === "function"
+        ? cardFaceHTML(card)
+        : `<div class="value">${label(card.value)}</div>`;
 
     $("animationLayer")
       .appendChild(el);
@@ -672,12 +676,50 @@ const AcidFX = (() => {
       маленькая карта из руки бота.
     */
 
+    /*
+      Карта живёт в натуральную величину и сжимается
+      трансформом.
+
+      Если задать элементу размер маленькой карты из веера
+      бота, скругление, рамка и цифра остаются абсолютными
+      пикселями: получается круглая карта с огромным числом,
+      не похожая ни на одну карту в руке игрока.
+    */
+
     placeFromRect(
       flying,
-      source,
-      1,
-      -4
+      target
     );
+
+    const sourceCenter =
+      rectCenter(source);
+
+    const targetCenter =
+      rectCenter(target);
+
+    const startScale =
+      Math.max(
+        source.width / target.width,
+        .1
+      );
+
+    const dx =
+      sourceCenter.x -
+      targetCenter.x;
+
+    const dy =
+      sourceCenter.y -
+      targetCenter.y;
+
+    flying.style.transform = `
+      translate3d(
+        ${dx}px,
+        ${dy}px,
+        0
+      )
+      rotate(-4deg)
+      scale(${startScale})
+    `;
 
     await sleep(180);
 
@@ -690,36 +732,13 @@ const AcidFX = (() => {
     );
 
     /*
-      По пути карта увеличивается
-      до нормального размера.
+      По пути карта вырастает до нормального размера.
     */
 
-    const sourceCenter =
-      rectCenter(source);
-
-    const targetCenter =
-      rectCenter(target);
-
-    const x =
-      targetCenter.x -
-      sourceCenter.x;
-
-    const y =
-      targetCenter.y -
-      sourceCenter.y;
-
-    const scale =
-      target.width /
-      source.width;
-
     flying.style.transform = `
-      translate3d(
-        ${x}px,
-        ${y}px,
-        0
-      )
+      translate3d(0, 0, 0)
       rotate(4deg)
-      scale(${scale})
+      scale(1)
     `;
 
     await sleep(690);

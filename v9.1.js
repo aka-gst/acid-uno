@@ -3572,11 +3572,8 @@
             `flyingCard ${card.color}`;
 
 
-          flying.innerHTML = `
-            <div class="value">
-              ${cardLabel(card.value)}
-            </div>
-          `;
+          flying.innerHTML =
+            cardFaceHTML(card);
 
 
           $("animationLayer")
