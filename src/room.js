@@ -26,18 +26,30 @@
 
 
   /*
-    Место закреплено за токеном, а не за вкладкой. Держим его
-    в sessionStorage, иначе перезагрузка страницы выглядела бы
-    для сервера как новый игрок — и упиралась бы в «комната
-    заполнена».
+    Место закреплено за токеном, а не за вкладкой, иначе
+    перезагрузка выглядела бы для сервера как новый игрок и
+    упиралась бы в «комната заполнена».
+
+    Хранится в localStorage, а не в sessionStorage: тот умирает
+    вместе со вкладкой, и закрытый браузер означал бы навсегда
+    потерянную партию — а из партии нельзя выйти даже нарочно.
+    Рядом лежит указатель на текущий стол: по нему игра сама
+    садится обратно, когда в адресе уже нет ссылки-приглашения.
   */
+  const SEAT_KEY = "acid-room-";
+
+  const ACTIVE_KEY = "acid-room-active";
+
+
   function remember(room, token, seat) {
 
     try {
-      window.sessionStorage.setItem(
-        "acid-room-" + room,
+      window.localStorage.setItem(
+        SEAT_KEY + room,
         JSON.stringify({ token, seat })
       );
+
+      window.localStorage.setItem(ACTIVE_KEY, room);
 
     } catch (error) {
       /* приватный режим — переподключиться не выйдет */
@@ -49,7 +61,7 @@
 
     try {
       return JSON.parse(
-        window.sessionStorage.getItem("acid-room-" + room)
+        window.localStorage.getItem(SEAT_KEY + room)
       );
 
     } catch (error) {
@@ -61,10 +73,27 @@
   function forget(room) {
 
     try {
-      window.sessionStorage.removeItem("acid-room-" + room);
+      window.localStorage.removeItem(SEAT_KEY + room);
+
+      if (
+        window.localStorage.getItem(ACTIVE_KEY) === room
+      ) {
+        window.localStorage.removeItem(ACTIVE_KEY);
+      }
 
     } catch (error) {
       /* нечего забывать */
+    }
+  }
+
+
+  function activeRoom() {
+
+    try {
+      return window.localStorage.getItem(ACTIVE_KEY);
+
+    } catch (error) {
+      return null;
     }
   }
 
@@ -142,10 +171,27 @@
     $$("roomCode").textContent =
       payload.room;
 
+    const wasNamed =
+      state.names.join("\u0001");
+
     state.names =
       payload.seats.map(
         seat => seat.name
       );
+
+
+    /*
+      Имена приходят только с лобби, а стол уже нарисован —
+      при возврате в начатую партию соперник иначе навсегда
+      остаётся подписан «ACID BOT». Перерисовываем ровно
+      когда имена и правда сменились.
+    */
+    if (
+      state.names.join("\u0001") !== wasNamed &&
+      typeof render === "function"
+    ) {
+      render();
+    }
 
 
     $$("roomPlayers").innerHTML =
@@ -214,6 +260,31 @@
   }
 
 
+  /*
+    Комната ответила хоть чем-то — лобби или состоянием. Нужно,
+    чтобы отличить «сели обратно за живой стол» от «стола давно
+    нет»: во втором случае сервер молча закрывает поток.
+  */
+  let heard = false;
+
+
+  AcidStore.subscribe(
+    () => {
+
+      heard = true;
+
+      /*
+        Партия доиграна — держать за собой место больше незачем.
+        Иначе следующий запуск молча усадил бы за законченный
+        стол, откуда ещё и не выйти.
+      */
+      if (gameOver && state.room) {
+        forget(state.room);
+      }
+    }
+  );
+
+
   function connect() {
 
     AcidStore.attach({
@@ -221,7 +292,12 @@
       token: state.token,
       seat: state.seat,
 
-      onLobby: paintLobbyList,
+      onLobby(payload) {
+
+        heard = true;
+
+        paintLobbyList(payload);
+      },
 
       onDrop() {
 
@@ -297,6 +373,9 @@
       state.room = String(id).toUpperCase();
       state.token = known.token;
       state.seat = known.seat;
+
+      /* указатель мог остаться от прошлого стола */
+      remember(state.room, state.token, state.seat);
 
       showPanel(true);
 
@@ -493,6 +572,7 @@
       .searchParams
       .get("room");
 
+
   if (invited) {
 
     $$("rules")
@@ -500,6 +580,43 @@
       .add("hidden");
 
     joinRoom(invited);
+
+  } else {
+
+    /*
+      Ссылки в адресе нет, но за столом мы уже сидели —
+      возвращаемся туда молча. Так партия переживает и
+      закрытую вкладку, и закрытый браузер.
+
+      Комната живёт в памяти сервера и когда-нибудь исчезает.
+      Тогда поток закрывается сразу и не приходит ни лобби,
+      ни состояния: через несколько секунд отпускаем место и
+      уходим в меню, а не сидим за пустым столом.
+    */
+    const kept = activeRoom();
+
+    if (kept) {
+
+      $$("rules")
+        ?.classList
+        .add("hidden");
+
+      joinRoom(kept);
+
+      window.setTimeout(
+        () => {
+
+          if (heard) {
+            return;
+          }
+
+          forget(kept);
+
+          location.replace(location.pathname);
+        },
+        6000
+      );
+    }
   }
 
 
