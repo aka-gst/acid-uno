@@ -2373,37 +2373,77 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
 #deck[data-thick="1"] {
   box-shadow:
-    3px 3px 0 -1px rgba(120, 60, 210, .55);
+    4px 5px 0 -1px rgba(150, 96, 250, 0.73);
 }
 
 #deck[data-thick="2"] {
   box-shadow:
-    3px 3px 0 -1px rgba(120, 60, 210, .55),
-    6px 6px 0 -2px rgba(110, 52, 195, .45);
+    4px 5px 0 -1px rgba(150, 96, 250, 0.73),
+    8px 10px 0 -2px rgba(150, 96, 250, 0.64);
 }
 
 #deck[data-thick="3"] {
   box-shadow:
-    3px 3px 0 -1px rgba(120, 60, 210, .55),
-    6px 6px 0 -2px rgba(110, 52, 195, .45),
-    9px 9px 0 -3px rgba(96, 44, 175, .36);
+    4px 5px 0 -1px rgba(150, 96, 250, 0.73),
+    8px 10px 0 -2px rgba(150, 96, 250, 0.64),
+    12px 15px 0 -3px rgba(122, 66, 220, 0.55);
 }
 
 #deck[data-thick="4"] {
   box-shadow:
-    3px 3px 0 -1px rgba(120, 60, 210, .55),
-    6px 6px 0 -2px rgba(110, 52, 195, .45),
-    9px 9px 0 -3px rgba(96, 44, 175, .36),
-    12px 12px 0 -4px rgba(84, 38, 155, .3);
+    4px 5px 0 -1px rgba(150, 96, 250, 0.73),
+    8px 10px 0 -2px rgba(150, 96, 250, 0.64),
+    12px 15px 0 -3px rgba(122, 66, 220, 0.55),
+    16px 20px 0 -4px rgba(122, 66, 220, 0.46);
 }
 
 #deck[data-thick="5"] {
   box-shadow:
-    3px 3px 0 -1px rgba(120, 60, 210, .55),
-    6px 6px 0 -2px rgba(110, 52, 195, .45),
-    9px 9px 0 -3px rgba(96, 44, 175, .36),
-    12px 12px 0 -4px rgba(84, 38, 155, .3),
-    15px 15px 0 -5px rgba(72, 32, 135, .24);
+    4px 5px 0 -1px rgba(150, 96, 250, 0.73),
+    8px 10px 0 -2px rgba(150, 96, 250, 0.64),
+    12px 15px 0 -3px rgba(122, 66, 220, 0.55),
+    16px 20px 0 -4px rgba(122, 66, 220, 0.46),
+    20px 25px 0 -5px rgba(122, 66, 220, 0.37);
+}
+
+/*
+  Сброс тоже стопка: сыгранные карты никуда не деваются, а
+  выглядел он одной карточкой. Слои живут на ::before, чтобы
+  не трогать ауру цвета — она рисуется на ::after.
+*/
+.discardPile[data-thick="1"]::before {
+  box-shadow:
+    -3px 4px 0 -1px rgba(255, 255, 255, 0.44);
+}
+
+.discardPile[data-thick="2"]::before {
+  box-shadow:
+    -3px 4px 0 -1px rgba(255, 255, 255, 0.44),
+    -6px 8px 0 -2px rgba(255, 255, 255, 0.38);
+}
+
+.discardPile[data-thick="3"]::before {
+  box-shadow:
+    -3px 4px 0 -1px rgba(255, 255, 255, 0.44),
+    -6px 8px 0 -2px rgba(255, 255, 255, 0.38),
+    -9px 12px 0 -3px rgba(255, 255, 255, 0.32);
+}
+
+.discardPile[data-thick="4"]::before {
+  box-shadow:
+    -3px 4px 0 -1px rgba(255, 255, 255, 0.44),
+    -6px 8px 0 -2px rgba(255, 255, 255, 0.38),
+    -9px 12px 0 -3px rgba(255, 255, 255, 0.32),
+    -12px 16px 0 -4px rgba(255, 255, 255, 0.26);
+}
+
+.discardPile[data-thick="5"]::before {
+  box-shadow:
+    -3px 4px 0 -1px rgba(255, 255, 255, 0.44),
+    -6px 8px 0 -2px rgba(255, 255, 255, 0.38),
+    -9px 12px 0 -3px rgba(255, 255, 255, 0.32),
+    -12px 16px 0 -4px rgba(255, 255, 255, 0.26),
+    -15px 20px 0 -5px rgba(255, 255, 255, 0.2);
 }
 
 
@@ -3141,5 +3181,163 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
   .rulesSection p {
     font-size: 15px;
+  }
+}
+
+
+/* =========================================================
+   ЧЕЙ ХОД
+
+   Прежняя подсветка жила в #playerTurnGlow, а он лежит в
+   #playerArea нулевой ширины — то есть не показывалась
+   никогда. У соперника подсветка была, но еле заметная:
+   тонкая рамка через весь стол не читается.
+
+   Теперь активное место обведено кольцом и медленно дышит,
+   а на своём ходу светится сама рука.
+   ========================================================= */
+
+.opponent.is-active .opponentPlate {
+  border-color: var(--acid);
+
+  box-shadow:
+    0 0 0 2px rgba(183, 255, 36, .5),
+    0 0 22px rgba(183, 255, 36, .55),
+    0 6px 18px rgba(0, 0, 0, .5);
+
+  animation: acidTurnBreath 2.4s ease-in-out infinite;
+}
+
+.opponent.is-active .opponentName {
+  color: var(--acid);
+}
+
+.opponent.is-active .opponentBack {
+  border-color: rgba(183, 255, 36, .7);
+
+  box-shadow: 0 0 10px rgba(183, 255, 36, .3);
+}
+
+@keyframes acidTurnBreath {
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(183, 255, 36, .32),
+      0 0 34px rgba(183, 255, 36, .38),
+      0 6px 18px rgba(0, 0, 0, .5);
+  }
+}
+
+/* свой ход: подсвечивается веер в руке */
+.hand.is-turn::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: -14%;
+
+  /*
+    Рука тянется во всю ширину экрана, а веер — нет. Пятно
+    по ширине руки размазывается в ничто, поэтому оно жёстко
+    ограничено размером самого веера.
+  */
+  width: min(46%, 560px);
+  height: 74%;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      closest-side,
+      rgba(183, 255, 36, .46),
+      rgba(183, 255, 36, .16) 52%,
+      transparent 76%
+    );
+
+  filter: blur(6px);
+
+  pointer-events: none;
+
+  z-index: 0;
+
+  animation: acidTurnBreath 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .opponent.is-active .opponentPlate,
+  .hand.is-turn::before {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   ШТРАФ ВИДЕН ПО КАРТЕ
+
+   Число сверху легко пропустить: глаз в этот момент смотрит
+   в центр стола. Пока штраф висит, аура сброса переключается
+   с цвета хода на тревожную и начинает пульсировать — то
+   есть подсвечивается ровно та карта, которая прилетела.
+   ========================================================= */
+
+.discardPile.is-penalty {
+  --aura: var(--magenta);
+  --aura-strong: rgba(255, 43, 214, .88);
+  --aura-soft: rgba(255, 43, 214, .40);
+}
+
+.discardPile.is-penalty::after {
+  animation: acidPenaltyPulse 1.05s ease-in-out infinite;
+}
+
+@keyframes acidPenaltyPulse {
+  50% {
+    opacity: .42;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .discardPile.is-penalty::after {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   СОПЕРНИКИ КРУПНЕЕ НА БОЛЬШОМ ЭКРАНЕ
+
+   На мониторе значки соперников оставались телефонного
+   размера: карты в веере читались как крошки.
+   ========================================================= */
+
+@media (min-width: 900px) {
+
+  .opponent {
+    width: 122px;
+  }
+
+  .opponentBack {
+    width: 26px;
+    height: 39px;
+  }
+
+  .opponentFace {
+    font-size: 20px;
+  }
+
+  .opponentName {
+    font-size: 12px;
+  }
+
+  .opponentCount {
+    font-size: 20px;
+  }
+
+  .opponentPlate {
+    padding: 7px 11px;
   }
 }

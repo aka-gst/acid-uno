@@ -122,8 +122,29 @@ function tableView() {
    ========================================================= */
 
 /*
-  Имя места. Соперники нумеруются с единицы, чтобы
-  «БОТ 3» на экране совпадал с третьим значком сверху.
+  Имена ботов раздаются на партию и держатся до конца: имя,
+  меняющееся при перерисовке, хуже номера.
+*/
+let botNames = [];
+
+
+/*
+  Число мест передаётся явно: проекция seats обновляется
+  после сброса, и считать по ней здесь ещё нечего.
+*/
+function dealBotNames(count) {
+
+  botNames =
+    AcidRules.pickBotNames(
+      Math.max(0, count - 1)
+    );
+}
+
+
+/*
+  Имя места. У ботов оно своё на каждую партию — «БОТ 1» и
+  «БОТ 2» за столом не различить, и за игру к ним не
+  возникает никакого отношения.
 */
 function seatName(index) {
 
@@ -141,9 +162,19 @@ function seatName(index) {
     );
   }
 
-  return seats.length > 2
-    ? `БОТ ${index}`
-    : "ACID BOT";
+  /*
+    Своё место может быть не нулевым, поэтому имя берётся по
+    порядку среди соперников, а не по номеру места.
+  */
+  const among =
+    index > AcidStore.mySeat()
+      ? index - 1
+      : index;
+
+  return (
+    botNames[among] ||
+    `БОТ ${index}`
+  );
 }
 
 function seatCount() {
@@ -275,6 +306,8 @@ function startGame() {
     seats: tableSize,
     humans: 1
   });
+
+  dealBotNames(tableSize);
 
   pendingWild = null;
 

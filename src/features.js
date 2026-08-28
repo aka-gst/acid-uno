@@ -158,6 +158,19 @@
     }
 
 
+    /*
+      Штраф виден и по самой карте на столе: цифру наверху
+      легко пропустить, а карта, которая только что прилетела,
+      лежит ровно там, куда игрок и смотрит.
+    */
+    const pile =
+      document.querySelector(".discardPile");
+
+    pile
+      ?.classList
+      .toggle("is-penalty", drawPenalty > 0);
+
+
     if (drawPenalty <= 0) {
 
       hud.classList.add("hidden");
@@ -176,11 +189,16 @@
     value.textContent =
       "+" + drawPenalty;
 
+    /*
+      Слово «штраф» здесь обязательно: одно «возьмёшь» рядом
+      с числом читается как подсказка, а не как то, что тебе
+      сейчас прилетит.
+    */
     hud.querySelector(".stackHUDLabel")
       .textContent =
         mine
-          ? "ВОЗЬМЁШЬ"
-          : "БОТ ВОЗЬМЁТ";
+          ? "ШТРАФ · ВОЗЬМЁШЬ"
+          : "ШТРАФ · ВОЗЬМЁТ СОПЕРНИК";
 
     hud.classList.toggle("mine", mine);
 
@@ -222,6 +240,28 @@
         left < 55 ? 3 :
         left < 80 ? 4 : 5
       );
+
+
+    /*
+      Сброс растёт ровно настолько, насколько тает колода,
+      поэтому его толщина считается по своей стопке.
+    */
+    const pile =
+      document.querySelector(".discardPile");
+
+    if (pile) {
+
+      const played = discard.length;
+
+      pile.dataset.thick =
+        String(
+          played < 2 ? 0 :
+          played < 6 ? 1 :
+          played < 14 ? 2 :
+          played < 28 ? 3 :
+          played < 50 ? 4 : 5
+        );
+    }
   }
 
 

@@ -28,10 +28,10 @@ const ROOM_ID_LENGTH = 4;
 const ROOM_TTL_MS = 5 * 60 * 1000;
 
 
-const BOT_FACES = [
-  "БОТ 1", "БОТ 2", "БОТ 3",
-  "БОТ 4", "БОТ 5", "БОТ 6"
-];
+/*
+  Имена ботов общие с одиночной игрой и живут в правилах:
+  за столом «БОТ 1» и «БОТ 2» не различить.
+*/
 
 
 const rooms = new Map();
@@ -307,14 +307,25 @@ function addBot(room) {
     return { error: "свободных мест нет" };
   }
 
-  const used =
-    room.seats.filter(s => s?.kind === "bot").length;
+  /*
+    Имя не должно повторить уже сидящего за этим столом —
+    ни бота, ни живого игрока под тем же прозвищем.
+  */
+  const taken =
+    new Set(
+      room.seats
+        .filter(Boolean)
+        .map(s => s.name)
+    );
+
+  const name =
+    R.pickBotNames(R.BOT_NAMES.length)
+      .find(candidate => !taken.has(candidate)) ||
+    `БОТ ${seat + 1}`;
 
   room.seats[seat] = {
     kind: "bot",
-
-    name:
-      BOT_FACES[used % BOT_FACES.length]
+    name
   };
 
   room.touchedAt = Date.now();
