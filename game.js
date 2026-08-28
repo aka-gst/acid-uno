@@ -304,12 +304,40 @@ function startGame() {
    CARD HTML
    ========================================================= */
 
+/*
+  Подпись под номиналом. В классической колоде она скрыта,
+  в кислотной это половина лица карты: спецкарты там зовутся
+  своими именами, а не «пропуск» и «разворот».
+*/
+function cardWord(value) {
+  switch (value) {
+    case "skip":
+      return "BLOCK";
+
+    case "reverse":
+      return "REVOLT";
+
+    case "wild":
+      return "ACID WILD";
+
+    case "+2":
+      return "ДОЗА";
+
+    case "+4":
+      return "ВЫБРОС";
+
+    default:
+      return "ACID UNO";
+  }
+}
+
 function cardFaceHTML(card) {
   const label = cardLabel(card.value);
 
   return `
     <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
     <div class="value">${label}</div>
+    <span class="cardWord" aria-hidden="true">${cardWord(card.value)}</span>
     <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>
   `;
 }

@@ -43,13 +43,17 @@ const TYPES = {
   ".jpg": "image/jpeg",
   ".webp": "image/webp",
   ".ico": "image/x-icon",
-  ".woff2": "font/woff2"
+  ".woff2": "font/woff2",
+  ".webmanifest": "application/manifest+json; charset=utf-8"
 };
 
 
 /* Наружу отдаём только эти файлы и папки. */
 const PUBLIC = new Set([
   "index.html",
+  "favicon.svg",
+  "apple-touch-icon.png",
+  "manifest.webmanifest",
   "style.css",
   "effects.css",
   "v9.1.css",

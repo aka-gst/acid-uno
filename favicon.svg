@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ACID UNO">
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a6f42a"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff2d78"/>
+      <stop offset="1" stop-color="#8b3dff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- поле -->
+  <rect width="64" height="64" rx="14" fill="#08050f"/>
+
+  <!-- карта, наклонённая как в веере -->
+  <g transform="rotate(-11 32 32)">
+    <rect x="17" y="10" width="30" height="44" rx="7"
+          fill="url(#edge)" opacity=".55"/>
+    <rect x="19" y="12" width="26" height="40" rx="6"
+          fill="#0d0819" stroke="url(#card)" stroke-width="2.5"/>
+    <!-- овал, как на лице карты -->
+    <ellipse cx="32" cy="32" rx="15" ry="9"
+             transform="rotate(-33 32 32)"
+             fill="url(#card)" opacity=".9"/>
+    <text x="32" y="40" text-anchor="middle"
+          font-family="Arial Black, Arial, sans-serif"
+          font-size="24" font-weight="900" fill="#08050f">U</text>
+  </g>
+</svg>

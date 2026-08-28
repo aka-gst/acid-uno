@@ -2027,3 +2027,272 @@
     0 0 34px rgba(150, 45, 255, .34),
     0 25px 60px rgba(0, 0, 0, .62);
 }
+
+
+/* =========================================================
+   КОЛОДА — ВАРИАНТ 2, «КИСЛОТНАЯ»
+
+   Другая карта, а не перекраска: тёмное поле, неоновая
+   рамка со срезанными углами, номинал светится цветом масти,
+   спецкарты подписаны именами.
+
+   Включается атрибутом data-deck="acid" на <html>, поэтому
+   обе колоды живут рядом и переключаются в лобби.
+   ========================================================= */
+
+/* подпись показывается только в кислотной колоде */
+.cardWord {
+  display: none;
+}
+
+html[data-deck="acid"] .cardWord {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  /*
+    Не у нижней кромки: веер руки нарочно уходит за нижний
+    край экрана, и подпись — половина лица кислотной карты —
+    там просто не видна.
+  */
+  top: 68%;
+
+  z-index: 6;
+
+  display: block;
+
+  font-size: 7px;
+  font-weight: 900;
+
+  letter-spacing: .14em;
+
+  text-align: center;
+
+  color: currentColor;
+
+  opacity: .75;
+
+  pointer-events: none;
+}
+
+
+html[data-deck="acid"] .card,
+html[data-deck="acid"] .handCard,
+html[data-deck="acid"] .flyingCard {
+  border: 0;
+
+  border-radius: 13px;
+
+  /* срезанные углы — «механическая эстетика» макета */
+  clip-path:
+    polygon(
+      16% 0%, 84% 0%, 100% 11%,
+      100% 89%, 84% 100%, 16% 100%,
+      0% 89%, 0% 11%
+    );
+}
+
+
+/*
+  Светлый овал классической карты превращается в тёмное
+  поле: в кислотной колоде цвет несёт рамка и свечение,
+  а не заливка.
+*/
+html[data-deck="acid"] .card::before,
+html[data-deck="acid"] .handCard::before,
+html[data-deck="acid"] .flyingCard::before {
+  inset: 0;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 0;
+
+  transform: none;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 22%,
+      rgba(18, 10, 30, .92),
+      rgba(6, 3, 12, .98) 70%
+    );
+
+  box-shadow: none;
+}
+
+
+/* рамка внутри среза */
+html[data-deck="acid"] .card::after,
+html[data-deck="acid"] .handCard::after,
+html[data-deck="acid"] .flyingCard::after {
+  inset: 3px;
+
+  border-radius: 9px;
+
+  border: 2px solid currentColor;
+
+  opacity: .9;
+}
+
+
+html[data-deck="acid"] .card .value,
+html[data-deck="acid"] .handCard .value,
+html[data-deck="acid"] .flyingCard .value {
+  color: currentColor;
+
+  text-shadow:
+    0 0 6px currentColor,
+    0 0 18px currentColor;
+}
+
+
+html[data-deck="acid"] .cardCorner {
+  color: currentColor;
+
+  -webkit-text-stroke: 0;
+
+  text-shadow:
+    0 0 6px currentColor;
+}
+
+
+/*
+  Масть задаёт currentColor — от него кормятся и рамка,
+  и номинал, и подпись.
+*/
+html[data-deck="acid"] .red { color: var(--red); }
+html[data-deck="acid"] .yellow { color: var(--yellow); }
+html[data-deck="acid"] .green { color: var(--green); }
+html[data-deck="acid"] .blue { color: var(--blue); }
+html[data-deck="acid"] .wild { color: var(--acid); }
+
+
+html[data-deck="acid"] .card.red,
+html[data-deck="acid"] .handCard.red,
+html[data-deck="acid"] .flyingCard.red,
+html[data-deck="acid"] .card.yellow,
+html[data-deck="acid"] .handCard.yellow,
+html[data-deck="acid"] .flyingCard.yellow,
+html[data-deck="acid"] .card.green,
+html[data-deck="acid"] .handCard.green,
+html[data-deck="acid"] .flyingCard.green,
+html[data-deck="acid"] .card.blue,
+html[data-deck="acid"] .handCard.blue,
+html[data-deck="acid"] .flyingCard.blue,
+html[data-deck="acid"] .card.wild,
+html[data-deck="acid"] .handCard.wild,
+html[data-deck="acid"] .flyingCard.wild {
+  background:
+    linear-gradient(
+      158deg,
+      rgba(20, 11, 32, .98),
+      rgba(7, 4, 14, .98)
+    );
+
+  box-shadow:
+    0 0 8px currentColor,
+    0 0 22px rgba(0, 0, 0, .6),
+    0 11px 18px rgba(0, 0, 0, .5);
+}
+
+
+/* чёрная карта переливается всеми мастями */
+html[data-deck="acid"] .card.wild::after,
+html[data-deck="acid"] .handCard.wild::after,
+html[data-deck="acid"] .flyingCard.wild::after {
+  border: 0;
+
+  background:
+    conic-gradient(
+      from -30deg,
+      var(--red),
+      var(--yellow) 25%,
+      var(--green) 50%,
+      var(--blue) 75%,
+      var(--red) 100%
+    );
+
+  /* оставляем только ободок */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+  -webkit-mask-composite: xor;
+
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+
+  mask-composite: exclude;
+
+  padding: 2px;
+
+  border-radius: 9px;
+}
+
+html[data-deck="acid"] .card.wild .value,
+html[data-deck="acid"] .handCard.wild .value,
+html[data-deck="acid"] .flyingCard.wild .value {
+  color: #fff;
+
+  text-shadow:
+    0 0 6px #fff,
+    0 0 20px var(--magenta);
+}
+
+
+/* угловые индексы в тесной руке */
+html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
+  background: rgba(6, 3, 12, .9);
+
+  color: currentColor;
+}
+
+
+/* выбор колоды в лобби */
+
+.deckPicker {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 6px;
+}
+
+.deckPick {
+  height: 36px;
+
+  border-radius: 11px;
+
+  border:
+    1px solid rgba(181, 93, 255, .35);
+
+  background: rgba(255, 255, 255, .03);
+
+  color: rgba(255, 255, 255, .6);
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .12em;
+
+  cursor: pointer;
+
+  transition:
+    border-color .2s ease,
+    color .2s ease,
+    background .2s ease;
+}
+
+.deckPick.chosen {
+  border-color: rgba(183, 255, 36, .85);
+
+  background: rgba(183, 255, 36, .1);
+
+  color: var(--acid);
+}

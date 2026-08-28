@@ -1,0 +1,25 @@
+{
+  "name": "ACID UNO",
+  "short_name": "ACID UNO",
+  "description": "UNO на 2–7 игроков: кластер +2/+4, перехват, таймер с подсчётом очков.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#08050f",
+  "theme_color": "#08070d",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

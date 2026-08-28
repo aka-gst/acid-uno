@@ -536,6 +536,78 @@
 
 
   /* =======================================================
+     КОЛОДА
+
+     Два дизайна карт живут рядом и переключаются целиком
+     атрибутом на <html>: сравнить их можно только вживую,
+     на своей руке, а не по картинке.
+     ======================================================= */
+
+  const DECK_KEY = "acid-uno-deck";
+
+  const DECKS = ["classic", "acid"];
+
+
+  function readDeck() {
+
+    try {
+      const saved =
+        window.localStorage.getItem(DECK_KEY);
+
+      return DECKS.includes(saved)
+        ? saved
+        : "classic";
+
+    } catch (error) {
+      return "classic";
+    }
+  }
+
+
+  function applyDeck(name) {
+
+    const deck =
+      DECKS.includes(name) ? name : "classic";
+
+    document.documentElement.dataset.deck = deck;
+
+    document
+      .querySelectorAll(".deckPick")
+      .forEach(button =>
+        button.classList.toggle(
+          "chosen",
+          button.dataset.deck === deck
+        )
+      );
+
+    try {
+      window.localStorage.setItem(DECK_KEY, deck);
+
+    } catch (error) {
+      /* приватный режим — просто не запоминаем */
+    }
+  }
+
+
+  document
+    .querySelectorAll(".deckPick")
+    .forEach(button =>
+      button.addEventListener(
+        "click",
+        () => {
+
+          AcidSound.play("card");
+
+          applyDeck(button.dataset.deck);
+        }
+      )
+    );
+
+
+  applyDeck(readDeck());
+
+
+  /* =======================================================
      ЛОББИ
 
      Размер стола и часы выбираются до раздачи.
