@@ -371,6 +371,19 @@ const server =
         `http://${request.headers.host || "localhost"}`
       );
 
+    /*
+      Живость сервиса, а не наличие статики: в бою рядом с
+      этим процессом лежат только server/ и src/, страницу
+      отдаёт отдельный веб-сервер.
+    */
+    if (url.pathname === "/api/health") {
+
+      return json(response, 200, {
+        ok: true,
+        rooms: rooms.rooms.size
+      });
+    }
+
     if (
       url.pathname.startsWith("/api/rooms")
     ) {
