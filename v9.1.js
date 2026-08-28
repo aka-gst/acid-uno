@@ -34,8 +34,9 @@
 
     actionDepth: 0,
 
-    playerUnoCalled: false,
-    playerUnoVulnerable: false,
+    playerUno:
+      new AcidRules.UnoCall(),
+
     playerUnoTimer: null,
 
     botUnoCalled: false,
@@ -948,6 +949,8 @@
 
       player.push(card);
 
+      notePlayerHandGrew91();
+
       render();
 
       return;
@@ -975,6 +978,9 @@
     */
 
     player.push(card);
+
+
+    notePlayerHandGrew91();
 
 
     render();
@@ -3816,6 +3822,21 @@
     $("unoButton");
 
 
+  function unoContext91() {
+
+    return {
+
+      active:
+        !gameOver &&
+        turn === "player",
+
+      handSize:
+        player.length
+
+    };
+  }
+
+
   function syncUno91() {
 
     if (!unoButton91) {
@@ -3823,16 +3844,12 @@
     }
 
 
-    const shouldShow =
-      !gameOver &&
-      turn === "player" &&
-      player.length === 2 &&
-      !V91.playerUnoCalled;
-
-
     unoButton91.classList.toggle(
       "show",
-      shouldShow
+
+      V91.playerUno.shouldShowButton(
+        unoContext91()
+      )
     );
   }
 
@@ -3844,12 +3861,42 @@
     );
 
 
-    V91.playerUnoCalled =
-      false;
+    V91.playerUno.reset();
 
 
-    V91.playerUnoVulnerable =
-      false;
+    unoButton91
+      ?.classList
+      .remove(
+        "show",
+        "called"
+      );
+  }
+
+
+  /*
+    Рука выросла — прошлое объявление UNO снимается.
+
+    Без этого после удачного «UNO!» рука падала до одной
+    карты, обработчик выходил по раннему return, и флаг
+    оставался поднятым до конца партии: кнопка больше
+    не появлялась, а бот больше не ловил.
+  */
+
+  function notePlayerHandGrew91() {
+
+    if (
+      !V91.playerUno.handGrew(
+        player.length
+      )
+    ) {
+
+      return;
+    }
+
+
+    clearTimeout(
+      V91.playerUnoTimer
+    );
 
 
     unoButton91
@@ -3872,17 +3919,13 @@
 
 
         if (
-          gameOver ||
-          turn !== "player" ||
-          player.length !== 2
+          !V91.playerUno.call(
+            unoContext91()
+          )
         ) {
 
           return;
         }
-
-
-        V91.playerUnoCalled =
-          true;
 
 
         unoButton91.classList.add(
@@ -3905,8 +3948,14 @@
 
   function handlePlayerUnoAfterPlay91() {
 
+    const outcome =
+      V91.playerUno.afterPlay(
+        player.length
+      );
+
+
     if (
-      player.length !== 1
+      outcome === "clear"
     ) {
 
       resetPlayerUno91();
@@ -3923,19 +3972,11 @@
 
 
     if (
-      V91.playerUnoCalled
+      outcome === "safe"
     ) {
-
-      V91.playerUnoVulnerable =
-        false;
-
 
       return;
     }
-
-
-    V91.playerUnoVulnerable =
-      true;
 
 
     clearTimeout(
@@ -3949,16 +3990,16 @@
 
           if (
             gameOver ||
-            !V91.playerUnoVulnerable ||
-            player.length !== 1
+            !V91.playerUno.catchable(
+              player.length
+            )
           ) {
 
             return;
           }
 
 
-          V91.playerUnoVulnerable =
-            false;
+          V91.playerUno.reset();
 
 
           burst91(
