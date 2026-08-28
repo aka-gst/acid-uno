@@ -5,7 +5,11 @@
    Touch drag / smooth play / mobile first
    ========================================================= */
 
-const COLORS = ["red", "yellow", "green", "blue"];
+/*
+  Правила игры целиком живут в src/rules.js.
+  Здесь остаётся состояние партии и отрисовка.
+*/
+const COLORS = AcidRules.COLORS;
 
 /*
   The small set of values most often tuned while polishing the UI.
@@ -61,23 +65,23 @@ function random(max) {
 }
 
 function shuffle(array) {
-  for (
-    let i = array.length - 1;
-    i > 0;
-    i--
-  ) {
-    const j = random(i + 1);
+  return AcidRules.shuffle(
+    array,
+    random
+  );
+}
 
-    [
-      array[i],
-      array[j]
-    ] = [
-      array[j],
-      array[i]
-    ];
-  }
 
-  return array;
+/*
+  Снимок стола для чистых функций правил.
+*/
+function tableView() {
+  return {
+    top: topCard(),
+    currentColor,
+    drawPenalty,
+    penaltyType
+  };
 }
 
 function topCard() {
@@ -140,86 +144,13 @@ function unavailable() {
    ========================================================= */
 
 function createDeck() {
-  deck = [];
 
   nextCardId = 1;
 
-  COLORS.forEach(color => {
-
-    deck.push(
-      makeCard(
-        color,
-        "0"
-      )
+  deck =
+    AcidRules.createDeck(
+      makeCard
     );
-
-    for (
-      let number = 1;
-      number <= 9;
-      number++
-    ) {
-      deck.push(
-        makeCard(
-          color,
-          String(number)
-        )
-      );
-
-      deck.push(
-        makeCard(
-          color,
-          String(number)
-        )
-      );
-    }
-
-    for (
-      let i = 0;
-      i < 2;
-      i++
-    ) {
-      deck.push(
-        makeCard(
-          color,
-          "skip"
-        )
-      );
-
-      deck.push(
-        makeCard(
-          color,
-          "reverse"
-        )
-      );
-
-      deck.push(
-        makeCard(
-          color,
-          "+2"
-        )
-      );
-    }
-  });
-
-  for (
-    let i = 0;
-    i < 4;
-    i++
-  ) {
-    deck.push(
-      makeCard(
-        "wild",
-        "wild"
-      )
-    );
-
-    deck.push(
-      makeCard(
-        "wild",
-        "+4"
-      )
-    );
-  }
 
   shuffle(deck);
 }
@@ -290,65 +221,24 @@ function takeMany(amount) {
    ========================================================= */
 
 function normalPlayable(card) {
-  const top = topCard();
-
-  if (!top) {
-    return true;
-  }
-
-  if (card.color === "wild") {
-    return true;
-  }
-
-  return (
-    card.color ===
-      currentColor ||
-
-    card.value ===
-      top.value
+  return AcidRules.normalPlayable(
+    card,
+    tableView()
   );
 }
 
 function canDefendPenalty(card) {
-  if (drawPenalty <= 0) {
-    return false;
-  }
-
-  /*
-    ACID UNO:
-
-    +2 -> +2 / +4
-    +4 -> +4
-  */
-
-  if (
-    penaltyType === "+2"
-  ) {
-    return (
-      card.value === "+2" ||
-      card.value === "+4"
-    );
-  }
-
-  if (
-    penaltyType === "+4"
-  ) {
-    return (
-      card.value === "+4"
-    );
-  }
-
-  return false;
+  return AcidRules.canDefendPenalty(
+    card,
+    tableView()
+  );
 }
 
 function canPlay(card) {
-  if (drawPenalty > 0) {
-    return (
-      canDefendPenalty(card)
-    );
-  }
-
-  return normalPlayable(card);
+  return AcidRules.canPlay(
+    card,
+    tableView()
+  );
 }
 
 
@@ -357,18 +247,11 @@ function canPlay(card) {
    ========================================================= */
 
 function sameCard(a, b) {
-  if (!a || !b) {
-    return false;
-  }
-
-  return (
-    a.color === b.color &&
-    a.value === b.value
-  );
+  return AcidRules.sameCard(a, b);
 }
 
 function canIntercept(card) {
-  return sameCard(
+  return AcidRules.canIntercept(
     card,
     topCard()
   );
@@ -385,38 +268,25 @@ function applyCardState(
 ) {
   discard.push(card);
 
-  if (
-    card.color === "wild"
-  ) {
-    currentColor =
+  const next =
+    AcidRules.applyCard(
+      tableView(),
+      card,
+
       chosenColor ||
       COLORS[
-        random(
-          COLORS.length
-        )
-      ];
-  } else {
-    currentColor =
-      card.color;
-  }
+        random(COLORS.length)
+      ]
+    );
 
-  if (
-    card.value === "+2"
-  ) {
-    drawPenalty += 2;
+  currentColor =
+    next.currentColor;
 
-    if (!penaltyType) {
-      penaltyType = "+2";
-    }
-  }
+  drawPenalty =
+    next.drawPenalty;
 
-  if (
-    card.value === "+4"
-  ) {
-    drawPenalty += 4;
-
-    penaltyType = "+4";
-  }
+  penaltyType =
+    next.penaltyType;
 }
 
 
@@ -2242,131 +2112,33 @@ async function playerDraw() {
    ========================================================= */
 
 function botPlayableIndexes() {
-  const result = [];
-
-  bot.forEach(
-    (card, index) => {
-
-      if (canPlay(card)) {
-        result.push(index);
-      }
-    }
+  return AcidRules.playableIndexes(
+    bot,
+    tableView()
   );
-
-  return result;
 }
 
 function botInterceptIndex() {
-  const top =
-    topCard();
-
-  return bot.findIndex(
-    card =>
-      sameCard(
-        card,
-        top
-      )
+  return AcidRules.interceptIndex(
+    bot,
+    topCard()
   );
 }
 
 function bestBotColor(
   excludingIndex = -1
 ) {
-  const counts = {
-    red: 0,
-    yellow: 0,
-    green: 0,
-    blue: 0
-  };
-
-  bot.forEach(
-    (card, index) => {
-
-      if (
-        index !==
-          excludingIndex &&
-
-        COLORS.includes(
-          card.color
-        )
-      ) {
-        counts[
-          card.color
-        ]++;
-      }
-    }
-  );
-
-  return COLORS.reduce(
-    (best, color) =>
-      counts[color] >
-      counts[best]
-        ? color
-        : best,
-    "red"
+  return AcidRules.bestColor(
+    bot,
+    excludingIndex
   );
 }
 
 function botChoose(indexes) {
-
-  const priorities = {
-    "+4": 8,
-    "+2": 7,
-    "skip": 6,
-    "reverse": 6,
-    "wild": 2
-  };
-
-  let best =
-    indexes[0];
-
-  let score =
-    -Infinity;
-
-  indexes.forEach(
-    index => {
-
-      const card =
-        bot[index];
-
-      let current =
-        priorities[
-          card.value
-        ] || 3;
-
-      if (
-        card.color === "wild"
-      ) {
-        current -= 1;
-      }
-
-      if (
-        bot.length <= 3 &&
-        [
-          "+2",
-          "+4",
-          "skip",
-          "reverse"
-        ].includes(
-          card.value
-        )
-      ) {
-        current += 3;
-      }
-
-      current +=
-        Math.random() * .6;
-
-      if (
-        current > score
-      ) {
-        score = current;
-        best = index;
-      }
-    }
+  return AcidRules.chooseCard(
+    bot,
+    indexes
   );
-
-  return best;
 }
 
 
