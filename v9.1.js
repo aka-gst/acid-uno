@@ -650,16 +650,6 @@
      читать надо у всех сразу.
      ======================================================= */
 
-  const OPPONENT_FACES = [
-    "🤖",
-    "👾",
-    "🎃",
-    "👽",
-    "🦾",
-    "🐙"
-  ];
-
-
   function multiSeat91() {
     return seatCount() > 2;
   }
@@ -671,6 +661,110 @@
   */
   function seatOf91(index) {
     return seats[index]?.hand || [];
+  }
+
+
+  /*
+    Углы посадки соперников на дуге вокруг стола: 180 —
+    слева, 270 — сверху, 360 — справа. Ты всегда снизу,
+    поэтому места раскладываются по верхней половине круга,
+    как в макете v1.0.
+  */
+  const SEAT_ANGLES = {
+    1: [270],
+    2: [206, 334],
+    3: [200, 270, 340],
+    4: [196, 240, 300, 344],
+    5: [193, 231, 270, 309, 347],
+    6: [191, 223, 255, 285, 317, 349]
+  };
+
+
+  function seatSpot91(index, total) {
+
+    const angles =
+      SEAT_ANGLES[total] || SEAT_ANGLES[1];
+
+    const radians =
+      angles[index] * Math.PI / 180;
+
+    /*
+      Радиусы и центр дуги задаются в CSS: в альбоме стол
+      шире и ниже, в портрете выше и уже.
+    */
+    return {
+      x: Math.cos(radians),
+      y: Math.sin(radians)
+    };
+  }
+
+
+  const OPPONENT_FACES = [
+    "🤖", "👾", "🎃", "👽", "🦾", "🐙"
+  ];
+
+
+  /* сколько рубашек показываем в веере соперника */
+  const FAN_MAX = 8;
+
+
+  function opponentMarkup91(seat, index, total) {
+
+    const spot =
+      seatSpot91(index, total);
+
+    const face =
+      OPPONENT_FACES[
+        (seat.index - 1 + OPPONENT_FACES.length) %
+        OPPONENT_FACES.length
+      ];
+
+    return `
+      <button
+        class="opponent"
+        type="button"
+        data-seat="${seat.index}"
+        style="--sx:${spot.x.toFixed(3)};--sy:${spot.y.toFixed(3)}"
+        aria-label="${seatName(seat.index)}"
+      >
+        <span class="opponentFan"></span>
+
+        <span class="opponentPlate">
+          <span class="opponentFace">${face}</span>
+          <span class="opponentName">${seatName(seat.index)}</span>
+          <span class="opponentCount">0</span>
+        </span>
+      </button>
+    `;
+  }
+
+
+  /*
+    Веер рубашек: за столом количество карт читают глазами
+    по толщине веера, а не по цифре. Цифра остаётся рядом,
+    потому что после десятка карт веер перестаёт расти.
+  */
+  function paintFan91(element, count) {
+
+    const visible =
+      Math.min(count, FAN_MAX);
+
+    if (
+      element.childElementCount !== visible
+    ) {
+
+      element.innerHTML =
+        Array.from(
+          { length: visible },
+          (ignored, i) =>
+            `<i class="opponentBack" style="--i:${i}"></i>`
+        ).join("");
+    }
+
+    element.style.setProperty(
+      "--fan",
+      String(Math.max(visible, 1))
+    );
   }
 
 
@@ -688,34 +782,22 @@
     }
 
 
-    const multi =
-      multiSeat91();
+    /*
+      Секция #bot из старой раскладки больше не нужна:
+      теперь по дуге сидят все соперники, включая
+      единственного.
+    */
+    solo?.classList.add("hidden");
+
+    row.classList.remove("hidden");
 
 
-    row.classList.toggle(
-      "hidden",
-      !multi
-    );
-
-    solo
-      ?.classList
-      .toggle(
-        "hidden",
-        multi
-      );
-
-
-    if (!multi) {
-
-      row.innerHTML = "";
-
-      return;
-    }
-
+    const me =
+      AcidStore.mySeat();
 
     const others =
       seats.filter(
-        seat => seat.index !== AcidStore.mySeat()
+        seat => seat.index !== me
       );
 
 
@@ -735,75 +817,48 @@
       row.innerHTML =
         others
           .map(
-            seat => `
-              <button
-                class="opponent"
-                type="button"
-                data-seat="${seat.index}"
-                aria-label="${seatName(seat.index)}"
-              >
-                <span class="opponentGlow"></span>
-
-                <span class="opponentStack"></span>
-
-                <span class="opponentFace">${
-                  OPPONENT_FACES[
-                    (seat.index - 1) %
-                    OPPONENT_FACES.length
-                  ]
-                }</span>
-
-                <span class="opponentName">${
-                  seatName(seat.index)
-                }</span>
-
-                <span class="opponentCount">0</span>
-              </button>
-            `
+            (seat, index) =>
+              opponentMarkup91(
+                seat,
+                index,
+                others.length
+              )
           )
           .join("");
     }
 
 
-    others
-      .forEach(seat => {
+    others.forEach(seat => {
 
-        const el =
-          row.querySelector(
-            `.opponent[data-seat="${seat.index}"]`
-          );
-
-        if (!el) {
-          return;
-        }
-
-        el.querySelector(".opponentCount")
-          .textContent =
-            String(seat.hand.length);
-
-        el.classList.toggle(
-          "is-active",
-          seat.index === activeSeat &&
-          !gameOver
+      const el =
+        row.querySelector(
+          `.opponent[data-seat="${seat.index}"]`
         );
 
-        el.classList.toggle(
-          "is-low",
-          seat.hand.length === 1
-        );
+      if (!el) {
+        return;
+      }
 
-        /*
-          Толщина стопки за значком: пять слоёв покрывают
-          разницу между «почти выиграл» и «завяз».
-        */
-        el.dataset.stack =
-          String(
-            Math.min(
-              5,
-              Math.ceil(seat.hand.length / 2)
-            )
-          );
-      });
+      el.querySelector(".opponentCount")
+        .textContent =
+          String(seat.hand.length);
+
+      paintFan91(
+        el.querySelector(".opponentFan"),
+        seat.hand.length
+      );
+
+      el.classList.toggle(
+        "is-active",
+        seat.index === activeSeat &&
+        !gameOver
+      );
+
+      el.classList.toggle(
+        "is-low",
+        seat.hand.length === 1
+      );
+    });
   }
 
 
@@ -813,9 +868,11 @@
       renderOpponents91();
 
 
-      if (multiSeat91()) {
-        return;
-      }
+      /*
+        Веер соперника теперь рисуется в его значке,
+        секция #bot не используется.
+      */
+      return;
 
 
       const countEl =
@@ -1175,10 +1232,11 @@
       !multiSeat91()
     );
 
-    el.textContent =
-      direction === 1
-        ? "↻"
-        : "↺";
+    /*
+      Направление рисуется кольцом со стрелкой вокруг центра
+      стола, как в макете, поэтому глиф не нужен.
+    */
+    el.textContent = "";
 
     el.classList.toggle(
       "reversed",
@@ -4123,10 +4181,6 @@
      ======================================================= */
 
   function opponentElement91(seat) {
-
-    if (!multiSeat91()) {
-      return $("bot");
-    }
 
     return document.querySelector(
       `.opponent[data-seat="${seat}"]`

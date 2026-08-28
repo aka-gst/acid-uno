@@ -460,29 +460,34 @@
 /* =========================================================
    СОПЕРНИКИ
 
-   Ряд значков вместо веера. Появляется от трёх мест:
-   шесть вееров на телефон не помещаются, а число карт
-   у всех надо видеть одновременно.
+   Рассадка по дуге вокруг стола, как в макете v1.0: ты
+   снизу, остальные разложены по верхней половине круга.
+   У каждого настоящий веер рубашек — за столом количество
+   карт читают по толщине веера, а не по цифре.
+
+   Место задаётся единичным вектором --sx/--sy из JS,
+   радиусы дуги — здесь: в альбоме шире и ниже, в портрете
+   выше и уже.
    ========================================================= */
 
 .opponents {
   position: absolute;
 
-  left: 8px;
-  right: 8px;
-
-  top: calc(var(--safe-top) + 48px);
-
-  height: 96px;
+  inset: 0;
 
   z-index: 14;
 
-  display: flex;
+  pointer-events: none;
 
-  align-items: center;
-  justify-content: center;
-
-  gap: 8px;
+  /*
+    Центр дуги и радиусы. Верхний край дуги не должен
+    заезжать под шапку с логотипом и кнопками, поэтому
+    вертикальный радиус заметно меньше горизонтального.
+  */
+  --arc-x: 50%;
+  --arc-y: 47%;
+  --arc-rx: 39%;
+  --arc-ry: 30%;
 }
 
 .opponents.hidden {
@@ -491,66 +496,141 @@
 
 
 .opponent {
-  position: relative;
+  position: absolute;
 
-  flex: 0 1 96px;
+  left:
+    calc(
+      var(--arc-x) +
+      var(--sx) * var(--arc-rx)
+    );
 
-  min-width: 0;
+  top:
+    calc(
+      var(--arc-y) +
+      var(--sy) * var(--arc-ry)
+    );
 
-  height: 96px;
+  transform: translate(-50%, -50%);
+
+  width: 104px;
 
   padding: 0;
 
   display: grid;
 
-  place-items: center;
+  justify-items: center;
 
-  align-content: center;
+  gap: 4px;
 
-  gap: 1px;
+  border: 0;
 
-  border-radius: 18px;
-
-  border:
-    1px solid rgba(181, 93, 255, .42);
-
-  background:
-    linear-gradient(
-      158deg,
-      rgba(38, 14, 64, .92),
-      rgba(10, 5, 20, .92)
-    );
-
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, .45);
+  background: none;
 
   color: var(--white);
 
   font-family: inherit;
 
+  pointer-events: auto;
+
   cursor: pointer;
 
-  transition:
-    border-color .25s ease,
-    box-shadow .25s ease,
-    transform .25s ease;
+  transition: transform .25s ease;
 }
 
 
+/* веер рубашек */
+
+.opponentFan {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+
+  height: 38px;
+}
+
+.opponentBack {
+  position: absolute;
+
+  left: 50%;
+  top: 0;
+
+  width: 23px;
+  height: 34px;
+
+  margin-left: -11.5px;
+
+  border-radius: 4px;
+
+  border:
+    1px solid rgba(186, 73, 255, .65);
+
+  background:
+    linear-gradient(
+      152deg,
+      rgba(120, 45, 220, .95),
+      rgba(38, 12, 70, .95)
+    );
+
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, .5);
+
+  /*
+    Каждая рубашка сдвинута и повёрнута относительно
+    середины веера: --i её номер, --fan общее число.
+  */
+  --half: calc((var(--fan) - 1) / 2);
+
+  transform:
+    translateX(
+      calc((var(--i) - var(--half)) * 11px)
+    )
+    rotate(
+      calc((var(--i) - var(--half)) * 7deg)
+    );
+
+  transform-origin: 50% 130%;
+}
+
+
+/* табличка с именем и числом */
+
+.opponentPlate {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 4px 9px 4px 5px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid rgba(181, 93, 255, .45);
+
+  background: rgba(12, 6, 26, .9);
+
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, .5);
+
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
 .opponentFace {
-  font-size: 26px;
+  font-size: 17px;
 
   line-height: 1;
-
-  filter:
-    drop-shadow(0 0 10px rgba(50, 235, 255, .4));
 }
 
 .opponentName {
   font-size: 9px;
   font-weight: 900;
 
-  letter-spacing: .12em;
+  letter-spacing: .1em;
 
   color: rgba(255, 255, 255, .6);
 
@@ -558,93 +638,56 @@
 }
 
 .opponentCount {
-  font-size: 22px;
+  min-width: 17px;
+
+  font-size: 15px;
   font-weight: 1000;
 
   line-height: 1;
 
-  letter-spacing: -.02em;
+  text-align: center;
 
   color: var(--acid);
 
   text-shadow:
-    0 0 14px rgba(183, 255, 36, .55);
-}
-
-
-/*
-  Стопка рубашек за значком — сколько карт, столько слоёв,
-  но не больше трёх: дальше читается число.
-*/
-.opponentStack {
-  position: absolute;
-
-  inset: 6px 10px auto 10px;
-
-  height: 22px;
-
-  border-radius: 8px;
-
-  pointer-events: none;
-
-  opacity: 0;
-
-  transition: opacity .25s ease;
-}
-
-.opponent[data-stack="1"] .opponentStack,
-.opponent[data-stack="2"] .opponentStack,
-.opponent[data-stack="3"] .opponentStack {
-  opacity: 1;
-
-  border:
-    1px solid rgba(186, 73, 255, .5);
-
-  background:
-    linear-gradient(
-      150deg,
-      rgba(139, 61, 255, .5),
-      rgba(255, 43, 214, .28)
-    );
-}
-
-.opponent[data-stack="2"] .opponentStack {
-  box-shadow:
-    3px -3px 0 -1px rgba(139, 61, 255, .38);
-}
-
-.opponent[data-stack="3"] .opponentStack {
-  box-shadow:
-    3px -3px 0 -1px rgba(139, 61, 255, .38),
-    6px -6px 0 -2px rgba(139, 61, 255, .26);
+    0 0 12px rgba(183, 255, 36, .55);
 }
 
 
 /* чей ход */
-.opponent.is-active {
-  border-color: rgba(183, 255, 36, .7);
 
-  transform: translateY(-3px);
+.opponent.is-active {
+  transform:
+    translate(-50%, -50%) scale(1.06);
+}
+
+.opponent.is-active .opponentPlate {
+  border-color: rgba(183, 255, 36, .8);
 
   box-shadow:
-    0 0 12px rgba(183, 255, 36, .35),
-    0 0 34px rgba(139, 61, 255, .4),
-    0 10px 24px rgba(0, 0, 0, .5);
+    0 0 14px rgba(183, 255, 36, .4),
+    0 6px 16px rgba(0, 0, 0, .5);
+}
+
+.opponent.is-active .opponentBack {
+  border-color: rgba(183, 255, 36, .5);
 }
 
 
 /* осталась одна карта */
+
 .opponent.is-low .opponentCount {
   color: var(--magenta);
 
   text-shadow:
-    0 0 16px rgba(255, 43, 214, .8);
+    0 0 14px rgba(255, 43, 214, .85);
 }
 
 
 /* не сказал UNO — можно ловить */
-.opponent.catchable {
-  border-color: rgba(255, 49, 88, .85);
+
+.opponent.catchable .opponentPlate {
+  border-color: rgba(255, 49, 88, .9);
 
   animation:
     acidCatchable .6s ease-in-out infinite;
@@ -654,119 +697,104 @@
   0%,
   100% {
     box-shadow:
-      0 0 10px rgba(255, 49, 88, .45),
-      0 10px 24px rgba(0, 0, 0, .5);
+      0 0 10px rgba(255, 49, 88, .45);
   }
 
   50% {
     box-shadow:
-      0 0 26px rgba(255, 49, 88, .95),
-      0 10px 24px rgba(0, 0, 0, .5);
+      0 0 26px rgba(255, 49, 88, .95);
   }
 }
 
+
+/* тесный стол — значки мельче */
+
+.opponents[data-count="5"],
+.opponents[data-count="6"] {
+  --arc-rx: 43%;
+}
 
 .opponents[data-count="5"] .opponent,
 .opponents[data-count="6"] .opponent {
-  flex-basis: 74px;
-
-  height: 86px;
+  width: 86px;
 }
 
-.opponents[data-count="5"] .opponentFace,
-.opponents[data-count="6"] .opponentFace {
-  font-size: 21px;
-}
-
-.opponents[data-count="5"] .opponentCount,
-.opponents[data-count="6"] .opponentCount {
-  font-size: 18px;
+.opponents[data-count="5"] .opponentName,
+.opponents[data-count="6"] .opponentName {
+  display: none;
 }
 
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
 
   .opponents {
-    gap: 5px;
+    --arc-y: 33%;
+    --arc-rx: 38%;
+    --arc-ry: 24%;
   }
 
   .opponent {
-    flex-basis: 72px;
-
-    height: 84px;
+    width: 84px;
   }
 
-  .opponentFace {
-    font-size: 20px;
+  .opponentFan {
+    height: 26px;
   }
 
-  .opponentCount {
-    font-size: 18px;
+  .opponentBack {
+    width: 16px;
+    height: 24px;
+
+    margin-left: -8px;
   }
 
   .opponentName {
-    font-size: 8px;
-
-    letter-spacing: .08em;
-  }
-
-  .opponents[data-count="5"] .opponent,
-  .opponents[data-count="6"] .opponent {
-    flex-basis: 54px;
-
-    height: 78px;
+    display: none;
   }
 }
 
 
 /*
-  Телефон в альбоме: по высоте нет места на колонку значков,
-  поэтому соперники сжимаются в строку фишек «лицо + число»
-  и уходят в верхнюю полосу между логотипом и кнопками.
+  Телефон в альбоме: стол широкий и низкий, дуга становится
+  плоской, значки прижимаются к краям.
 */
-@media (orientation: landscape) and (max-height: 460px) {
+@media (orientation: landscape) and (max-height: 560px) {
 
   .opponents {
-    top: calc(var(--safe-top) + 6px);
-
-    left: 150px;
-    right: 130px;
-
-    height: 38px;
-
-    gap: 6px;
+    --arc-y: 46%;
+    --arc-rx: 43%;
+    --arc-ry: 30%;
   }
 
   .opponent {
-    flex: 0 1 60px;
-
-    height: 34px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 5px;
-
-    border-radius: 11px;
+    width: 74px;
   }
 
-  .opponent.is-active {
-    transform: none;
+  .opponentFan {
+    height: 22px;
+  }
+
+  .opponentBack {
+    width: 14px;
+    height: 20px;
+
+    margin-left: -7px;
+  }
+
+  .opponentName {
+    display: none;
+  }
+
+  .opponentPlate {
+    padding: 3px 7px 3px 4px;
   }
 
   .opponentFace {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .opponentCount {
-    font-size: 15px;
-  }
-
-  .opponentName,
-  .opponentStack {
-    display: none;
+    font-size: 13px;
   }
 }
 
@@ -774,55 +802,94 @@
 /* =========================================================
    НАПРАВЛЕНИЕ ХОДА
 
-   Имеет смысл только от трёх мест: на двоих разворот
-   работает как пропуск.
+   Кольцо со стрелкой вокруг центра стола, как в макете v1.0:
+   маленький значок в углу читался как кнопка и терялся.
+   Имеет смысл от трёх мест — на двоих разворот работает
+   как пропуск.
    ========================================================= */
 
 .direction {
   position: absolute;
 
-  left: 14px;
-  top: 12px;
+  left: 50%;
+  top: 50%;
 
-  width: 34px;
-  height: 34px;
+  width: 244px;
+  height: 244px;
 
-  display: grid;
-  place-items: center;
+  transform: translate(-50%, -50%);
 
   border-radius: 50%;
 
-  border:
-    1px solid rgba(186, 73, 255, .5);
-
-  background: rgba(10, 5, 22, .6);
-
-  font-size: 19px;
-  font-weight: 900;
-
-  color: var(--cyan);
-
-  text-shadow:
-    0 0 14px rgba(32, 234, 255, .7);
+  border: 2px dashed rgba(32, 234, 255, .3);
 
   pointer-events: none;
 
-  z-index: 6;
+  z-index: 3;
 
-  transition: transform .4s ease;
+  transition:
+    border-color .4s ease,
+    opacity .4s ease;
 }
 
 .direction.hidden {
   display: none;
 }
 
+/* стрелка на кольце */
+.direction::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: -9px;
+
+  width: 0;
+  height: 0;
+
+  margin-left: -9px;
+
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 15px solid rgba(32, 234, 255, .75);
+
+  transform: rotate(90deg);
+
+  transform-origin: 50% 60%;
+
+  filter:
+    drop-shadow(0 0 7px rgba(32, 234, 255, .7));
+}
+
 .direction.reversed {
-  color: var(--magenta);
+  border-color: rgba(255, 43, 214, .32);
+}
 
-  text-shadow:
-    0 0 14px rgba(255, 43, 214, .8);
+.direction.reversed::after {
+  border-bottom-color: rgba(255, 43, 214, .8);
 
-  transform: rotateY(180deg);
+  transform: rotate(-90deg);
+
+  filter:
+    drop-shadow(0 0 7px rgba(255, 43, 214, .75));
+}
+
+
+@media (max-width: 560px) {
+
+  .direction {
+    width: 196px;
+    height: 196px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .direction {
+    width: 180px;
+    height: 180px;
+  }
 }
 
 
@@ -1731,4 +1798,33 @@
 
 .rulesOpen:hover {
   color: var(--cyan);
+}
+
+
+/* =========================================================
+   ТЕЛЕФОН В АЛЬБОМЕ
+
+   По высоте здесь тесно: стол занимал 254px из 390, и рука
+   налезала на него на сорок с лишним пикселей — карты
+   лежали поверх сброса. Стол поджимается и поднимается,
+   чтобы под ним осталась полоса для руки.
+   ========================================================= */
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  #table {
+    top: 37%;
+
+    height:
+      min(48vh, 196px);
+
+    width:
+      min(calc(100vw - 210px), 470px);
+  }
+
+  .actionHUD {
+    bottom: auto;
+
+    top: 58%;
+  }
 }
