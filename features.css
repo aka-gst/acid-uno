@@ -2675,3 +2675,111 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
   transition: opacity .25s ease;
 }
+
+
+/* =========================================================
+   ОБЪЯВЛЕНИЕ ЦВЕТА
+
+   После чёрной карты цвет меняется на выбранный, и точки
+   сбоку для этого мало. В мобильном UNO выбранный цвет
+   пишут словом поверх стола — понятно с одного взгляда.
+   ========================================================= */
+
+.colorFlash {
+  position: absolute;
+
+  left: 50%;
+
+  /* над сбросом, а не поверх него */
+  top: 15%;
+
+  z-index: 8;
+
+  transform:
+    translate(-50%, -50%) scale(.85);
+
+  font-size: 40px;
+  font-weight: 1000;
+
+  letter-spacing: .04em;
+
+  white-space: nowrap;
+
+  color: var(--flash, var(--white));
+
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, .85),
+    0 0 18px var(--flash, var(--white)),
+    0 0 44px var(--flash, var(--white));
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    opacity .22s ease,
+    transform .22s ease;
+}
+
+.colorFlash.show {
+  opacity: 1;
+
+  transform:
+    translate(-50%, -50%) scale(1);
+}
+
+@media (max-width: 560px) {
+  .colorFlash {
+    font-size: 30px;
+  }
+}
+
+
+/* =========================================================
+   МЕТКА UNO НАД СОПЕРНИКОМ
+
+   Одна карта на руках — событие, а не оттенок цифры.
+   ========================================================= */
+
+.opponent[data-uno="1"] .opponentPlate::after {
+  content: "UNO";
+
+  position: absolute;
+
+  top: -13px;
+  right: -8px;
+
+  padding: 2px 6px;
+
+  border-radius: 7px;
+
+  background: var(--magenta);
+
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 1000;
+
+  letter-spacing: .1em;
+
+  box-shadow:
+    0 0 12px rgba(255, 43, 214, .8);
+
+  animation:
+    acidUnoTag .9s ease-in-out infinite;
+}
+
+.opponentPlate {
+  position: relative;
+}
+
+@keyframes acidUnoTag {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opponent[data-uno="1"] .opponentPlate::after {
+    animation: none;
+  }
+}

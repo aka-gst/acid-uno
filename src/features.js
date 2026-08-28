@@ -249,6 +249,56 @@
   let lastDrawSound = 0;
 
 
+  /*
+    Названия мастей для объявления цвета. Берём по тому, как
+    масть выглядит после перекраски, а не по внутреннему
+    имени: игрок видит розовую карту, а не «red».
+  */
+  const COLOR_WORDS = {
+    red: "РОЗОВЫЙ",
+    yellow: "ЖЁЛТЫЙ",
+    green: "ЗЕЛЁНЫЙ",
+    blue: "ГОЛУБОЙ"
+  };
+
+
+  let colorFlashTimer = null;
+
+
+  /*
+    После чёрной карты цвет меняется на выбранный, и по одной
+    точке сбоку это не прочитать. Объявляем словом в центре
+    стола — так это сделано в мобильном UNO, и там понятно
+    с одного взгляда.
+  */
+  function flashColor(color) {
+
+    const el = $$("colorFlash");
+
+    if (!el || !COLOR_WORDS[color]) {
+      return;
+    }
+
+    el.textContent = COLOR_WORDS[color];
+
+    el.style.setProperty("--flash", `var(--${color})`);
+
+    el.classList.remove("show");
+
+    void el.offsetWidth;
+
+    el.classList.add("show");
+
+    clearTimeout(colorFlashTimer);
+
+    colorFlashTimer =
+      setTimeout(
+        () => el.classList.remove("show"),
+        1700
+      );
+  }
+
+
   AcidStore.subscribe(events => {
 
     let penalty = false;
@@ -262,6 +312,10 @@
             ? "reverse"
             : "card"
         );
+
+        if (event.card.color === "wild") {
+          flashColor(event.color);
+        }
       }
 
       if (event.type === "drew") {
