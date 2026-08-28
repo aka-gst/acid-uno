@@ -1425,3 +1425,66 @@
 
   color: rgba(32, 234, 255, .8);
 }
+
+
+/* =========================================================
+   ПОДСКАЗКИ НА ИКОНКАХ
+
+   Иконка без подписи ничего не объясняет, а нативный
+   title выглядит чужеродно на неоновом экране. Подсказка
+   рисуется своя и только по наведению — на телефоне
+   наведения нет, там подписи дают лобби и экран правил.
+   ========================================================= */
+
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+
+  position: absolute;
+
+  top: calc(100% + 8px);
+  right: 0;
+
+  z-index: 60;
+
+  padding: 6px 10px;
+
+  border-radius: 10px;
+
+  border:
+    1px solid var(--panel-line-purple);
+
+  background: rgba(10, 5, 22, .95);
+
+  color: rgba(255, 255, 255, .82);
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: .12em;
+
+  white-space: nowrap;
+
+  opacity: 0;
+
+  transform: translateY(-4px);
+
+  pointer-events: none;
+
+  transition:
+    opacity .16s ease,
+    transform .16s ease;
+}
+
+@media (hover: hover) {
+
+  [data-tip]:hover::after,
+  [data-tip]:focus-visible::after {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
