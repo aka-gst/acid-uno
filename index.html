@@ -14,10 +14,10 @@
   <title>ACID UNO</title>
 
     
-  <link rel="stylesheet" href="style.css?v=36">
-  <link rel="stylesheet" href="effects.css?v=36">
-  <link rel="stylesheet" href="v9.1.css?v=36">
-  <link rel="stylesheet" href="features.css?v=36">
+  <link rel="stylesheet" href="style.css?v=37">
+  <link rel="stylesheet" href="effects.css?v=37">
+  <link rel="stylesheet" href="v9.1.css?v=37">
+  <link rel="stylesheet" href="features.css?v=37">
   
 </head>
 
@@ -470,57 +470,71 @@
     <div id="lobbyMain">
 
     <div class="windowEyebrow">
-      СТОЛ
+      ACID UNO
     </div>
 
     <h2>
-      СКОЛЬКО ИГРОКОВ
+      НОВАЯ ИГРА
     </h2>
 
 
-    <div
-      id="seatPicker"
-      class="seatPicker"
-    >
+    <!-- НАСТРОЙКА -->
 
-      <button class="seatPick" data-seats="2">2</button>
-      <button class="seatPick" data-seats="3">3</button>
-      <button class="seatPick" data-seats="4">4</button>
-      <button class="seatPick" data-seats="5">5</button>
-      <button class="seatPick" data-seats="6">6</button>
-      <button class="seatPick" data-seats="7">7</button>
+    <div class="lobbySetup">
+
+      <div class="lobbyRow">
+
+        <span class="lobbyLabel">
+          ИГРОКОВ
+        </span>
+
+        <div
+          id="seatPicker"
+          class="seatPicker"
+        >
+
+          <button class="seatPick" data-seats="2">2</button>
+          <button class="seatPick" data-seats="3">3</button>
+          <button class="seatPick" data-seats="4">4</button>
+          <button class="seatPick" data-seats="5">5</button>
+          <button class="seatPick" data-seats="6">6</button>
+          <button class="seatPick" data-seats="7">7</button>
+
+        </div>
+
+      </div>
+
+
+      <div class="lobbyRow">
+
+        <span class="lobbyLabel">
+          ВРЕМЯ
+        </span>
+
+        <button
+          id="clockToggle"
+          class="clockToggle"
+          type="button"
+          aria-pressed="false"
+        >
+
+          <span class="clockToggleBox"></span>
+
+          <span>ИГРАТЬ БЕЗ ТАЙМЕРА</span>
+
+        </button>
+
+        <div
+          id="lobbyNote"
+          class="lobbyNote"
+        ></div>
+
+      </div>
 
     </div>
 
 
-    <button
-      id="clockToggle"
-      class="clockToggle"
-      type="button"
-      aria-pressed="false"
-    >
-
-      <span class="clockToggleBox"></span>
-
-      <span>ИГРАТЬ БЕЗ ТАЙМЕРА</span>
-
-    </button>
-
-
-    <div
-      id="lobbyNote"
-      class="lobbyNote"
-    ></div>
-
-
-    <button
-      id="rulesOpen"
-      class="rulesOpen"
-      type="button"
-    >
-      КАК ИГРАТЬ
-    </button>
-
+    <!-- ДЕЙСТВИЕ -->
 
     <button id="lobbyStart">
       ИГРАТЬ С БОТАМИ
@@ -533,6 +547,15 @@
       type="button"
     >
       ПОЗВАТЬ ДРУГА ПО ССЫЛКЕ
+    </button>
+
+
+    <button
+      id="rulesOpen"
+      class="rulesOpen"
+      type="button"
+    >
+      как играть
     </button>
 
     </div>
@@ -662,18 +685,18 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/rules.js?v=36"></script>
-<script src="src/match.js?v=36"></script>
-<script src="src/audio.js?v=36"></script>
-<script src="animations.js?v=36"></script>
-<script src="src/bot.js?v=36"></script>
-<script src="src/transport.js?v=36"></script>
-<script src="src/store.js?v=36"></script>
-<script src="game.js?v=36"></script>
-<script src="v9.1.js?v=36"></script>
-<script src="src/features.js?v=36"></script>
-<script src="src/room.js?v=36"></script>
-<script src="src/tutorial.js?v=36"></script>
+<script src="src/rules.js?v=37"></script>
+<script src="src/match.js?v=37"></script>
+<script src="src/audio.js?v=37"></script>
+<script src="animations.js?v=37"></script>
+<script src="src/bot.js?v=37"></script>
+<script src="src/transport.js?v=37"></script>
+<script src="src/store.js?v=37"></script>
+<script src="game.js?v=37"></script>
+<script src="v9.1.js?v=37"></script>
+<script src="src/features.js?v=37"></script>
+<script src="src/room.js?v=37"></script>
+<script src="src/tutorial.js?v=37"></script>
 
 </body>
 </html>

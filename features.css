@@ -830,31 +830,78 @@
    ЛОББИ
    ========================================================= */
 
+/* =========================================================
+   СТАРТОВОЕ МЕНЮ
+
+   Раньше всё в окне весило одинаково: сетка чисел, галочка и
+   три кнопки одного размера — глазу не за что зацепиться и
+   непонятно, что тут выбирают, а что нажимают.
+
+   Теперь два яруса. Сверху настройка в рамке с подписями,
+   снизу действия: главное — залитое, второе — контурное,
+   «как играть» вообще уходит в текстовую ссылку.
+   ========================================================= */
+
+.lobbySetup {
+  margin: 16px 0 18px;
+
+  border-radius: 18px;
+
+  border:
+    1px solid rgba(181, 93, 255, .22);
+
+  background: rgba(255, 255, 255, .02);
+
+  overflow: hidden;
+}
+
+.lobbyRow {
+  padding: 12px 13px 13px;
+}
+
+.lobbyRow + .lobbyRow {
+  border-top:
+    1px solid rgba(181, 93, 255, .18);
+}
+
+.lobbyLabel {
+  display: block;
+
+  margin-bottom: 9px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: .2em;
+
+  color: rgba(255, 255, 255, .38);
+}
+
+
+/* число игроков — одной строкой, а не сеткой */
 .seatPicker {
   display: grid;
 
   grid-template-columns:
-    repeat(3, 1fr);
+    repeat(6, 1fr);
 
-  gap: 9px;
-
-  margin: 16px 0 14px;
+  gap: 5px;
 }
 
 .seatPick {
-  height: 52px;
+  height: 40px;
 
-  border-radius: 15px;
+  border-radius: 11px;
 
   border:
-    1px solid rgba(181, 93, 255, .45);
+    1px solid rgba(181, 93, 255, .35);
 
-  background: rgba(255, 255, 255, .04);
+  background: rgba(255, 255, 255, .03);
 
-  color: var(--white);
+  color: rgba(255, 255, 255, .62);
 
   font-family: inherit;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 1000;
 
   cursor: pointer;
@@ -862,17 +909,19 @@
   transition:
     border-color .2s ease,
     box-shadow .2s ease,
-    color .2s ease;
+    color .2s ease,
+    background .2s ease;
 }
 
 .seatPick.chosen {
-  border-color: rgba(183, 255, 36, .8);
+  border-color: rgba(183, 255, 36, .85);
+
+  background: rgba(183, 255, 36, .12);
 
   color: var(--acid);
 
   box-shadow:
-    0 0 12px rgba(183, 255, 36, .3),
-    inset 0 0 18px rgba(183, 255, 36, .12);
+    0 0 10px rgba(183, 255, 36, .25);
 }
 
 
@@ -883,24 +932,24 @@
 
   align-items: center;
 
-  gap: 10px;
+  gap: 9px;
 
-  padding: 11px 13px;
+  padding: 9px 11px;
 
-  border-radius: 15px;
+  border-radius: 11px;
 
   border:
-    1px solid rgba(181, 93, 255, .35);
+    1px solid rgba(181, 93, 255, .3);
 
   background: rgba(255, 255, 255, .03);
 
-  color: rgba(255, 255, 255, .74);
+  color: rgba(255, 255, 255, .7);
 
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
 
-  letter-spacing: .12em;
+  letter-spacing: .1em;
 
   cursor: pointer;
 
@@ -910,12 +959,12 @@
 }
 
 .clockToggleBox {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 
   flex: none;
 
-  border-radius: 6px;
+  border-radius: 5px;
 
   border:
     1px solid rgba(181, 93, 255, .6);
@@ -933,14 +982,14 @@
   background: var(--acid);
 
   box-shadow:
-    0 0 12px rgba(183, 255, 36, .6);
+    0 0 10px rgba(183, 255, 36, .55);
 }
 
 
 .lobbyNote {
-  margin: 12px 0 16px;
+  margin: 9px 0 0;
 
-  min-height: 15px;
+  min-height: 13px;
 
   font-size: 10px;
   font-weight: 800;
@@ -1542,12 +1591,13 @@
 
 #hand .handCard.v9-unplayable {
   /*
-    Приглушаем, но не обесцвечиваем: масть должна оставаться
-    узнаваемой, иначе нельзя прикинуть, чем пойдёшь потом.
+    Разница должна читаться боковым зрением, а не бить в глаза.
+    Лёгкого приглушения хватает: масть остаётся яркой, рука не
+    выглядит выключенной.
   */
   filter:
-    brightness(.6)
-    saturate(.62);
+    brightness(.86)
+    saturate(.88);
 
   transition: filter .18s ease;
 }
@@ -1555,10 +1605,8 @@
 #hand .handCard.v9-playable,
 #hand .handCard.playable {
   filter:
-    brightness(1.12)
-    saturate(1.18)
-    drop-shadow(0 0 9px rgba(207, 255, 42, .85))
-    drop-shadow(0 0 20px rgba(207, 255, 42, .45));
+    brightness(1.03)
+    drop-shadow(0 0 5px rgba(207, 255, 42, .42));
 
   transition: filter .18s ease;
 }
@@ -1629,4 +1677,58 @@
     6px -6px 0 -2px rgba(139, 61, 255, .32),
     9px -9px 0 -3px rgba(139, 61, 255, .24),
     12px -12px 0 -4px rgba(139, 61, 255, .18);
+}
+
+
+/* =========================================================
+   ДЕЙСТВИЯ В СТАРТОВОМ МЕНЮ
+
+   Три кнопки одного веса не говорят, какая из них главная.
+   Здесь порядок: залитая — начать, контурная — позвать,
+   текстовая ссылка — справка.
+   ========================================================= */
+
+#lobbyStart {
+  margin-bottom: 9px;
+}
+
+.lobbyOnline {
+  margin-top: 0;
+
+  padding: 12px;
+
+  font-size: 11px;
+}
+
+.rulesOpen {
+  width: auto;
+
+  margin: 14px auto 0;
+
+  padding: 4px 2px;
+
+  display: block;
+
+  border: 0;
+
+  background: none;
+
+  color: rgba(255, 255, 255, .38);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+  text-transform: none;
+
+  text-decoration: underline;
+
+  text-underline-offset: 4px;
+
+  cursor: pointer;
+}
+
+.rulesOpen:hover {
+  color: var(--cyan);
 }
