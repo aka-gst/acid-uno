@@ -1338,3 +1338,90 @@
 
   cursor: pointer;
 }
+
+
+/* кнопки стола в комнате */
+
+.roomTools {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 8px;
+
+  margin-bottom: 8px;
+}
+
+.roomTools.hidden {
+  display: none;
+}
+
+.roomTool {
+  padding: 11px;
+
+  border-radius: 13px;
+
+  border:
+    1px solid rgba(181, 93, 255, .45);
+
+  background: rgba(255, 255, 255, .04);
+
+  color: var(--white);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .1em;
+
+  cursor: pointer;
+}
+
+.roomTool:disabled {
+  opacity: .3;
+
+  cursor: default;
+}
+
+
+.roomStart {
+  width: 100%;
+
+  padding: 13px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid rgba(183, 255, 36, .7);
+
+  background: rgba(183, 255, 36, .1);
+
+  color: var(--acid);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 1000;
+
+  letter-spacing: 1px;
+
+  cursor: pointer;
+}
+
+.roomStart:disabled {
+  opacity: .3;
+
+  cursor: default;
+}
+
+.roomStart.hidden {
+  display: none;
+}
+
+
+.roomSeat.bot {
+  border-style: solid;
+
+  border-color: rgba(32, 234, 255, .45);
+
+  color: rgba(32, 234, 255, .8);
+}

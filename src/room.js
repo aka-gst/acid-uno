@@ -18,7 +18,10 @@
     room: null,
     token: null,
     seat: 0,
-    size: 0
+    size: 0,
+
+    /* имена мест приходят из лобби: за столом сидят и боты */
+    names: []
   };
 
 
@@ -116,37 +119,58 @@
     $$("roomCode").textContent =
       payload.room;
 
-    const box = $$("roomPlayers");
+    state.names =
+      payload.seats.map(
+        seat => seat.name
+      );
 
-    box.innerHTML =
-      Array.from(
-        { length: payload.size },
-        (ignored, index) => {
 
-          const player =
-            payload.players.find(
-              p => p.seat === index
-            );
+    $$("roomPlayers").innerHTML =
+      payload.seats
+        .map(seat => {
 
           const mine =
-            player && player.seat === state.seat;
+            seat.seat === state.seat &&
+            seat.kind === "human";
+
+          const label =
+            !seat.kind
+              ? "ЖДЁМ"
+              : mine
+                ? "ТЫ"
+                : seat.name;
 
           return `
-            <div class="roomSeat${player ? " taken" : ""}${mine ? " mine" : ""}">
-              <span>${
-                player
-                  ? (mine ? "ТЫ" : player.name)
-                  : "ЖДЁМ"
-              }</span>
-              <b>${index + 1}</b>
+            <div class="roomSeat${
+              seat.kind ? " taken" : ""
+            }${mine ? " mine" : ""}${
+              seat.kind === "bot" ? " bot" : ""
+            }">
+              <span>${label}</span>
+              <b>${seat.seat + 1}</b>
             </div>
           `;
-        }
-      ).join("");
+        })
+        .join("");
+
+
+    $$("roomBotAdd").disabled = !payload.canAddBot;
+    $$("roomBotRemove").disabled = !payload.canRemoveBot;
+
+    $$("roomStart").disabled = !payload.canStart;
+
+    $$("roomStart").classList.toggle(
+      "hidden",
+      payload.started
+    );
+
+    $$("roomTools")
+      ?.classList
+      .toggle("hidden", payload.started);
 
 
     const missing =
-      payload.size - payload.players.length;
+      payload.size - payload.taken;
 
     $$("roomNote").textContent =
       payload.started
@@ -304,6 +328,65 @@
             AcidRules.MIN_SEATS,
           clockOff
         );
+      }
+    );
+
+
+  async function lobbyCommand(what) {
+
+    if (!state.token) {
+      return;
+    }
+
+    const answer =
+      await api(
+        `/api/rooms/${encodeURIComponent(state.room)}` +
+        `/lobby?token=${encodeURIComponent(state.token)}`,
+        { do: what }
+      );
+
+    if (answer.error) {
+
+      $$("roomNote").textContent =
+        answer.error.toUpperCase();
+    }
+
+    return answer;
+  }
+
+
+  $$("roomBotAdd")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        AcidSound.play("draw");
+
+        lobbyCommand("addBot");
+      }
+    );
+
+
+  $$("roomBotRemove")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        AcidSound.play("card");
+
+        lobbyCommand("removeBot");
+      }
+    );
+
+
+  $$("roomStart")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        AcidSound.play("card");
+
+        lobbyCommand("start");
       }
     );
 

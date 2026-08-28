@@ -16,6 +16,7 @@
 
 const R = require("../src/rules.js");
 const M = require("../src/match.js");
+const B = require("../src/bot.js");
 
 
 /* =========================================================
@@ -41,62 +42,12 @@ const TIMING = {
 /* =========================================================
    ПОЛИТИКА
 
-   Одна и та же для всех мест: разница между живым игроком
-   и ботом здесь только во времени на ход.
+   Та же, что у бота в игре и в комнате: src/bot.js.
+   Разница между живым игроком и ботом здесь только
+   во времени на ход.
    ========================================================= */
 
-function decide(state, seat, roll) {
-
-  const moves =
-    M.legalMoves(state, seat);
-
-
-  if (moves.length > 0) {
-
-    const hand =
-      state.seats[seat].hand;
-
-    const indexes =
-      moves.map(
-        card =>
-          hand.findIndex(one => one.id === card.id)
-      );
-
-    const chosen =
-      hand[
-        R.chooseCard(hand, indexes, roll)
-      ];
-
-    return {
-      type: "play",
-      seat,
-      cardId: chosen.id,
-
-      color:
-        chosen.color === "wild"
-          ? R.bestColor(
-              hand,
-              hand.indexOf(chosen)
-            )
-          : null
-    };
-  }
-
-
-  /*
-    Ходить нечем: забираем штраф целиком либо тянем
-    по одной, пока не найдётся подходящая.
-  */
-  if (
-    state.deck.length > 0 ||
-    state.discard.length > 1 ||
-    state.drawPenalty > 0
-  ) {
-    return { type: "draw", seat };
-  }
-
-  return { type: "pass", seat };
-}
+const decide = B.decide;
 
 
 /* =========================================================

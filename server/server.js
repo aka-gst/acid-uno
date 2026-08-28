@@ -293,6 +293,34 @@ async function serveApi(request, response, url) {
   }
 
 
+  /* POST /api/rooms/:id/lobby — добавить бота, начать раньше */
+  if (
+    parts[1] === "lobby" &&
+    request.method === "POST"
+  ) {
+
+    const body =
+      await readBody(request);
+
+    if (!body) {
+      return json(response, 400, { error: "неверный запрос" });
+    }
+
+    const result =
+      rooms.lobbyAction(
+        room,
+        url.searchParams.get("token") || "",
+        body.do
+      );
+
+    return json(
+      response,
+      result.error ? 409 : 200,
+      result
+    );
+  }
+
+
   /* POST /api/rooms/:id/actions */
   if (
     parts[1] === "actions" &&

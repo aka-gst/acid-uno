@@ -134,6 +134,20 @@ function create(options) {
       Math.max(1, settings.humans || 1)
     );
 
+  /*
+    За столом в комнате живые сидят не подряд: кто-то занял
+    третье место, остальные добрали ботами. Поэтому состав
+    можно задать списком, а humans остаётся коротким путём
+    для одиночной игры.
+  */
+  const kinds =
+    Array.from(
+      { length: seatCount },
+      (ignored, index) =>
+        settings.kinds?.[index] ||
+        (index < humans ? "human" : "bot")
+    );
+
 
   let nextCardId = 1;
 
@@ -160,10 +174,7 @@ function create(options) {
       (ignored, index) => ({
         index,
 
-        kind:
-          index < humans
-            ? "human"
-            : "bot",
+        kind: kinds[index],
 
         hand:
           deck.splice(

@@ -14,10 +14,10 @@
   <title>ACID UNO</title>
 
     
-  <link rel="stylesheet" href="style.css?v=27">
-  <link rel="stylesheet" href="effects.css?v=27">
-  <link rel="stylesheet" href="v9.1.css?v=27">
-  <link rel="stylesheet" href="features.css?v=27">
+  <link rel="stylesheet" href="style.css?v=29">
+  <link rel="stylesheet" href="effects.css?v=29">
+  <link rel="stylesheet" href="v9.1.css?v=29">
+  <link rel="stylesheet" href="features.css?v=29">
   
 </head>
 
@@ -564,6 +564,36 @@
         class="roomPlayers"
       ></div>
 
+      <div id="roomTools" class="roomTools">
+
+        <button
+          id="roomBotAdd"
+          class="roomTool"
+          type="button"
+        >
+          + БОТ
+        </button>
+
+        <button
+          id="roomBotRemove"
+          class="roomTool"
+          type="button"
+        >
+          − БОТ
+        </button>
+
+      </div>
+
+
+      <button
+        id="roomStart"
+        class="roomStart"
+        type="button"
+      >
+        НАЧАТЬ СЕЙЧАС
+      </button>
+
+
       <div
         id="roomNote"
         class="lobbyNote"
@@ -629,17 +659,18 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/rules.js?v=27"></script>
-<script src="src/match.js?v=27"></script>
-<script src="src/audio.js?v=27"></script>
-<script src="animations.js?v=27"></script>
-<script src="src/transport.js?v=27"></script>
-<script src="src/store.js?v=27"></script>
-<script src="game.js?v=27"></script>
-<script src="v9.1.js?v=27"></script>
-<script src="src/features.js?v=27"></script>
-<script src="src/room.js?v=27"></script>
-<script src="src/tutorial.js?v=27"></script>
+<script src="src/rules.js?v=29"></script>
+<script src="src/match.js?v=29"></script>
+<script src="src/audio.js?v=29"></script>
+<script src="animations.js?v=29"></script>
+<script src="src/bot.js?v=29"></script>
+<script src="src/transport.js?v=29"></script>
+<script src="src/store.js?v=29"></script>
+<script src="game.js?v=29"></script>
+<script src="v9.1.js?v=29"></script>
+<script src="src/features.js?v=29"></script>
+<script src="src/room.js?v=29"></script>
+<script src="src/tutorial.js?v=29"></script>
 
 </body>
 </html>

@@ -125,7 +125,13 @@ function seatName(index) {
   }
 
   if (AcidStore.online()) {
-    return `ИГРОК ${index + 1}`;
+
+    return (
+      window.AcidRoom
+        ?.state
+        .names[index] ||
+      `ИГРОК ${index + 1}`
+    );
   }
 
   return seats.length > 2
