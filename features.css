@@ -985,3 +985,203 @@
   box-shadow:
     0 0 20px rgba(211, 39, 255, .34);
 }
+
+
+/* =========================================================
+   ПРАВИЛА
+
+   Карты внутри — настоящие, из cardHTML(): объяснение
+   всегда совпадает с тем, что игрок видит на столе.
+   ========================================================= */
+
+.rulesOpen {
+  width: 100%;
+
+  margin-bottom: 10px;
+
+  padding: 11px;
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(32, 234, 255, .38);
+
+  background: rgba(32, 234, 255, .06);
+
+  color: var(--cyan);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .16em;
+
+  cursor: pointer;
+}
+
+
+.rulesWindow {
+  width:
+    min(
+      420px,
+      calc(100vw - 28px)
+    );
+
+  max-height:
+    calc(100vh - var(--safe-top) - var(--safe-bottom) - 44px);
+
+  display: flex;
+
+  flex-direction: column;
+
+  text-align: left;
+}
+
+.rulesWindow .windowEyebrow,
+.rulesWindow h2 {
+  text-align: center;
+}
+
+
+.rulesBody {
+  flex: 1;
+
+  min-height: 0;
+
+  margin: 14px 0;
+
+  padding-right: 6px;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.rulesSection {
+  padding: 14px 0;
+
+  border-top:
+    1px solid rgba(181, 93, 255, .18);
+}
+
+.rulesSection:first-child {
+  padding-top: 0;
+
+  border-top: 0;
+}
+
+.rulesSection h3 {
+  margin: 0 0 8px;
+
+  font-size: 12px;
+  font-weight: 1000;
+
+  letter-spacing: .18em;
+
+  color: var(--acid);
+
+  text-shadow:
+    0 0 14px rgba(183, 255, 36, .4);
+}
+
+.rulesSection p {
+  margin: 0 0 7px;
+
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 600;
+
+  color: rgba(255, 255, 255, .76);
+}
+
+.rulesSection p:last-child {
+  margin-bottom: 0;
+}
+
+
+.rulesCards {
+  --card-w: 42px;
+  --card-h: 63px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+
+  gap: 12px;
+
+  margin: 4px 0 12px;
+}
+
+.rulesCard {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 5px;
+}
+
+.rulesCard .card {
+  border-width: 1px;
+}
+
+.rulesCard .card .value {
+  font-size: 18px;
+
+  letter-spacing: -1px;
+}
+
+.rulesNote {
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: .1em;
+
+  color: rgba(255, 255, 255, .42);
+
+  white-space: nowrap;
+}
+
+
+#rulesClose {
+  width: 100%;
+
+  padding: 13px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid rgba(255, 255, 255, .65);
+
+  background:
+    linear-gradient(
+      90deg,
+      #7e2cff,
+      #e527d9
+    );
+
+  color: var(--white);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 1000;
+
+  letter-spacing: 1px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 20px rgba(211, 39, 255, .34);
+}
+
+
+/*
+  Экран правил всегда поверх лобби.
+*/
+#rules {
+  z-index: 20010;
+}
