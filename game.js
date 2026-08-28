@@ -120,8 +120,12 @@ function tableView() {
 */
 function seatName(index) {
 
-  if (index === 0) {
+  if (index === AcidStore.mySeat()) {
     return "ТЫ";
+  }
+
+  if (AcidStore.online()) {
+    return `ИГРОК ${index + 1}`;
   }
 
   return seats.length > 2

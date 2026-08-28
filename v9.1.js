@@ -612,6 +612,15 @@
   }
 
 
+  /*
+    Рука места по индексу — не обязательно бота: в комнате
+    напротив сидит живой человек.
+  */
+  function seatOf91(index) {
+    return seats[index]?.hand || [];
+  }
+
+
   function renderOpponents91() {
 
     const row =
@@ -651,8 +660,14 @@
     }
 
 
+    const others =
+      seats.filter(
+        seat => seat.index !== AcidStore.mySeat()
+      );
+
+
     row.dataset.count =
-      String(seatCount() - 1);
+      String(others.length);
 
 
     /*
@@ -661,12 +676,11 @@
       на каждой перерисовке.
     */
     if (
-      row.childElementCount !== seatCount() - 1
+      row.childElementCount !== others.length
     ) {
 
       row.innerHTML =
-        seats
-          .slice(1)
+        others
           .map(
             seat => `
               <button
@@ -698,8 +712,7 @@
     }
 
 
-    seats
-      .slice(1)
+    others
       .forEach(seat => {
 
         const el =
@@ -749,10 +762,28 @@
         $("botCount");
 
 
+      const other =
+        (AcidStore.mySeat() + 1) % seatCount();
+
+
+      const nameEl =
+        document.querySelector(
+          ".botInfo strong"
+        );
+
+      if (nameEl) {
+
+        nameEl.textContent =
+          AcidStore.online()
+            ? seatName(other)
+            : "ACID BOT";
+      }
+
+
       if (countEl) {
 
         countEl.textContent =
-          `${bot.length} КАРТ`;
+          `${seatOf91(other).length} КАРТ`;
       }
 
 
@@ -2404,7 +2435,14 @@
 
     render();
 
-    if (turn !== "bot") {
+    /*
+      В комнате за соседними местами живые люди: ждём их
+      ходов потоком, а не запускаем ИИ.
+    */
+    if (
+      turn !== "bot" ||
+      AcidStore.online()
+    ) {
       return;
     }
 
@@ -2477,9 +2515,9 @@
       физически доехала до сброса.
     */
     const result =
-      AcidStore.dispatch({
+      await AcidStore.dispatch({
         type: "play",
-        seat: 0,
+        seat: AcidStore.mySeat(),
         cardId: card.id,
         color: chosenColor
       });
@@ -2502,6 +2540,18 @@
 
 
       return false;
+    }
+
+
+    /*
+      В комнате карта уедет в сброс по событию с сервера.
+    */
+    if (result.pending) {
+
+      endAction91();
+
+
+      return true;
     }
 
 
@@ -2573,7 +2623,9 @@
 
     endAction91();
 
-    finish(over.winner === 0);
+    finish(
+      over.winner === AcidStore.mySeat()
+    );
 
     return true;
   }
@@ -2834,9 +2886,9 @@
 
 
       const result =
-        AcidStore.dispatch({
+        await AcidStore.dispatch({
           type: "draw",
-          seat: 0
+          seat: AcidStore.mySeat()
         });
 
 
@@ -2851,8 +2903,16 @@
       }
 
 
+      if (result.pending) {
+        return;
+      }
+
+
       const cards =
-        drawnCards91(result.events, 0);
+        drawnCards91(
+          result.events,
+          AcidStore.mySeat()
+        );
 
 
       if (penalty) {
@@ -3177,7 +3237,7 @@
 
 
       const result =
-        AcidStore.dispatch({
+        await AcidStore.dispatch({
           type: "play",
           seat,
           cardId: card.id,
@@ -3390,7 +3450,7 @@
 
 
         const result =
-          AcidStore.dispatch({
+          await AcidStore.dispatch({
             type: "draw",
             seat
           });
@@ -3497,7 +3557,7 @@
 
 
           const result =
-            AcidStore.dispatch({
+            await AcidStore.dispatch({
               type: "draw",
               seat
             });
@@ -3538,7 +3598,7 @@
         /*
           Ходить нечем и брать неоткуда.
         */
-        AcidStore.dispatch({
+        await AcidStore.dispatch({
           type: "pass",
           seat: activeSeat
         });
@@ -3746,9 +3806,9 @@
 
 
       const result =
-        AcidStore.dispatch({
+        await AcidStore.dispatch({
           type: "play",
-          seat: 0,
+          seat: AcidStore.mySeat(),
           cardId,
           color: chosenColor
         });
@@ -3759,6 +3819,14 @@
         endAction91();
 
         render();
+
+        return;
+      }
+
+
+      if (result.pending) {
+
+        endAction91();
 
         return;
       }
@@ -3835,7 +3903,9 @@
 
 
     const seat =
-      AcidStore.seatOf(0);
+      AcidStore.seatOf(
+        AcidStore.mySeat()
+      );
 
     if (!seat) {
       return;
@@ -3878,7 +3948,7 @@
   unoButton91
     ?.addEventListener(
       "click",
-      event => {
+      async event => {
 
         event.preventDefault();
 
@@ -3886,9 +3956,9 @@
 
 
         const result =
-          AcidStore.dispatch({
+          await AcidStore.dispatch({
             type: "uno",
-            seat: 0
+            seat: AcidStore.mySeat()
           });
 
 
@@ -3927,8 +3997,12 @@
     syncUno91();
 
 
+    /*
+      В комнате ловят живые соперники, а не таймер.
+    */
     if (
-      !AcidStore.seatOf(0)?.unoVulnerable
+      AcidStore.online() ||
+      !AcidStore.seatOf(AcidStore.mySeat())?.unoVulnerable
     ) {
 
       return;
@@ -3944,17 +4018,18 @@
           }
 
 
+          const me =
+            AcidStore.mySeat();
+
           const catcher =
-            seats.length > 1
-              ? 1
-              : 0;
+            (me + 1) % seats.length;
 
 
           const result =
-            AcidStore.dispatch({
+            await AcidStore.dispatch({
               type: "catch",
               seat: catcher,
-              target: 0
+              target: me
             });
 
 
@@ -3970,7 +4045,10 @@
 
 
           await animateIncoming91(
-            drawnCards91(result.events, 0)
+            drawnCards91(
+              result.events,
+              AcidStore.mySeat()
+            )
           );
 
 
@@ -4045,6 +4123,24 @@
     clearBotUno91();
 
 
+    /*
+      В комнате никто не объявляет UNO за игрока: окно
+      закрывает он сам или его ловят.
+    */
+    if (AcidStore.online()) {
+
+      V91.botUnoSeat = seat;
+
+      V91.botUnoVulnerable = true;
+
+      opponentElement91(seat)
+        ?.classList
+        .add("catchable");
+
+      return;
+    }
+
+
     V91.botUnoSeat =
       seat;
 
@@ -4060,7 +4156,7 @@
 
     V91.botUnoTimer =
       setTimeout(
-        () => {
+        async () => {
 
           if (gameOver) {
             return;
@@ -4068,7 +4164,7 @@
 
 
           const result =
-            AcidStore.dispatch({
+            await AcidStore.dispatch({
               type: "closeUno",
               target: seat
             });
@@ -4140,14 +4236,21 @@
 
 
     const result =
-      AcidStore.dispatch({
+      await AcidStore.dispatch({
         type: "catch",
-        seat: 0,
+        seat: AcidStore.mySeat(),
         target: seat
       });
 
 
-    if (result.error) {
+    if (
+      result.error ||
+      result.pending
+    ) {
+
+      clearBotUno91();
+
+
       return;
     }
 
@@ -4222,6 +4325,157 @@
         );
       }
     );
+
+
+  /* =======================================================
+     КОМНАТА
+
+     Клиент ничего не проигрывает наперёд: всё, что видно на
+     экране, приезжает событиями от сервера и показывается
+     строго по очереди.
+     ======================================================= */
+
+  let remoteQueue91 =
+    Promise.resolve();
+
+
+  AcidStore.subscribe(events => {
+
+    if (
+      !AcidStore.online() ||
+      !events.length
+    ) {
+
+      return;
+    }
+
+    remoteQueue91 =
+      remoteQueue91
+        .then(() => playRemote91(events))
+        .catch(() => {});
+  });
+
+
+  async function playRemote91(events) {
+
+    const me =
+      AcidStore.mySeat();
+
+
+    beginAction91();
+
+
+    for (const event of events) {
+
+      if (event.type === "played") {
+
+        if (event.seat !== me) {
+
+          const pod =
+            opponentElement91(event.seat);
+
+          pod?.classList.add("is-flying");
+
+          await AcidFX.playBotCard(event.card);
+
+          pod?.classList.remove("is-flying");
+        }
+
+        render();
+
+        await specialEffect91(event.card);
+      }
+
+
+      if (
+        event.type === "drew" ||
+        event.type === "penalty" ||
+        event.type === "caught"
+      ) {
+
+        const seat =
+          event.target ?? event.seat;
+
+        if (seat === me) {
+
+          await animateIncoming91(event.cards);
+
+        } else {
+
+          for (
+            let i = 0;
+            i < event.cards.length;
+            i++
+          ) {
+
+            await botDrawBack91(seat);
+
+            await wait91(25);
+          }
+
+          render();
+        }
+      }
+
+
+      if (event.type === "uno") {
+
+        burst91(
+          event.seat === me
+            ? "UNO!"
+            : `${seatName(event.seat)}: UNO!`,
+          "acid"
+        );
+      }
+
+
+      if (event.type === "caught") {
+
+        burst91(
+          "ПОЙМАЛ! +2",
+          "danger"
+        );
+      }
+
+
+      if (event.type === "exposed") {
+
+        if (event.seat !== me) {
+
+          opponentElement91(event.seat)
+            ?.classList
+            .add("catchable");
+
+          V91.botUnoSeat = event.seat;
+        }
+      }
+
+
+      if (event.type === "over") {
+
+        endAction91();
+
+        finish(event.winner === me);
+
+        return;
+      }
+
+
+      if (event.type === "turn") {
+
+        clearBotUno91();
+
+        announceTurn91();
+      }
+    }
+
+
+    render();
+
+    watchPlayerUno91();
+
+    endAction91();
+  }
 
 
   /* =======================================================

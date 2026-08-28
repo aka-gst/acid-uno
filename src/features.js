@@ -321,7 +321,14 @@
 
     paintClock(snapshot);
 
-    if (snapshot.expired) {
+    /*
+      В комнате гонг бьёт сервер: у каждого клиента свои
+      часы, и договориться им не о чем.
+    */
+    if (
+      snapshot.expired &&
+      !AcidStore.online()
+    ) {
       finishByTime();
     }
   }
@@ -413,7 +420,7 @@
       был его забрать.
     */
     const result =
-      AcidStore.dispatch({
+      await AcidStore.dispatch({
         type: "timeout"
       });
 
@@ -674,6 +681,35 @@
     clock,
     startClock,
     stopClock,
+
+    /*
+      Подогнать часы под серверные: в комнате время
+      считает сервер, клиент только рисует.
+    */
+    syncFrom(payload) {
+
+      if (!payload || payload.limit === null) {
+
+        clock.disable();
+
+        paintClock(clock.advance(0));
+
+        return;
+      }
+
+      clock.limit = payload.limit;
+      clock.elapsed = payload.elapsed || 0;
+      clock.running = true;
+      clock.expired = false;
+
+      lastTick = performance.now();
+
+      clearInterval(tickTimer);
+
+      tickTimer = setInterval(tick, 250);
+
+      paintClock(clock.advance(0));
+    },
 
     disableClock() {
 

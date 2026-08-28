@@ -14,10 +14,10 @@
   <title>ACID UNO</title>
 
     
-  <link rel="stylesheet" href="style.css?v=23">
-  <link rel="stylesheet" href="effects.css?v=23">
-  <link rel="stylesheet" href="v9.1.css?v=23">
-  <link rel="stylesheet" href="features.css?v=23">
+  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="effects.css?v=27">
+  <link rel="stylesheet" href="v9.1.css?v=27">
+  <link rel="stylesheet" href="features.css?v=27">
   
 </head>
 
@@ -464,6 +464,8 @@
 
   <div class="window lobbyWindow">
 
+    <div id="lobbyMain">
+
     <div class="windowEyebrow">
       СТОЛ
     </div>
@@ -521,6 +523,62 @@
       НАЧАТЬ
     </button>
 
+
+    <button
+      id="lobbyOnline"
+      class="lobbyOnline"
+      type="button"
+    >
+      СЫГРАТЬ ПО ССЫЛКЕ
+    </button>
+
+    </div>
+
+
+    <!-- КОМНАТА -->
+
+    <div
+      id="roomPanel"
+      class="roomPanel hidden"
+    >
+
+      <div class="windowEyebrow">
+        КОМНАТА
+      </div>
+
+      <div
+        id="roomCode"
+        class="roomCode"
+      >····</div>
+
+      <button
+        id="roomCopy"
+        class="roomCopy"
+        type="button"
+      >
+        СКОПИРОВАТЬ ССЫЛКУ
+      </button>
+
+      <div
+        id="roomPlayers"
+        class="roomPlayers"
+      ></div>
+
+      <div
+        id="roomNote"
+        class="lobbyNote"
+      ></div>
+
+      <button
+        id="roomLeave"
+        class="roomLeave"
+        type="button"
+      >
+        ВЫЙТИ
+      </button>
+
+    </div>
+
   </div>
 
 </div>
@@ -571,15 +629,17 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/rules.js?v=23"></script>
-<script src="src/match.js?v=23"></script>
-<script src="src/audio.js?v=23"></script>
-<script src="animations.js?v=23"></script>
-<script src="src/store.js?v=23"></script>
-<script src="game.js?v=23"></script>
-<script src="v9.1.js?v=23"></script>
-<script src="src/features.js?v=23"></script>
-<script src="src/tutorial.js?v=23"></script>
+<script src="src/rules.js?v=27"></script>
+<script src="src/match.js?v=27"></script>
+<script src="src/audio.js?v=27"></script>
+<script src="animations.js?v=27"></script>
+<script src="src/transport.js?v=27"></script>
+<script src="src/store.js?v=27"></script>
+<script src="game.js?v=27"></script>
+<script src="v9.1.js?v=27"></script>
+<script src="src/features.js?v=27"></script>
+<script src="src/room.js?v=27"></script>
+<script src="src/tutorial.js?v=27"></script>
 
 </body>
 </html>

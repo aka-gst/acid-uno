@@ -58,6 +58,9 @@ const AcidFX = (() => {
     */
     const el =
       document.querySelector(
+        ".opponent.is-flying"
+      ) ||
+      document.querySelector(
         ".opponent.is-active"
       ) ||
       $("botCards");
