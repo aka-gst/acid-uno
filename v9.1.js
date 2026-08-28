@@ -111,6 +111,58 @@
 
 
   /* =======================================================
+     ОЖИДАНИЕ КАДРА И АНИМАЦИИ
+
+     В свёрнутой вкладке requestAnimationFrame не срабатывает,
+     а Web Animations не проигрываются и finished не резолвится.
+     Ход, который их ждёт, повисает навсегда: игрок свернул
+     игру посреди хода — вернулся к намертво залипшему столу.
+
+     Поэтому оба ожидания ограничены по времени. Анимация в
+     фоне не покажется всё равно, но партия доедет до конца.
+     ======================================================= */
+
+  function nextFrame91(fallback = 140) {
+
+    return new Promise(resolve => {
+
+      let done = false;
+
+      const finish = () => {
+
+        if (done) {
+          return;
+        }
+
+        done = true;
+
+        resolve();
+      };
+
+      requestAnimationFrame(
+        () =>
+          requestAnimationFrame(finish)
+      );
+
+      setTimeout(finish, fallback);
+    });
+  }
+
+
+  function settled91(animation, ms) {
+
+    return Promise.race([
+
+      animation.finished.catch(() => {}),
+
+      new Promise(
+        resolve => setTimeout(resolve, ms)
+      )
+    ]);
+  }
+
+
+  /* =======================================================
      UI
      ======================================================= */
 
@@ -1978,15 +2030,7 @@
       );
 
 
-    await new Promise(
-      resolve =>
-        requestAnimationFrame(
-          () =>
-            requestAnimationFrame(
-              resolve
-            )
-        )
-    );
+    await nextFrame91();
 
 
     const currentCenter =
@@ -2065,10 +2109,7 @@
       );
 
 
-    await animation.finished
-      .catch(
-        () => {}
-      );
+    await settled91(animation, 285);
 
 
     const invalid =
@@ -2180,15 +2221,7 @@
     );
 
 
-    await new Promise(
-      resolve =>
-        requestAnimationFrame(
-          () =>
-            requestAnimationFrame(
-              resolve
-            )
-        )
-    );
+    await nextFrame91();
 
 
     const currentCenter =
@@ -2267,10 +2300,7 @@
       );
 
 
-    await animation.finished
-      .catch(
-        () => {}
-      );
+    await settled91(animation, 285);
 
 
     return true;
@@ -3087,15 +3117,7 @@
     );
 
 
-    await new Promise(
-      resolve =>
-        requestAnimationFrame(
-          () =>
-            requestAnimationFrame(
-              resolve
-            )
-        )
-    );
+    await nextFrame91();
 
 
     const a =
@@ -3733,15 +3755,7 @@
           );
 
 
-          await new Promise(
-            resolve =>
-              requestAnimationFrame(
-                () =>
-                  requestAnimationFrame(
-                    resolve
-                  )
-              )
-          );
+          await nextFrame91();
 
 
           const from =

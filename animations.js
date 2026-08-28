@@ -126,6 +126,41 @@ const AcidFX = (() => {
      PLACE ELEMENT FROM RECT
      ======================================================= */
 
+  /* =======================================================
+     ОЖИДАНИЕ КАДРА
+
+     В свёрнутой вкладке requestAnimationFrame не срабатывает.
+     Полёт карты, который его ждёт, повисает навсегда и
+     утаскивает за собой весь ход, поэтому ожидание
+     ограничено по времени.
+     ======================================================= */
+
+  function nextFrame(fallback = 140) {
+
+    return new Promise(resolve => {
+
+      let done = false;
+
+      const finish = () => {
+
+        if (done) {
+          return;
+        }
+
+        done = true;
+
+        resolve();
+      };
+
+      requestAnimationFrame(
+        () => requestAnimationFrame(finish)
+      );
+
+      setTimeout(finish, fallback);
+    });
+  }
+
+
   function placeFromRect(
     element,
     rect,
@@ -517,13 +552,7 @@ const AcidFX = (() => {
       начальной позиции.
     */
 
-    await new Promise(resolve =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(
-          resolve
-        )
-      )
-    );
+    await nextFrame();
 
     const targetRotation =
       2 + Math.random() * 5;
@@ -599,13 +628,7 @@ const AcidFX = (() => {
       startRect
     );
 
-    await new Promise(resolve =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(
-          resolve
-        )
-      )
-    );
+    await nextFrame();
 
     flying.style.transform =
       transformToRect(
@@ -735,13 +758,7 @@ const AcidFX = (() => {
 
     await sleep(180);
 
-    await new Promise(resolve =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(
-          resolve
-        )
-      )
-    );
+    await nextFrame();
 
     /*
       По пути карта вырастает до нормального размера.
@@ -802,13 +819,7 @@ const AcidFX = (() => {
 
     await sleep(90);
 
-    await new Promise(resolve =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(
-          resolve
-        )
-      )
-    );
+    await nextFrame();
 
     let target;
 
