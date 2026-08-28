@@ -3,12 +3,41 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const R = require("../src/rules.js");
+const M = require("../src/match.js");
 
 
-const PLAYER_TURN = handSize => ({
-  active: true,
-  handSize
+/* Ставим руку места 0 в нужное состояние, минуя раздачу. */
+function withHand(state, cards) {
+
+  return {
+    ...state,
+
+    activeSeat: 0,
+    direction: 1,
+
+    discard: [{ id: 500, color: "red", value: "7" }],
+    currentColor: "red",
+
+    deck: state.deck.slice(),
+
+    seats: state.seats.map(
+      (seat, index) => ({
+        ...seat,
+
+        hand:
+          index === 0
+            ? cards.slice()
+            : seat.hand.slice()
+      })
+    )
+  };
+}
+
+
+const RED = (value, id) => ({
+  id,
+  color: "red",
+  value
 });
 
 
@@ -18,110 +47,140 @@ const PLAYER_TURN = handSize => ({
    «Второй раз, когда у меня две карты, кнопка UNO не
    появилась, и бот меня на этом не поймал.»
 
-   Причина: после удачного объявления рука уменьшалась
-   до одной карты, обработчик выходил по раннему return,
-   и called оставался поднятым до конца партии.
+   Объявление жило отдельным флагом интерфейса и после
+   удачного «UNO!» оставалось поднятым до конца партии.
+   Теперь оно живёт в состоянии партии, и любой рост руки
+   его снимает.
    ========================================================= */
 
 test("объявление UNO снимается, когда рука снова выросла", () => {
 
-  const uno = new R.UnoCall();
+  let state =
+    withHand(
+      M.create({ seats: 2, seed: 1 }),
 
-  // Первый заход: две карты, кнопка на месте.
+      /* пропуск оставляет ход себе — удобно для сценария */
+      [RED("skip", 1), RED("3", 2)]
+    );
+
+
+  /* первый заход: две карты, объявляем */
   assert.equal(
-    uno.shouldShowButton(PLAYER_TURN(2)),
-    true
+    M.apply(state, { type: "uno", seat: 0 }).error,
+    undefined
   );
 
-  assert.equal(uno.call(PLAYER_TURN(2)), true);
+  state = M.apply(state, { type: "uno", seat: 0 }).state;
+
+  assert.equal(state.seats[0].unoCalled, true);
+
+
+  /* выкладываем — осталась одна, объявление засчитано */
+  state = M.apply(state, {
+    type: "play",
+    seat: 0,
+    cardId: 1
+  }).state;
+
+  assert.equal(state.seats[0].hand.length, 1);
+  assert.equal(state.seats[0].unoVulnerable, false);
+
+
+  /* берём карту: рука выросла до двух */
+  state = M.apply(state, { type: "draw", seat: 0 }).state;
+
+  assert.equal(state.seats[0].hand.length, 2);
 
   assert.equal(
-    uno.shouldShowButton(PLAYER_TURN(2)),
+    state.seats[0].unoCalled,
     false,
-    "после нажатия кнопка прячется"
+    "рост руки обязан снять прошлое объявление"
   );
 
-  // Выложили карту — осталась одна, объявление засчитано.
-  assert.equal(uno.afterPlay(1), "safe");
-  assert.equal(uno.vulnerable, false);
 
-  // Взяли карту: рука выросла до двух.
+  /* второй заход: объявить можно снова */
   assert.equal(
-    uno.handGrew(2),
-    true,
-    "рост руки обнуляет прошлое объявление"
+    M.apply(state, { type: "uno", seat: 0 }).error,
+    undefined,
+    "UNO должно объявляться во второй раз"
   );
 
-  // Второй заход: кнопка обязана вернуться.
-  assert.equal(
-    uno.shouldShowButton(PLAYER_TURN(2)),
-    true,
-    "кнопка UNO должна появиться во второй раз"
-  );
 
-  // И если промолчать — бот обязан поймать.
-  assert.equal(uno.afterPlay(1), "exposed");
-  assert.equal(uno.catchable(1), true);
+  /* а если промолчать — ловят */
+  const played =
+    M.apply(state, {
+      type: "play",
+      seat: 0,
+      cardId: state.seats[0].hand[0].id
+    }).state;
+
+  assert.equal(played.seats[0].hand.length, 1);
+  assert.equal(played.seats[0].unoVulnerable, true);
+
+  const caught =
+    M.apply(played, {
+      type: "catch",
+      seat: 1,
+      target: 0
+    });
+
+  assert.equal(caught.error, undefined);
+  assert.equal(caught.state.seats[0].hand.length, 3);
 });
 
 
 test("рост руки после промаха тоже снимает уязвимость", () => {
 
-  const uno = new R.UnoCall();
+  let state =
+    withHand(
+      M.create({ seats: 2, seed: 2 }),
+      [RED("skip", 1), RED("3", 2)]
+    );
 
-  assert.equal(uno.afterPlay(1), "exposed");
-  assert.equal(uno.catchable(1), true);
+  state = M.apply(state, {
+    type: "play",
+    seat: 0,
+    cardId: 1
+  }).state;
 
-  // Поймали и выдали +2 — рука выросла.
-  assert.equal(uno.handGrew(3), true);
-  assert.equal(uno.catchable(1), false);
-  assert.equal(uno.vulnerable, false);
-});
+  assert.equal(state.seats[0].unoVulnerable, true);
 
+  /* поймали и выдали +2 */
+  state = M.apply(state, {
+    type: "catch",
+    seat: 1,
+    target: 0
+  }).state;
 
-test("handGrew не трогает чистое состояние", () => {
+  assert.equal(state.seats[0].unoVulnerable, false);
 
-  const uno = new R.UnoCall();
-
-  assert.equal(uno.handGrew(7), false);
-  assert.equal(uno.called, false);
-  assert.equal(uno.vulnerable, false);
-});
-
-
-test("UNO нельзя объявить не в свой ход и не на двух картах", () => {
-
-  const uno = new R.UnoCall();
-
-  assert.equal(
-    uno.call({ active: false, handSize: 2 }),
-    false
-  );
-
-  assert.equal(uno.call(PLAYER_TURN(3)), false);
-  assert.equal(uno.call(PLAYER_TURN(1)), false);
-  assert.equal(uno.called, false);
-});
-
-
-test("кнопка не показывается вне хода игрока", () => {
-
-  const uno = new R.UnoCall();
-
-  assert.equal(
-    uno.shouldShowButton({ active: false, handSize: 2 }),
-    false
+  assert.match(
+    M.apply(state, { type: "catch", seat: 1, target: 0 }).error,
+    /ловить некого/,
+    "дважды за одно молчание не ловят"
   );
 });
 
 
-test("выкладка не до одной карты полностью очищает состояние", () => {
+test("добор снимает объявление, даже если рука не менялась иначе", () => {
 
-  const uno = new R.UnoCall();
+  let state =
+    withHand(
+      M.create({ seats: 2, seed: 3 }),
+      [RED("skip", 1), RED("3", 2)]
+    );
 
-  uno.call(PLAYER_TURN(2));
+  state = M.apply(state, { type: "uno", seat: 0 }).state;
 
-  assert.equal(uno.afterPlay(4), "clear");
-  assert.equal(uno.called, false);
-  assert.equal(uno.vulnerable, false);
+  assert.equal(state.seats[0].unoCalled, true);
+
+  state = M.apply(state, { type: "draw", seat: 0 }).state;
+
+  assert.equal(
+    state.seats[0].unoCalled,
+    false,
+    "взял карту — объявление больше не действует"
+  );
+
+  assert.equal(state.seats[0].hand.length, 3);
 });

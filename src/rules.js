@@ -592,47 +592,6 @@ const MIN_SEATS = 2;
 const MAX_SEATS = 7;
 
 
-/*
-  Место за столом. Место 0 всегда живое — это ты.
-
-  uno у каждого своё: на столе из семи ловить «не сказал UNO»
-  можно у любого соперника независимо.
-*/
-function createSeats(count, options) {
-
-  const settings = options || {};
-
-  const total =
-    Math.min(
-      MAX_SEATS,
-      Math.max(MIN_SEATS, count || MIN_SEATS)
-    );
-
-  const humans =
-    Math.min(
-      total,
-      Math.max(1, settings.humans || 1)
-    );
-
-
-  return Array.from(
-    { length: total },
-    (ignored, index) => ({
-      index,
-
-      kind:
-        index < humans
-          ? "human"
-          : "bot",
-
-      hand: [],
-
-      uno: new UnoCall()
-    })
-  );
-}
-
-
 function nextSeat(seat, seats, direction, step) {
 
   const shift =
@@ -1146,7 +1105,6 @@ return {
 
   MIN_SEATS,
   MAX_SEATS,
-  createSeats,
   nextSeat,
   turnAfterCard,
 

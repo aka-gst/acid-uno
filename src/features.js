@@ -7,10 +7,11 @@
    а оборачивает уже существующие глобальные функции:
 
      render           -> аура активного цвета, счётчик кластера
-     applyCardState   -> звук выкладки, разворота, штрафа
-     takeRaw          -> звук добора
      startGame        -> перезапуск часов партии
      finish           -> звук итога
+
+   Звук берётся не из обёрток, а из событий редьюсера:
+   AcidStore.subscribe() отдаёт всё, что случилось за ход.
 
    Плюс часы партии: три минуты, за минуту до конца
    таймер выходит на экран, по истечении выигрывает тот,
@@ -77,26 +78,6 @@
 
 
   syncSoundButton();
-
-
-  /*
-    UNO! — вешаем отдельным слушателем, чтобы не лезть
-    внутрь обработчика v9.1.
-  */
-  $$("unoButton")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        if (
-          !gameOver &&
-          turn === "player" &&
-          player.length === 2
-        ) {
-          AcidSound.play("uno");
-        }
-      }
-    );
 
 
   /* =======================================================
@@ -217,54 +198,61 @@
 
   /* =======================================================
      ЗВУК ИГРОВЫХ СОБЫТИЙ
+
+     Один источник правды: что случилось за ход, знает
+     редьюсер, а не обёртки над функциями отрисовки.
      ======================================================= */
 
-  const baseApplyCardState = applyCardState;
-
-  applyCardState = function (card, chosenColor) {
-
-    const before = drawPenalty;
-
-    baseApplyCardState(card, chosenColor);
-
-    if (card.value === "reverse") {
-      AcidSound.play("reverse");
-
-    } else {
-      AcidSound.play("card");
-    }
-
-    if (drawPenalty > before) {
-      AcidSound.play("penalty");
-    }
-  };
-
-
-  /*
-    Добор звучит один раз на серию: при штрафе +6 не нужно
-    шесть одинаковых щелчков подряд.
-  */
   let lastDrawSound = 0;
 
-  const baseTakeRaw = takeRaw;
 
-  takeRaw = function () {
+  AcidStore.subscribe(events => {
 
-    const card = baseTakeRaw();
+    let penalty = false;
 
-    const now = performance.now();
+    events.forEach(event => {
 
-    if (
-      card &&
-      now - lastDrawSound > 110
-    ) {
-      lastDrawSound = now;
+      if (event.type === "played") {
 
-      AcidSound.play("draw");
+        AcidSound.play(
+          event.card.value === "reverse"
+            ? "reverse"
+            : "card"
+        );
+      }
+
+      if (event.type === "drew") {
+
+        const now = performance.now();
+
+        /*
+          Серия доборов звучит один раз: при штрафе +6
+          не нужно шесть одинаковых щелчков подряд.
+        */
+        if (now - lastDrawSound > 110) {
+
+          lastDrawSound = now;
+
+          AcidSound.play("draw");
+        }
+      }
+
+      if (
+        event.type === "penalty" ||
+        event.type === "caught"
+      ) {
+        penalty = true;
+      }
+
+      if (event.type === "uno") {
+        AcidSound.play("uno");
+      }
+    });
+
+    if (penalty) {
+      AcidSound.play("penalty");
     }
-
-    return card;
-  };
+  });
 
 
   /* =======================================================
@@ -410,8 +398,6 @@
       return;
     }
 
-    gameOver = true;
-
     stopClock();
 
 
@@ -421,41 +407,33 @@
       было бы бросить +4 на последней секунде и выиграть
       по очкам, ничего не заплатив.
     */
-    if (drawPenalty > 0) {
+    /*
+      Гонг — такое же действие партии, как выкладка карты.
+      Висящий кластер редьюсер сам отдаёт тому, кто обязан
+      был его забрать.
+    */
+    const result =
+      AcidStore.dispatch({
+        type: "timeout"
+      });
 
-      seats[activeSeat].hand.push(
-        ...takeMany(drawPenalty)
-      );
-
-      if (activeSeat === 0) {
-        AcidRules.sortHand(player);
-      }
-
-      drawPenalty = 0;
-      penaltyType = null;
+    if (result.error) {
+      return;
     }
 
 
-    const hands = {};
-
-    seats.forEach(seat => {
-      hands[seat.index] = seat.hand;
-    });
-
-
     const outcome =
-      AcidRules.timeoutResult(hands);
+      result.events.find(
+        event => event.type === "over"
+      );
 
 
     const leaders =
-      outcome.leaders.map(Number);
+      outcome.leaders;
 
 
     const points =
-      seats.map(
-        seat =>
-          AcidRules.handPoints(seat.hand)
-      );
+      outcome.points;
 
 
     const playerWon =

@@ -34,9 +34,6 @@
 
     actionDepth: 0,
 
-    playerUno:
-      new AcidRules.UnoCall(),
-
     playerUnoTimer: null,
 
     botUnoCalled: false,
@@ -1119,29 +1116,106 @@
 
 
   /* =======================================================
-     NEW CARD INTO PLAYER HAND
+     НОВЫЕ КАРТЫ В РУКУ
 
-     1) hand opens slightly
-     2) state changes
-     3) old cards animate to new slots
-     4) new card flies from deck to its final slot
+     Карты уже в состоянии — здесь только показать, как они
+     туда прилетели:
+
+       1) рука приоткрывается
+       2) render перестраивает веер
+       3) старые карты уезжают на новые места
+       4) новые летят из колоды в свои слоты
      ======================================================= */
 
-  async function addPlayerCardAnimated91(
-    card
-  ) {
+  function flyFromDeck91(card, delay) {
+
+    const target =
+      playerCardElement(card.id);
+
+    const deckEl =
+      $("deck");
+
+    if (!target || !deckEl) {
+      return;
+    }
+
+
+    const deckRect =
+      deckEl.getBoundingClientRect();
+
+    const targetRect =
+      target.getBoundingClientRect();
+
+    const deckCenter =
+      rectCenter91(deckRect);
+
+    const targetCenter =
+      rectCenter91(targetRect);
+
+
+    const dx =
+      deckCenter.x - targetCenter.x;
+
+    const dy =
+      deckCenter.y - targetCenter.y;
+
+    const scale =
+      Math.min(
+        deckRect.width /
+          Math.max(targetRect.width, 1),
+
+        deckRect.height /
+          Math.max(targetRect.height, 1)
+      );
+
+
+    target.classList.remove(
+      "v9-playable",
+      "playable"
+    );
+
+
+    target.animate(
+      [
+        {
+          translate: `${dx}px ${dy}px`,
+          scale: String(scale),
+          rotate: "-7deg",
+          opacity: .94
+        },
+        {
+          translate: "0px 0px",
+          scale: "1",
+          rotate: "0deg",
+          opacity: 1
+        }
+      ],
+      {
+        duration: 285,
+
+        /*
+          Штрафные карты вылетают не разом, а очередью:
+          fill backwards держит карту у колоды до её очереди.
+        */
+        delay,
+
+        fill: "backwards",
+
+        easing: "cubic-bezier(.18,.82,.2,1)"
+      }
+    );
+  }
+
+
+  async function animateIncoming91(cards) {
 
     const hand =
       $("hand");
 
-
-    if (!hand) {
-
-      player.push(card);
-
-      AcidRules.sortHand(player);
-
-      notePlayerHandGrew91();
+    if (
+      !hand ||
+      !cards.length
+    ) {
 
       render();
 
@@ -1157,25 +1231,14 @@
     );
 
 
-    await wait91(75);
-
-
-    const before =
-      captureHand91();
+    await wait91(70);
 
 
     /*
-      Add card before flight so
-      the fan reserves the destination slot.
+      Снимок берём с ещё не перестроенного DOM.
     */
-
-    player.push(card);
-
-
-    AcidRules.sortHand(player);
-
-
-    notePlayerHandGrew91();
+    const before =
+      captureHand91();
 
 
     render();
@@ -1187,123 +1250,18 @@
     );
 
 
-    const target =
-      playerCardElement(
-        card.id
-      );
+    cards.forEach(
+      (card, index) =>
+        flyFromDeck91(
+          card,
+          index * 60
+        )
+    );
 
 
-    const deckEl =
-      $("deck");
-
-
-    if (
-      target &&
-      deckEl
-    ) {
-
-      const deckRect =
-        deckEl.getBoundingClientRect();
-
-
-      const targetRect =
-        target.getBoundingClientRect();
-
-
-      const deckCenter =
-        rectCenter91(
-          deckRect
-        );
-
-
-      const targetCenter =
-        rectCenter91(
-          targetRect
-        );
-
-
-      const dx =
-        deckCenter.x -
-        targetCenter.x;
-
-
-      const dy =
-        deckCenter.y -
-        targetCenter.y;
-
-
-      const scale =
-        Math.min(
-          deckRect.width /
-            Math.max(
-              targetRect.width,
-              1
-            ),
-
-          deckRect.height /
-            Math.max(
-              targetRect.height,
-              1
-            )
-        );
-
-
-      target.classList.remove(
-        "v9-playable",
-        "playable"
-      );
-
-
-      target.animate(
-        [
-          {
-
-            translate:
-              `${dx}px ${dy}px`,
-
-            scale:
-              String(scale),
-
-            rotate:
-              "-7deg",
-
-            opacity:
-              .94
-
-          },
-          {
-
-            translate:
-              "0px 0px",
-
-            scale:
-              "1",
-
-            rotate:
-              "0deg",
-
-            opacity:
-              1
-
-          }
-        ],
-        {
-
-          duration:
-            285,
-
-          easing:
-            "cubic-bezier(.18,.82,.2,1)",
-
-          fill:
-            "none"
-
-        }
-      );
-    }
-
-
-    await wait91(235);
+    await wait91(
+      235 + (cards.length - 1) * 60
+    );
 
 
     hand.classList.remove(
@@ -1312,6 +1270,30 @@
 
 
     endAction91();
+  }
+
+
+  /*
+    Карты, прилетевшие игроку в этом действии.
+  */
+  function drawnCards91(events, seat) {
+
+    return events
+      .filter(
+        event =>
+          (
+            event.type === "drew" ||
+            event.type === "penalty" ||
+            event.type === "caught"
+          ) &&
+          (
+            event.seat === seat ||
+            event.target === seat
+          )
+      )
+      .flatMap(
+        event => event.cards
+      );
   }
 
 
@@ -2373,10 +2355,11 @@
      ======================================================= */
 
   /*
-    Пропуск и разворот на двоих возвращают ход тебе,
-    на большом столе — уводят дальше по кругу.
+    Пропуск и разворот на двоих возвращают ход тому же
+    игроку, на большом столе — уводят дальше по кругу.
+    Что именно случилось, знает событие хода из редьюсера.
   */
-  function specialTurnStatus91(card) {
+  function specialTurnStatus91(card, events) {
 
     if (
       card.value !== "skip" &&
@@ -2386,17 +2369,12 @@
       return null;
     }
 
-    const preview =
-      AcidRules.turnAfterCard(
-        card,
-        {
-          seat: activeSeat,
-          seats: seatCount(),
-          direction
-        }
+    const moved =
+      events.find(
+        event => event.type === "turn"
       );
 
-    if (preview.again) {
+    if (moved?.again) {
 
       return card.value === "skip"
         ? "ПРОПУСК — ХОДИШЬ СНОВА"
@@ -2409,28 +2387,14 @@
   }
 
 
-  function turnStatus91() {
-
-    if (turn === "player") {
-
-      return drawPenalty > 0
-        ? `ШТРАФ +${drawPenalty}`
-        : "ТВОЙ ХОД";
-    }
-
-    return drawPenalty > 0
-      ? `${seatName(activeSeat)}: ШТРАФ +${drawPenalty}`
-      : seatCount() > 2
-        ? `ХОДИТ ${seatName(activeSeat)}`
-        : "ХОД БОТА";
-  }
-
-
-  function handOverTurn91(card, options) {
+  /*
+    Ход уже передан редьюсером — здесь только показать это
+    и запустить следующего соперника: на столе из семи мест
+    подряд может сходить до шести ботов.
+  */
+  function announceTurn91(options) {
 
     const settings = options || {};
-
-    advanceTurn(card);
 
     visualTurn91(turn);
 
@@ -2458,6 +2422,23 @@
       },
       settings.delay ?? 90
     );
+  }
+
+
+  function turnStatus91() {
+
+    if (turn === "player") {
+
+      return drawPenalty > 0
+        ? `ШТРАФ +${drawPenalty}`
+        : "ТВОЙ ХОД";
+    }
+
+    return drawPenalty > 0
+      ? `${seatName(activeSeat)}: ШТРАФ +${drawPenalty}`
+      : seatCount() > 2
+        ? `ХОДИТ ${seatName(activeSeat)}`
+        : "ХОД БОТА";
   }
 
 
@@ -2491,26 +2472,31 @@
       captureHand91();
 
 
-    const freshIndex =
-      playerIndex(
-        card.id
-      );
+    /*
+      Состояние меняется только после того, как карта
+      физически доехала до сброса.
+    */
+    const result =
+      AcidStore.dispatch({
+        type: "play",
+        seat: 0,
+        cardId: card.id,
+        color: chosenColor
+      });
 
 
-    if (
-      freshIndex === -1
-    ) {
-
-      V91.drag =
-        null;
+    V91.drag =
+      null;
 
 
-      d.source.remove();
+    d.source.remove();
 
 
-      d.placeholder
-        ?.remove();
+    d.placeholder
+      ?.remove();
 
+
+    if (result.error) {
 
       render();
 
@@ -2528,34 +2514,6 @@
     }
 
 
-    /*
-      Actual gameplay state changes only AFTER
-      the physical card reaches discard.
-    */
-
-    player.splice(
-      freshIndex,
-      1
-    );
-
-
-    applyCardState(
-      card,
-      chosenColor
-    );
-
-
-    V91.drag =
-      null;
-
-
-    d.source.remove();
-
-
-    d.placeholder
-      ?.remove();
-
-
     render();
 
 
@@ -2571,42 +2529,51 @@
 
 
     if (
-      player.length === 0
+      finishedByEvents91(result.events)
     ) {
-
-      endAction91();
-
-      finish(true);
 
       return true;
     }
 
 
-    handlePlayerUnoAfterPlay91();
+    watchPlayerUno91();
 
 
-    /*
-      Перехват возвращает ход перехватившему,
-      дальше круг считается от него.
-    */
-    if (intercept) {
-      setActiveSeat(0);
-    }
+    announceTurn91({
+      status:
+        specialTurnStatus91(
+          card,
+          result.events
+        ),
 
-
-    handOverTurn91(
-      card,
-      {
-        status:
-          specialTurnStatus91(card),
-
-        delay: 85
-      }
-    );
+      delay: 85
+    });
 
 
     endAction91();
 
+
+    return true;
+  }
+
+
+  /*
+    Партия кончилась внутри редьюсера — остаётся показать это.
+  */
+  function finishedByEvents91(events) {
+
+    const over =
+      events.find(
+        event => event.type === "over"
+      );
+
+    if (!over) {
+      return false;
+    }
+
+    endAction91();
+
+    finish(over.winner === 0);
 
     return true;
   }
@@ -2862,71 +2829,18 @@
         now;
 
 
-      /*
-        PENALTY
-      */
-
-      if (
-        drawPenalty > 0
-      ) {
-
-        const amount =
-          drawPenalty;
+      const penalty =
+        drawPenalty > 0;
 
 
-        const cards =
-          takeMany(
-            amount
-          );
+      const result =
+        AcidStore.dispatch({
+          type: "draw",
+          seat: 0
+        });
 
 
-        drawPenalty =
-          0;
-
-
-        penaltyType =
-          null;
-
-
-        burst91(
-          `+${cards.length}`,
-          "danger"
-        );
-
-
-        for (
-          const card of cards
-        ) {
-
-          await addPlayerCardAnimated91(
-            card
-          );
-
-
-          await wait91(
-            45
-          );
-        }
-
-
-        handOverTurn91(null);
-
-
-        return;
-      }
-
-
-      /*
-        VOLUNTARY DRAW
-
-        ALWAYS exactly one card.
-      */
-
-      const card =
-        takeRaw();
-
-
-      if (!card) {
+      if (result.error) {
 
         AcidFX.status(
           "КАРТ БОЛЬШЕ НЕТ"
@@ -2937,12 +2851,37 @@
       }
 
 
-      await addPlayerCardAnimated91(
-        card
-      );
+      const cards =
+        drawnCards91(result.events, 0);
 
 
-      setActiveSeat(0);
+      if (penalty) {
+
+        burst91(
+          `+${cards.length}`,
+          "danger"
+        );
+      }
+
+
+      await animateIncoming91(cards);
+
+
+      /*
+        Штраф забирают целиком, и на этом ход заканчивается.
+        Добровольный добор ход не отдаёт.
+      */
+      if (penalty) {
+
+        announceTurn91();
+
+
+        return;
+      }
+
+
+      const card =
+        cards[cards.length - 1];
 
 
       render();
@@ -3006,7 +2945,7 @@
      BOT BACK DRAW
      ======================================================= */
 
-  async function botDrawBack91() {
+  async function botDrawBack91(seat) {
 
     const deckEl =
       $("deck");
@@ -3014,7 +2953,7 @@
 
     const botArea =
       opponentElement91(
-        activeSeat
+        seat ?? activeSeat
       ) ||
       $("botCards");
 
@@ -3228,21 +3167,31 @@
         Its delay is no longer preceded by 800ms think time.
       */
 
+      const seat =
+        activeSeat;
+
+
       await AcidFX.playBotCard(
         card
       );
 
 
-      bot.splice(
-        index,
-        1
-      );
+      const result =
+        AcidStore.dispatch({
+          type: "play",
+          seat,
+          cardId: card.id,
+          color: chosenColor
+        });
 
 
-      applyCardState(
-        card,
-        chosenColor
-      );
+      if (result.error) {
+
+        endAction91();
+
+
+        return;
+      }
 
 
       render();
@@ -3254,14 +3203,11 @@
 
 
       if (
-        bot.length === 0
+        finishedByEvents91(result.events)
       ) {
 
         clearBotUno91();
 
-        endAction91();
-
-        finish(false);
 
         return;
       }
@@ -3269,22 +3215,22 @@
 
       if (
         willHaveOne &&
-        bot.length === 1
+        AcidStore.seatOf(seat).hand.length === 1
       ) {
 
-        prepareBotUno91();
+        prepareBotUno91(seat);
       }
 
 
-      handOverTurn91(
-        card,
-        {
-          status:
-            specialTurnStatus91(card),
+      announceTurn91({
+        status:
+          specialTurnStatus91(
+            card,
+            result.events
+          ),
 
-          delay: 85
-        }
-      );
+        delay: 85
+      });
 
 
       endAction91();
@@ -3439,26 +3385,36 @@
         }
 
 
-        const amount =
-          drawPenalty;
+        const seat =
+          activeSeat;
+
+
+        const result =
+          AcidStore.dispatch({
+            type: "draw",
+            seat
+          });
+
+
+        if (result.error) {
+
+          V91.botRunning =
+            false;
+
+
+          announceTurn91();
+
+
+          return;
+        }
 
 
         const cards =
-          takeMany(
-            amount
-          );
-
-
-        drawPenalty =
-          0;
-
-
-        penaltyType =
-          null;
+          drawnCards91(result.events, seat);
 
 
         burst91(
-          `${seatName(activeSeat)} +${cards.length}`,
+          `${seatName(seat)} +${cards.length}`,
           "danger"
         );
 
@@ -3467,30 +3423,24 @@
 
 
         for (
-          const card of cards
+          let i = 0;
+          i < cards.length;
+          i++
         ) {
 
-          await botDrawBack91();
+          await botDrawBack91(seat);
 
 
-          bot.push(
-            card
-          );
-
-
-          render();
-
-
-          await wait91(
-            25
-          );
+          await wait91(25);
         }
 
 
+        render();
+
+
         /*
-          IMPORTANT:
-          accepting penalty ENDS bot turn.
-      */
+          Принять штраф — значит закончить ход.
+        */
 
         V91.botRunning =
           false;
@@ -3499,7 +3449,7 @@
         endAction91();
 
 
-        handOverTurn91(null);
+        announceTurn91();
 
 
         return;
@@ -3523,74 +3473,57 @@
         );
 
 
-        let found =
-          -1;
+        const seat =
+          activeSeat;
 
 
-        let safety =
-          0;
+        let safety = 0;
 
 
         beginAction91();
 
 
+        /*
+          Тянем по одной, пока не найдётся подходящая.
+          Добровольный добор ход не отдаёт, поэтому редьюсер
+          оставляет место за тем же соперником.
+        */
         while (
-          found === -1 &&
+          playable.length === 0 &&
           safety < 150
         ) {
 
           safety++;
 
 
-          const card =
-            takeRaw();
+          const result =
+            AcidStore.dispatch({
+              type: "draw",
+              seat
+            });
 
 
-          if (!card) {
+          if (result.error) {
 
             break;
           }
 
 
-          await botDrawBack91();
-
-
-          bot.push(
-            card
-          );
+          await botDrawBack91(seat);
 
 
           render();
 
 
-          if (
-            normalPlayable(
-              card
-            )
-          ) {
-
-            found =
-              bot.length - 1;
-          }
+          playable =
+            botPlayableIndexes();
 
 
-          await wait91(
-            22
-          );
+          await wait91(22);
         }
 
 
         endAction91();
-
-
-        if (
-          found !== -1
-        ) {
-
-          playable = [
-            found
-          ];
-        }
       }
 
 
@@ -3602,7 +3535,16 @@
           false;
 
 
-        handOverTurn91(null);
+        /*
+          Ходить нечем и брать неоткуда.
+        */
+        AcidStore.dispatch({
+          type: "pass",
+          seat: activeSeat
+        });
+
+
+        announceTurn91();
 
 
         return;
@@ -3803,17 +3745,20 @@
         captureHand91();
 
 
-      const freshIndex =
-        playerIndex(
-          cardId
-        );
+      const result =
+        AcidStore.dispatch({
+          type: "play",
+          seat: 0,
+          cardId,
+          color: chosenColor
+        });
 
 
-      if (
-        freshIndex === -1
-      ) {
+      if (result.error) {
 
         endAction91();
+
+        render();
 
         return;
       }
@@ -3826,18 +3771,6 @@
           "acid"
         );
       }
-
-
-      player.splice(
-        freshIndex,
-        1
-      );
-
-
-      applyCardState(
-        card,
-        chosenColor
-      );
 
 
       render();
@@ -3854,34 +3787,25 @@
 
 
       if (
-        player.length === 0
+        finishedByEvents91(result.events)
       ) {
-
-        endAction91();
-
-        finish(true);
 
         return;
       }
 
 
-      handlePlayerUnoAfterPlay91();
+      watchPlayerUno91();
 
 
-      if (intercept) {
-        setActiveSeat(0);
-      }
+      announceTurn91({
+        status:
+          specialTurnStatus91(
+            card,
+            result.events
+          ),
 
-
-      handOverTurn91(
-        card,
-        {
-          status:
-            specialTurnStatus91(card),
-
-          delay: 85
-        }
-      );
+        delay: 85
+      });
 
 
       endAction91();
@@ -3896,21 +3820,13 @@
     $("unoButton");
 
 
-  function unoContext91() {
-
-    return {
-
-      active:
-        !gameOver &&
-        turn === "player",
-
-      handSize:
-        player.length
-
-    };
-  }
-
-
+  /*
+    Объявление живёт в состоянии партии (seats[0].unoCalled),
+    а не в отдельном флаге интерфейса. Любой рост руки снимает
+    его прямо в редьюсере — из-за отсутствия этого сброса
+    кнопка когда-то переставала появляться после первого же
+    удачного «UNO!».
+  */
   function syncUno91() {
 
     if (!unoButton91) {
@@ -3918,55 +3834,32 @@
     }
 
 
+    const seat =
+      AcidStore.seatOf(0);
+
+    if (!seat) {
+      return;
+    }
+
+
     unoButton91.classList.toggle(
       "show",
 
-      V91.playerUno.shouldShowButton(
-        unoContext91()
-      )
+      !gameOver &&
+      turn === "player" &&
+      seat.hand.length === AcidRules.UNO_HAND_SIZE &&
+      !seat.unoCalled
+    );
+
+
+    unoButton91.classList.toggle(
+      "called",
+      Boolean(seat.unoCalled)
     );
   }
 
 
   function resetPlayerUno91() {
-
-    clearTimeout(
-      V91.playerUnoTimer
-    );
-
-
-    V91.playerUno.reset();
-
-
-    unoButton91
-      ?.classList
-      .remove(
-        "show",
-        "called"
-      );
-  }
-
-
-  /*
-    Рука выросла — прошлое объявление UNO снимается.
-
-    Без этого после удачного «UNO!» рука падала до одной
-    карты, обработчик выходил по раннему return, и флаг
-    оставался поднятым до конца партии: кнопка больше
-    не появлялась, а бот больше не ловил.
-  */
-
-  function notePlayerHandGrew91() {
-
-    if (
-      !V91.playerUno.handGrew(
-        player.length
-      )
-    ) {
-
-      return;
-    }
-
 
     clearTimeout(
       V91.playerUnoTimer
@@ -3992,19 +3885,19 @@
         event.stopPropagation();
 
 
-        if (
-          !V91.playerUno.call(
-            unoContext91()
-          )
-        ) {
+        const result =
+          AcidStore.dispatch({
+            type: "uno",
+            seat: 0
+          });
 
+
+        if (result.error) {
           return;
         }
 
 
-        unoButton91.classList.add(
-          "called"
-        );
+        syncUno91();
 
 
         burst91(
@@ -4020,60 +3913,54 @@
     );
 
 
-  function handlePlayerUnoAfterPlay91() {
-
-    const outcome =
-      V91.playerUno.afterPlay(
-        player.length
-      );
-
-
-    if (
-      outcome === "clear"
-    ) {
-
-      resetPlayerUno91();
-
-      return;
-    }
-
-
-    unoButton91
-      ?.classList
-      .remove(
-        "show"
-      );
-
-
-    if (
-      outcome === "safe"
-    ) {
-
-      return;
-    }
-
+  /*
+    Осталась одна карта и объявления не было — соперник ловит
+    через полсекунды, как живой человек.
+  */
+  function watchPlayerUno91() {
 
     clearTimeout(
       V91.playerUnoTimer
     );
 
 
+    syncUno91();
+
+
+    if (
+      !AcidStore.seatOf(0)?.unoVulnerable
+    ) {
+
+      return;
+    }
+
+
     V91.playerUnoTimer =
       setTimeout(
         async () => {
 
-          if (
-            gameOver ||
-            !V91.playerUno.catchable(
-              player.length
-            )
-          ) {
-
+          if (gameOver) {
             return;
           }
 
 
-          V91.playerUno.reset();
+          const catcher =
+            seats.length > 1
+              ? 1
+              : 0;
+
+
+          const result =
+            AcidStore.dispatch({
+              type: "catch",
+              seat: catcher,
+              target: 0
+            });
+
+
+          if (result.error) {
+            return;
+          }
 
 
           burst91(
@@ -4082,35 +3969,15 @@
           );
 
 
-          const cards =
-            takeMany(2);
-
-
-          for (
-            const card of cards
-          ) {
-
-            await addPlayerCardAnimated91(
-              card
-            );
-
-
-            await wait91(
-              45
-            );
-          }
-
-
-          resetPlayerUno91();
+          await animateIncoming91(
+            drawnCards91(result.events, 0)
+          );
 
 
           render();
 
         },
-        randomBetween91(
-          440,
-          700
-        )
+        randomBetween91(440, 700)
       );
   }
 
@@ -4169,10 +4036,10 @@
   }
 
 
-  function prepareBotUno91() {
+  function prepareBotUno91(target) {
 
     const seat =
-      activeSeat;
+      target ?? activeSeat;
 
 
     clearBotUno91();
@@ -4195,12 +4062,19 @@
       setTimeout(
         () => {
 
-          if (
-            gameOver ||
-            !V91.botUnoVulnerable ||
-            seats[seat]?.hand.length !== 1
-          ) {
+          if (gameOver) {
+            return;
+          }
 
+
+          const result =
+            AcidStore.dispatch({
+              type: "closeUno",
+              target: seat
+            });
+
+
+          if (result.error) {
             return;
           }
 
@@ -4258,12 +4132,22 @@
 
     if (
       gameOver ||
-      !V91.botUnoVulnerable ||
-      V91.botUnoCalled ||
-      V91.botUnoSeat !== seat ||
-      seats[seat]?.hand.length !== 1
+      V91.botUnoSeat !== seat
     ) {
 
+      return;
+    }
+
+
+    const result =
+      AcidStore.dispatch({
+        type: "catch",
+        seat: 0,
+        target: seat
+      });
+
+
+    if (result.error) {
       return;
     }
 
@@ -4282,32 +4166,27 @@
     );
 
 
-    const cards =
-      takeMany(2);
-
-
     beginAction91();
 
 
+    const cards =
+      drawnCards91(result.events, seat);
+
+
     for (
-      const card of cards
+      let i = 0;
+      i < cards.length;
+      i++
     ) {
 
-      await botDrawBack91();
+      await botDrawBack91(seat);
 
 
-      seats[seat].hand.push(
-        card
-      );
-
-
-      render();
-
-
-      await wait91(
-        25
-      );
+      await wait91(25);
     }
+
+
+    render();
 
 
     endAction91();
