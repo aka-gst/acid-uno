@@ -5130,7 +5130,12 @@ html[data-skin="crt"] .value[data-v] {
 .arena[data-art="1"] {
   background-size: cover;
 
-  background-position: center 62%;
+  /*
+    Сдвиг вверх, а не по центру: у всех четырёх фонов свет,
+    трубы и вывески живут в верхней трети, а низ — пустой пол.
+    При 62% в кадр попадал только он, и картинки будто не было.
+  */
+  background-position: center 42%;
 
   background-repeat: no-repeat;
 }

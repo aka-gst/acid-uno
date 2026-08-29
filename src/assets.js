@@ -29,10 +29,18 @@
   };
 
 
-  const EXT = {
-    arena: "jpg",
-    bot: "png",
-    back: "png"
+  /*
+    Имена и расширения — как в наборе, который отдаёт
+    генератор: webp легче jpg и png при том же качестве, а
+    рубашка там называется card-back.
+  */
+  const EXT = "webp";
+
+
+  const PREFIX = {
+    arena: "arena",
+    bot: "bot",
+    back: "card-back"
   };
 
 
@@ -64,7 +72,7 @@
 
     for (let i = 1; i <= COUNTS[kind]; i += 1) {
 
-      const url = `assets/${kind}-${i}.${EXT[kind]}`;
+      const url = `assets/${PREFIX[kind]}-${i}.${EXT}`;
 
       /* eslint-disable no-await-in-loop */
       if (!await probe(url)) {
