@@ -145,12 +145,35 @@
                 const off =
                   window.AcidAssets.isOff(url);
 
+                const dim =
+                  window.AcidAssets.dimOf(url);
+
+                /*
+                  Ползунок только у фонов: рубашка и материал
+                  лежат на карте, и затемнять их нечем — они
+                  и так тёмные.
+                */
+                const slider =
+                  section.key === "arena"
+                    ? '<label class="artDim">' +
+                      `<input type="range" min="0" max="85" step="5" ` +
+                      `value="${dim}" data-dim="${url}">` +
+                      `<span class="artDimValue">${dim}%</span>` +
+                      "</label>"
+                    : "";
+
                 return (
+                  '<div class="artItem">' +
                   `<button class="artCell${off ? " off" : ""}" ` +
                   `type="button" data-url="${url}">` +
-                  `<span class="artThumb" style="background-image:url('${url}')"></span>` +
+                  '<span class="artThumb" style="' +
+                  `background-image:linear-gradient(rgba(0,0,0,${dim / 100}),` +
+                  `rgba(0,0,0,${dim / 100})),url('${url}')">` +
+                  "</span>" +
                   `<span class="artName">${name}</span>` +
-                  "</button>"
+                  "</button>" +
+                  slider +
+                  "</div>"
                 );
               })
               .join("");
@@ -177,7 +200,10 @@
     const cell =
       event.target?.closest?.(".artCell");
 
-    if (!cell) {
+    if (
+      !cell ||
+      event.target?.closest?.(".artDim")
+    ) {
       return;
     }
 
@@ -195,6 +221,48 @@
   }
 
 
+  /*
+    Ползунок затемнения. Меняем сразу и на превью, и в
+    памяти: смысл в том, чтобы видеть результат, не закрывая
+    окна.
+  */
+  function onBodyInput(event) {
+
+    const slider =
+      event.target;
+
+    if (!slider?.dataset?.dim) {
+      return;
+    }
+
+    const url =
+      slider.dataset.dim;
+
+    const value =
+      window.AcidAssets.setDim(url, slider.value);
+
+    const item =
+      slider.closest(".artItem");
+
+    const thumb =
+      item?.querySelector(".artThumb");
+
+    if (thumb) {
+
+      thumb.style.backgroundImage =
+        `linear-gradient(rgba(0,0,0,${value / 100}),` +
+        `rgba(0,0,0,${value / 100})),url('${url}')`;
+    }
+
+    const label =
+      item?.querySelector(".artDimValue");
+
+    if (label) {
+      label.textContent = `${value}%`;
+    }
+  }
+
+
   function open() {
 
     const el = layer();
@@ -206,6 +274,12 @@
 
     $("artBody")
       .addEventListener("click", onBodyClick);
+
+    $("artBody")
+      .removeEventListener("input", onBodyInput);
+
+    $("artBody")
+      .addEventListener("input", onBodyInput);
 
     el.classList.remove("hidden");
   }

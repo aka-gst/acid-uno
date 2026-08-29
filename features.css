@@ -2173,22 +2173,22 @@
 
 :root {
   /* малиновый вместо красного */
-  --red: #ff2d78;
-  --red-light: #ff74a8;
-  --red-deep: #a3004b;
+  --red: #ff2a3d;
+  --red-light: #ff7a86;
+  --red-deep: #9c0011;
 
-  /* кислотный жёлтый */
-  --yellow: #f5d020;
+  /* жёлтый */
+  --yellow: #ffd21e;
   --yellow-light: #ffe97e;
-  --yellow-deep: #8f7200;
+  --yellow-deep: #8f6c00;
 
-  /* кислотный зелёный — основной цвет игры */
-  --green: #a6f42a;
-  --green-light: #ccff74;
-  --green-deep: #4b8a00;
+  /* зелёный */
+  --green: #3ddb1f;
+  --green-light: #93f57e;
+  --green-deep: #167a00;
 
-  /* холодная бирюза вместо синего */
-  --blue: #22d3ee;
+  /* синий */
+  --blue: #268bff;
   --blue-light: #8beeff;
   --blue-deep: #00697f;
 }
@@ -2491,17 +2491,63 @@ html[data-deck="acid"] .flyingCard.blue,
 html[data-deck="acid"] .card.wild,
 html[data-deck="acid"] .handCard.wild,
 html[data-deck="acid"] .flyingCard.wild {
+  /*
+    Карта носит свою масть, а не только окантовку. Раньше все
+    четыре масти красились одним почти чёрным градиентом, и
+    цвет жил только в рамке да в цифре — на столе это читалось
+    медленно, а в веере, где видно лишь край карты, не
+    читалось вовсе.
+
+    Тёмная основа остаётся, но масть в ней преобладает: карта
+    видна как «красная» или «синяя» с одного взгляда, и при
+    этом не превращается в плоскую заливку из настольного
+    набора.
+  */
   background:
     linear-gradient(
       158deg,
-      rgba(20, 11, 32, .98),
-      rgba(7, 4, 14, .98)
+      color-mix(in srgb, var(--suit) 58%, #0a0614),
+      color-mix(in srgb, var(--suit) 26%, #06030d)
     );
 
   box-shadow:
     0 0 8px currentColor,
     0 0 22px rgba(0, 0, 0, .6),
     0 11px 18px rgba(0, 0, 0, .5);
+}
+
+
+/*
+  Чёрная карта остаётся чёрной: у неё масти нет, а
+  color-mix с фиолетовым сделал бы её пятой мастью.
+*/
+html[data-deck="acid"] .card.wild,
+html[data-deck="acid"] .handCard.wild,
+html[data-deck="acid"] .flyingCard.wild {
+  background:
+    linear-gradient(
+      158deg,
+      rgba(20, 11, 32, .98),
+      rgba(7, 4, 14, .98)
+    );
+}
+
+
+/*
+  Номинал белый. На цветном поле цветная цифра сливается с
+  ним — ровно та жалоба, с которой всё и началось. Белая с
+  тёмной обводкой читается на любой масти и с любого
+  расстояния.
+*/
+html[data-deck="acid"] .card .value,
+html[data-deck="acid"] .handCard .value,
+html[data-deck="acid"] .flyingCard .value {
+  color: #fff;
+
+  text-shadow:
+    0 2px 0 rgba(4, 2, 9, .85),
+    0 0 3px rgba(4, 2, 9, .95),
+    0 0 16px color-mix(in srgb, var(--suit) 70%, transparent);
 }
 
 
@@ -5019,19 +5065,11 @@ html[data-deck="acid"] .flyingCard .value {
   фону, и любой фон здесь маска обрежет по своей форме —
   вместо ореола вышел бы тёмный значок вместо цветного.
 */
-html[data-deck="acid"] .card .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]),
-html[data-deck="acid"] .handCard .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]),
-html[data-deck="acid"] .flyingCard .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]) {
-  padding: 4px 13px;
-
-  background:
-    radial-gradient(
-      ellipse at center,
-      rgba(4, 2, 9, .94) 0 38%,
-      rgba(4, 2, 9, .74) 60%,
-      rgba(4, 2, 9, 0) 84%
-    );
-}
+/*
+  Тёмный ореол под цифрой убран: он спасал цветную цифру на
+  пёстрой фактуре, а теперь цифра белая с обводкой и поле под
+  ней ровное. Ореол только грязнил карту.
+*/
 
 html[data-deck="acid"] .card::after,
 html[data-deck="acid"] .handCard::after,
@@ -5051,8 +5089,20 @@ html[data-deck="acid"] .flyingCard::after {
    лишь клик или тап.
    ========================================================= */
 
+/*
+  Наведение зажигает сектор по-настоящему. Прежние четыре
+  процента яркости не видел никто: сектор под курсором ничем
+  не отличался от соседних, и барабан выглядел неживым.
+
+  Выбор по-прежнему делает только нажатие — наведение лишь
+  показывает, что выберется.
+*/
 .colorWheel .pick:hover {
-  filter: brightness(1.04) saturate(1.06);
+  filter:
+    brightness(1.5)
+    saturate(1.25);
+
+  z-index: 3;
 }
 
 
@@ -6993,9 +7043,12 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
   opacity: .5;
 }
 
-.direction.solo {
-  animation: none;
-}
+/*
+  Кольцо крутится и на столе вдвоём. Раньше здесь стояло
+  animation: none — и оно перебивало вращение, заведённое
+  ниже по файлу: круг стоял на месте ровно в самом частом
+  случае, на столе на двоих.
+*/
 
 
 /* =========================================================
@@ -7533,4 +7586,235 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
   .opponents:not([data-count="1"]):not([data-count="2"]) .opponentFan {
     rotate: calc(var(--tilt, 0deg) * .6);
   }
+}
+
+
+/* =========================================================
+   БАРАБАН ЦВЕТА: ЗАМЕТНЕЕ И КРАСИВЕЕ
+
+   Сектор под курсором должен гореть — иначе непонятно, что
+   именно выберется, и барабан кажется неотзывчивым.
+   Свечение идёт своей мастью, а не общим белым: так видно
+   и что наведено, и на что.
+   ========================================================= */
+
+.colorWheel .pick {
+  transition:
+    filter .16s ease,
+    scale .16s ease,
+    box-shadow .16s ease;
+}
+
+.colorWheel .pick:hover,
+.colorWheel .pick.hot {
+  scale: 1.06;
+
+  box-shadow:
+    0 0 18px 2px currentColor,
+    0 0 44px rgba(255, 255, 255, .18);
+}
+
+.colorWheel .pick.red { color: var(--red); }
+.colorWheel .pick.yellow { color: var(--yellow); }
+.colorWheel .pick.green { color: var(--green); }
+.colorWheel .pick.blue { color: var(--blue); }
+
+/* ступица подсказывает словом, что под пальцем */
+.colorWheel:hover .wheelHub {
+  color: #fff;
+
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, .5);
+}
+
+
+/* =========================================================
+   МАТЕРИАЛ НЕ ЗАКРАШИВАЕТ МАСТЬ
+
+   Каждый из пяти материалов рисует себя в ::before, и в
+   основании у него почти непрозрачная тёмная подложка —
+   она и делала все карты одинаково чёрными. Пока масть жила
+   только в рамке, это было незаметно; теперь масть в самой
+   карте, и подложку надо приглушить, иначе она её съедает.
+
+   Фактура остаётся: видно и плёнку, и плату, и развёртку —
+   просто сквозь них видно цвет.
+   ========================================================= */
+
+html[data-deck="acid"] .card::before,
+html[data-deck="acid"] .handCard::before,
+html[data-deck="acid"] .flyingCard::before {
+  opacity: .42;
+}
+
+/* у чёрной карты подложка на месте: масти под ней нет */
+html[data-deck="acid"] .card.wild::before,
+html[data-deck="acid"] .handCard.wild::before,
+html[data-deck="acid"] .flyingCard.wild::before {
+  opacity: 1;
+}
+
+
+/* ---------- ползунок затемнения фона ---------- */
+
+.artItem {
+  display: grid;
+
+  gap: 4px;
+}
+
+.artDim {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 0 2px;
+}
+
+.artDim input[type="range"] {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 3px;
+
+  border-radius: 3px;
+
+  background: rgba(255, 255, 255, .18);
+
+  accent-color: var(--acid);
+
+  cursor: pointer;
+}
+
+.artDimValue {
+  min-width: 30px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: .06em;
+
+  text-align: right;
+
+  color: rgba(183, 255, 36, .8);
+}
+
+/* выключенный фон гасим целиком, вместе с ползунком */
+.artItem:has(.artCell.off) .artDim {
+  opacity: .34;
+}
+
+
+/* =========================================================
+   КЛАСТЕР ШТРАФА ПОСРЕДИ СТОЛА
+
+   В референсе, когда висит «+8», он висит именно так:
+   огромным числом в середине стола, поверх всего. Иначе
+   игрок не понимает, что именно ему сейчас брать и сколько.
+
+   У нас число стояло у верхней кромки стола и было вдвое
+   мельче — его просто не замечали.
+   ========================================================= */
+
+.stackHUD {
+  /*
+    Ровно посреди стола. Правило для альбома уводило счётчик
+    к правому краю — оно писалось, когда он был мелким и
+    стоял сбоку. Теперь он главный на столе и должен быть
+    там, где на него смотрят.
+  */
+  left: 50%;
+  right: auto;
+
+  top: 44%;
+
+  transform: translate(-50%, -50%);
+
+  gap: 4px;
+
+  z-index: 12;
+}
+
+.stackHUD.hidden {
+  transform:
+    translate(-50%, -50%)
+    scale(.7);
+}
+
+.stackHUDValue {
+  font-size: clamp(96px, 15vh, 168px);
+
+  color: #fff;
+
+  text-shadow:
+    0 4px 0 rgba(6, 2, 10, .8),
+    0 0 14px rgba(255, 255, 255, .7),
+    0 0 40px var(--red),
+    0 0 90px rgba(255, 42, 61, .75);
+}
+
+.stackHUDLabel,
+.stackHUDCards {
+  padding: 3px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(6, 2, 10, .72);
+
+  font-size: 13px;
+
+  color: #fff;
+
+  text-shadow:
+    0 0 12px var(--red);
+}
+
+/*
+  Пока кластер висит, он дышит: остановившееся число на столе
+  читается как часть картинки, а не как то, что вот-вот
+  прилетит.
+*/
+.stackHUD:not(.hidden) .stackHUDValue {
+  animation:
+    stackPulse 1.15s ease-in-out infinite;
+}
+
+@keyframes stackPulse {
+
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.07;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .stackHUD:not(.hidden) .stackHUDValue {
+    animation: none;
+  }
+}
+
+
+/* ---------- админка: ячейка с ползунком ---------- */
+
+/*
+  Сетка раздаёт колонки самим ячейкам, а теперь между ними и
+  сеткой встал .artItem — размеры надо передать ему, иначе
+  превью схлопываются в полоски.
+*/
+.artItem {
+  min-width: 0;
+}
+
+.artItem .artCell {
+  width: 100%;
+
+  display: block;
 }

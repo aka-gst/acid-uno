@@ -158,6 +158,74 @@
   }
 
 
+  /* =======================================================
+     ЗАТЕМНЕНИЕ ФОНА
+
+     Рисованные арены пёстрые — они и должны быть такими сами
+     по себе, но под столом с картами пестрота мешает. Каждой
+     можно задать свою степень затемнения: ноль — как
+     нарисовано, восемьдесят — почти чёрный силуэт.
+
+     Хранится рядом с выключенными: это такая же настройка
+     хозяина, привязанная к файлу.
+     ======================================================= */
+
+  const DIM_KEY =
+    "acid-uno-art-dim";
+
+
+  function dimMap() {
+
+    try {
+
+      const raw =
+        window.localStorage.getItem(DIM_KEY);
+
+      const map =
+        raw ? JSON.parse(raw) : {};
+
+      return map && typeof map === "object" ? map : {};
+
+    } catch (error) {
+
+      return {};
+    }
+  }
+
+
+  function dimOf(url) {
+
+    const value =
+      Number(dimMap()[url]);
+
+    return Number.isFinite(value)
+      ? Math.min(85, Math.max(0, value))
+      : 0;
+  }
+
+
+  function setDim(url, value) {
+
+    const map = dimMap();
+
+    map[url] = Math.min(85, Math.max(0, Number(value) || 0));
+
+    try {
+
+      window.localStorage.setItem(
+        DIM_KEY,
+        JSON.stringify(map)
+      );
+
+    } catch (error) {
+
+      /* приватный режим — не запомним */
+    }
+
+    return map[url];
+  }
+
+
   function probe(url) {
 
     return new Promise(resolve => {
@@ -269,7 +337,18 @@
       return;
     }
 
-    arena.style.backgroundImage = `url("${url}")`;
+    /*
+      Затемнение — слоем поверх картинки, а не фильтром: фильтр
+      на весь экран стоит дорого, а лишний прямоугольник в
+      background не стоит ничего.
+    */
+    const dim =
+      dimOf(url) / 100;
+
+    arena.style.backgroundImage =
+      dim > 0
+        ? `linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim})), url("${url}")`
+        : `url("${url}")`;
 
     arena.dataset.art = "1";
   }
@@ -349,7 +428,9 @@
     offList,
     isOff,
     toggleOff,
-    pool
+    pool,
+    dimOf,
+    setDim
   };
 
 });
