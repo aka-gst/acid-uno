@@ -3505,68 +3505,6 @@ html[data-deck="acid"] .deckUno {
 
 
 /* =========================================================
-   ЛИЦА СОПЕРНИКОВ
-
-   Были системные эмодзи: на каждой платформе рисуются
-   по-своему и выглядят вставкой из другой оперы. В макете за
-   столом сидят персонажи, поэтому здесь — четыре неоновых
-   силуэта в палитре игры, по кругу на места.
-   ========================================================= */
-
-.opponentFace {
-  display: block;
-
-  width: 1.35em;
-  height: 1.35em;
-
-  -webkit-mask-source-type: luminance;
-  mask-mode: luminance;
-
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-
-  -webkit-mask-position: center;
-  mask-position: center;
-
-  -webkit-mask-size: contain;
-  mask-size: contain;
-
-  filter:
-    drop-shadow(0 0 2px rgba(255, 255, 255, .7))
-    drop-shadow(0 0 7px currentColor);
-}
-
-.opponentFace[data-face="0"] {
-  color: var(--acid);
-  background: var(--acid);
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c5.2 0 8.4 3.1 8.4 7.6v5.1c0 4.1-3.5 7.3-8.4 7.3s-8.4-3.2-8.4-7.3V9.6C3.6 5.1 6.8 2 12 2z' fill='white'/><rect x='6' y='8.4' width='12' height='3.6' rx='1.6' fill='black'/><rect x='9.2' y='17' width='5.6' height='1.6' rx='.8' fill='black'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c5.2 0 8.4 3.1 8.4 7.6v5.1c0 4.1-3.5 7.3-8.4 7.3s-8.4-3.2-8.4-7.3V9.6C3.6 5.1 6.8 2 12 2z' fill='white'/><rect x='6' y='8.4' width='12' height='3.6' rx='1.6' fill='black'/><rect x='9.2' y='17' width='5.6' height='1.6' rx='.8' fill='black'/></svg>");
-}
-
-.opponentFace[data-face="1"] {
-  color: var(--cyan);
-  background: var(--cyan);
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.2c5 0 8.3 3.2 8.3 7.5 0 1.7-.4 2.9-.4 4.2 0 2.6-3.1 6.3-7.9 6.3s-7.9-3.7-7.9-6.3c0-1.3-.4-2.5-.4-4.2 0-4.3 3.3-7.5 8.3-7.5z' fill='white'/><circle cx='8.4' cy='9.8' r='2.6' fill='black'/><circle cx='15.6' cy='9.8' r='2.6' fill='black'/><rect x='9.6' y='15' width='4.8' height='2.6' rx='1.2' fill='black'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.2c5 0 8.3 3.2 8.3 7.5 0 1.7-.4 2.9-.4 4.2 0 2.6-3.1 6.3-7.9 6.3s-7.9-3.7-7.9-6.3c0-1.3-.4-2.5-.4-4.2 0-4.3 3.3-7.5 8.3-7.5z' fill='white'/><circle cx='8.4' cy='9.8' r='2.6' fill='black'/><circle cx='15.6' cy='9.8' r='2.6' fill='black'/><rect x='9.6' y='15' width='4.8' height='2.6' rx='1.2' fill='black'/></svg>");
-}
-
-.opponentFace[data-face="2"] {
-  color: var(--magenta);
-  background: var(--magenta);
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4l7.4 3.6v8.4L12 21.6 4.6 14.4V6z' fill='white'/><rect x='10.8' y='7.6' width='2.4' height='7.4' rx='1.1' fill='black'/><rect x='6.6' y='9.4' width='2' height='3.6' rx='.9' fill='black'/><rect x='15.4' y='9.4' width='2' height='3.6' rx='.9' fill='black'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4l7.4 3.6v8.4L12 21.6 4.6 14.4V6z' fill='white'/><rect x='10.8' y='7.6' width='2.4' height='7.4' rx='1.1' fill='black'/><rect x='6.6' y='9.4' width='2' height='3.6' rx='.9' fill='black'/><rect x='15.4' y='9.4' width='2' height='3.6' rx='.9' fill='black'/></svg>");
-}
-
-.opponentFace[data-face="3"] {
-  color: var(--yellow);
-  background: var(--yellow);
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4c5 0 8.2 3.3 8.2 7.8 0 3-1.4 5-3 6.1v3.1c0 1.3-1 2.2-2.3 2.2H9.1c-1.3 0-2.3-.9-2.3-2.2v-3.1c-1.6-1.1-3-3.1-3-6.1 0-4.5 3.2-7.8 8.2-7.8z' fill='white'/><circle cx='8.6' cy='10.2' r='2.5' fill='black'/><circle cx='15.4' cy='10.2' r='2.5' fill='black'/><path d='M12 13.4l1.5 2.6h-3z' fill='black'/><rect x='9.2' y='18' width='1.6' height='3' fill='black'/><rect x='13.2' y='18' width='1.6' height='3' fill='black'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4c5 0 8.2 3.3 8.2 7.8 0 3-1.4 5-3 6.1v3.1c0 1.3-1 2.2-2.3 2.2H9.1c-1.3 0-2.3-.9-2.3-2.2v-3.1c-1.6-1.1-3-3.1-3-6.1 0-4.5 3.2-7.8 8.2-7.8z' fill='white'/><circle cx='8.6' cy='10.2' r='2.5' fill='black'/><circle cx='15.4' cy='10.2' r='2.5' fill='black'/><path d='M12 13.4l1.5 2.6h-3z' fill='black'/><rect x='9.2' y='18' width='1.6' height='3' fill='black'/><rect x='13.2' y='18' width='1.6' height='3' fill='black'/></svg>");
-}
-
-
-
-/* =========================================================
    АРЕНА ВМЕСТО СЕТКИ
 
    В макете стол — круглая арена с кольцами и подсветкой
@@ -4955,4 +4893,225 @@ html[data-skin="crt"] .value[data-v] {
   .cardTrail {
     animation: none;
   }
+}
+
+
+/* =========================================================
+   АРЕНА — КООРДИНАТНАЯ ПЛОСКОСТЬ
+
+   Стол лежит не в пустоте, а на уходящей в туман сетке, как
+   в заставках восьмидесятых. Слой лежит под всей игрой и
+   ничего не перехватывает: горизонт, плоскость в перспективе,
+   дымка и пятно света под столом.
+   ========================================================= */
+
+.arena {
+  position: fixed;
+
+  inset: 0;
+
+  /*
+    Ноль, а не минус один: арена лежит первым ребёнком #game
+    и должна быть над его фоном, но под всем содержимым.
+    Отрицательный слой уводил её под сам #game, а он занимает
+    весь экран — арену просто не было видно.
+  */
+  z-index: 0;
+
+  overflow: hidden;
+
+  pointer-events: none;
+
+  /*
+    Своей заливки нет: под ней уже лежит атмосфера #game, и
+    сплошной фон её бы стёр. Арена добавляет только горизонт,
+    плоскость, дымку и пятно света.
+  */
+  background: none;
+}
+
+.arenaHorizon {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 46%;
+
+  height: 1px;
+
+  background: var(--cyan);
+
+  box-shadow:
+    0 0 14px var(--cyan),
+    0 0 44px rgba(32, 234, 255, .55);
+
+  opacity: .8;
+}
+
+/*
+  Плоскость шире экрана и наклонена перспективой: линии должны
+  сходиться за краем, иначе видно, что сетка кончается.
+*/
+.arenaFloor {
+  position: absolute;
+
+  left: -40%;
+  right: -40%;
+  top: 46%;
+  bottom: -6%;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(139, 61, 255, .5) 0 1px,
+      transparent 1px 72px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(139, 61, 255, .42) 0 1px,
+      transparent 1px 30px
+    );
+
+  transform: perspective(280px) rotateX(62deg);
+
+  transform-origin: top center;
+
+  opacity: .7;
+}
+
+.arenaFog {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 32%;
+
+  height: 28%;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(139, 61, 255, .22),
+      transparent
+    );
+
+  filter: blur(8px);
+}
+
+/* пятно света под столом */
+.arenaDisc {
+  position: absolute;
+
+  left: 50%;
+  top: 54%;
+
+  width: min(70vw, 900px);
+  aspect-ratio: 2.6;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      closest-side,
+      rgba(183, 255, 36, .12),
+      transparent 72%
+    );
+
+  filter: blur(6px);
+}
+
+/*
+  Собственный фон стола становится почти прозрачным: под ним
+  теперь сетка, и заливка её бы перекрыла.
+*/
+.tableInner {
+  background: rgba(8, 4, 16, .42);
+}
+
+.tableGrid {
+  opacity: 0;
+}
+/* =========================================================
+   ЛИЦО СОПЕРНИКА — ЭКРАН С ОСЦИЛЛОГРАММОЙ
+
+   Вместо портрета маленький монитор: у каждого своя форма
+   волны, и соперников различаешь не читая имя. Эмодзи были
+   плохи вдвойне — на каждой платформе рисуются по-своему.
+   ========================================================= */
+
+.opponentFace {
+  position: relative;
+
+  display: block;
+
+  width: 2.5em;
+  height: 1.35em;
+
+  overflow: hidden;
+
+  border-radius: 4px;
+
+  border: 1px solid color-mix(in srgb, var(--wave, var(--acid)) 45%, transparent);
+
+  background:
+    radial-gradient(ellipse at 50% 40%, #0d1220, #05070f 78%);
+
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--wave, var(--acid)) 25%, transparent);
+}
+
+/* строчная развёртка поверх волны */
+.opponentFace::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, .45) 0 1px,
+      transparent 1px 3px
+    );
+
+  pointer-events: none;
+}
+
+.opponentFace svg {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+.opponentFace polyline {
+  fill: none;
+
+  stroke: var(--wave, var(--acid));
+
+  stroke-width: 2;
+
+  stroke-linejoin: round;
+
+  filter:
+    drop-shadow(0 0 3px var(--wave))
+    drop-shadow(0 0 8px var(--wave));
+}
+
+.opponentFace[data-face="0"] { --wave: var(--cyan); }
+.opponentFace[data-face="1"] { --wave: var(--acid); }
+.opponentFace[data-face="2"] { --wave: var(--magenta); }
+.opponentFace[data-face="3"] { --wave: var(--yellow); }
+.opponentFace[data-face="4"] { --wave: var(--orange); }
+
+/* на своём ходу экран разгорается */
+.opponent.is-active .opponentFace {
+  border-color: var(--wave);
+
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--wave) 55%, transparent);
 }
