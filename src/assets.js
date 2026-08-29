@@ -53,11 +53,26 @@
   };
 
 
+  /*
+    Текстуры материалов лежат не по номерам, а по именам —
+    материал у карты не случайный номер, а конкретный
+    «плёнка» или «печатная плата».
+  */
+  const SKINS = [
+    "film",
+    "glass",
+    "pcb",
+    "tube",
+    "crt"
+  ];
+
+
   /* что реально нашлось */
   const found = {
     arena: [],
     bot: [],
-    back: []
+    back: [],
+    skin: {}
   };
 
 
@@ -100,6 +115,50 @@
     found[kind] = list;
 
     return list;
+  }
+
+
+  async function scanSkins() {
+
+    await Promise.all(
+      SKINS.map(async name => {
+
+        const url = `assets/skin-${name}.${EXT}`;
+
+        if (await probe(url)) {
+          found.skin[name] = url;
+        }
+      })
+    );
+
+    return found.skin;
+  }
+
+
+  /*
+    Материал карты. Текстуру кладём переменной, а сам факт её
+    наличия — атрибутом: без него подложка на карте остаётся
+    пустой и невидимой, и карта выглядит ровно как раньше.
+  */
+  function dressSkin(name) {
+
+    const url = found.skin[name];
+
+    const root = document.documentElement;
+
+    if (!url) {
+
+      delete root.dataset.skinArt;
+
+      return;
+    }
+
+    root.style.setProperty(
+      "--skin-texture",
+      `url("${url}")`
+    );
+
+    root.dataset.skinArt = "1";
   }
 
 
@@ -175,7 +234,8 @@
     await Promise.all([
       scan("arena"),
       scan("bot"),
-      scan("back")
+      scan("back"),
+      scanSkins()
     ]);
 
     dressArena();
@@ -188,12 +248,14 @@
 
   return {
     COUNTS,
+    SKINS,
     found,
     scan,
     boot,
     dressArena,
     dressBacks,
-    dressFace
+    dressFace,
+    dressSkin
   };
 
 });

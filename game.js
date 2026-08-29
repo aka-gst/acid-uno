@@ -412,7 +412,17 @@ function startGame() {
 function cardFaceHTML(card) {
   const label = cardLabel(card.value);
 
+  /*
+    cardSkin — подложка материала. Своим слоем, а не в
+    ::before и не в ::after: оба уже заняты самим материалом
+    и внутренним свечением, и вписать туда ещё и текстуру
+    значило бы переписывать все пять материалов целиком.
+
+    Пустой, пока в assets/ нет текстур: тогда его просто не
+    видно.
+  */
   return `
+    <i class="cardSkin" aria-hidden="true"></i>
     <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
     <div class="value" data-v="${card.value}">${label}</div>
     <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>

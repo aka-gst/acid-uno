@@ -868,6 +868,8 @@
     lastSkin = skin;
 
     document.documentElement.dataset.skin = skin;
+
+    window.AcidAssets?.dressSkin(skin);
   }
 
 
@@ -884,7 +886,18 @@
   */
   window.AcidAssets
     ?.boot()
-    .then(() => render());
+    .then(() => {
+
+      /*
+        Материал разыгран до того, как нашлись картинки, —
+        текстуру для него надеваем задним числом.
+      */
+      window.AcidAssets.dressSkin(
+        document.documentElement.dataset.skin
+      );
+
+      render();
+    });
 
 
   /* =======================================================

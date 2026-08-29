@@ -3836,18 +3836,24 @@
       b.y - a.y;
 
 
-    const layout =
-      getBotFanLayout91(
-        Math.max(
-          bot.length + 1,
-          1
-        )
-      );
+    /*
+      Во что карта должна превратиться, долетев. Раньше
+      размер считался тут заново — 84 на свой коэффициент, —
+      и после того как размеры веера переехали в CSS, летящая
+      карта приземлялась не того размера, что лежащие рядом.
 
+      Теперь спрашиваем у настоящей рубашки в веере. Её нет
+      (совсем пустая рука) — считаем по-старому.
+    */
+    const backEl =
+      document.querySelector(".opponentBack");
 
     const targetWidth =
+      backEl?.offsetWidth ||
       84 *
-      layout.scale;
+        getBotFanLayout91(
+          Math.max(bot.length + 1, 1)
+        ).scale;
 
 
     const scale =
