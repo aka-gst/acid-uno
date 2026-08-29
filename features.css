@@ -3367,7 +3367,8 @@ html[data-deck="acid"] .value[data-v="skip"],
 html[data-deck="acid"] .value[data-v="reverse"],
 html[data-deck="acid"] .value[data-v="+2"],
 html[data-deck="acid"] .value[data-v="+4"],
-html[data-deck="acid"] .value[data-v="wild"] {
+html[data-deck="acid"] .value[data-v="wild"],
+.cardFlash[data-v] {
 
   /* глиф прячется: его место занимает знак */
   font-size: 0;
@@ -3411,7 +3412,9 @@ html[data-deck="acid"] .value[data-v="wild"] {
   поэтому под маску кладётся конический градиент.
 */
 html[data-deck="acid"] .value[data-v="wild"],
-html[data-deck="acid"] .value[data-v="+4"] {
+html[data-deck="acid"] .value[data-v="+4"],
+.cardFlash[data-v="wild"],
+.cardFlash[data-v="+4"] {
   background:
     conic-gradient(
       from -45deg,
@@ -3426,27 +3429,32 @@ html[data-deck="acid"] .value[data-v="+4"] {
     drop-shadow(0 0 12px rgba(255, 255, 255, .45));
 }
 
-html[data-deck="acid"] .value[data-v="skip"] {
+html[data-deck="acid"] .value[data-v="skip"],
+.cardFlash[data-v="skip"] {
   -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8.4' fill='none' stroke='white' stroke-width='2.6'/><rect x='10.7' y='2.6' width='2.6' height='18.8' rx='1.3' fill='white' transform='rotate(45 12 12)'/></svg>");
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8.4' fill='none' stroke='white' stroke-width='2.6'/><rect x='10.7' y='2.6' width='2.6' height='18.8' rx='1.3' fill='white' transform='rotate(45 12 12)'/></svg>");
 }
 
-html[data-deck="acid"] .value[data-v="reverse"] {
+html[data-deck="acid"] .value[data-v="reverse"],
+.cardFlash[data-v="reverse"] {
   -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8.6 21.2V6.4' stroke='white' stroke-width='2.4' stroke-linecap='round' fill='none'/><path d='M8.6 2.8l4 5.2h-8z' fill='white'/><path d='M15.4 2.8v14.8' stroke='white' stroke-width='2.4' stroke-linecap='round' fill='none'/><path d='M15.4 21.2l-4-5.2h8z' fill='white'/></svg>");
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8.6 21.2V6.4' stroke='white' stroke-width='2.4' stroke-linecap='round' fill='none'/><path d='M8.6 2.8l4 5.2h-8z' fill='white'/><path d='M15.4 2.8v14.8' stroke='white' stroke-width='2.4' stroke-linecap='round' fill='none'/><path d='M15.4 21.2l-4-5.2h8z' fill='white'/></svg>");
 }
 
-html[data-deck="acid"] .value[data-v="+2"] {
+html[data-deck="acid"] .value[data-v="+2"],
+.cardFlash[data-v="+2"] {
   -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
 }
 
-html[data-deck="acid"] .value[data-v="+4"] {
+html[data-deck="acid"] .value[data-v="+4"],
+.cardFlash[data-v="+4"] {
   -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.4' y='2.4' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='13' y='2.4' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='2.4' y='13' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='13' y='13' width='8.6' height='8.6' rx='1.8' fill='white'/></svg>");
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.4' y='2.4' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='13' y='2.4' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='2.4' y='13' width='8.6' height='8.6' rx='1.8' fill='white'/><rect x='13' y='13' width='8.6' height='8.6' rx='1.8' fill='white'/></svg>");
 }
 
-html[data-deck="acid"] .value[data-v="wild"] {
+html[data-deck="acid"] .value[data-v="wild"],
+.cardFlash[data-v="wild"] {
   -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10.4' fill='white'/></svg>");
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10.4' fill='white'/></svg>");
 }
@@ -4000,13 +4008,68 @@ html[data-deck="acid"] .deckUno {
     --table-max-h: 700px;
   }
 
+  /*
+    На мониторе соперники сидели прямо на игровом поле:
+    дуга проходила внутри стола. Между шапкой и столом есть
+    свободная полоса — туда их и поднимаем.
+  */
+  .opponents {
+    /*
+      Верх дуги должен пройти под шапкой: при пяти-семи местах
+      кто-то садится точно в её вершину, и веер над плашкой
+      торчит ещё на два десятка точек вверх. Разница
+      arc-y минус arc-ry — это и есть высота вершины.
+    */
+    --arc-y: 42%;
+    --arc-ry: 30%;
+  }
+
+  /*
+    Чем больше соперников, тем выше забирается тот, кто сидит
+    в вершине дуги. На пяти-шести местах вершину приходится
+    опускать, иначе веер лезет под шапку.
+  */
+  .opponents[data-count="5"] {
+    --arc-ry: 28%;
+  }
+
+  .opponents[data-count="6"] {
+    --arc-ry: 26%;
+  }
+
+  /*
+    Размер зависит от того, сколько их за столом: втроём места
+    вдоволь и соперник должен быть крупным, всемером дуга
+    забита и значки обязаны ужаться, иначе налезут друг на
+    друга.
+  */
   .opponent {
-    width: clamp(178px, 21vh, 240px);
+    width: clamp(206px, 25vh, 280px);
   }
 
   .opponentBack {
-    width: clamp(40px, 4.9vh, 56px);
-    height: clamp(60px, 7.4vh, 84px);
+    width: clamp(50px, 6.1vh, 70px);
+    height: clamp(75px, 9.2vh, 105px);
+  }
+
+  .opponents[data-count="4"] .opponent {
+    width: clamp(178px, 21vh, 236px);
+  }
+
+  .opponents[data-count="4"] .opponentBack {
+    width: clamp(42px, 5.1vh, 58px);
+    height: clamp(63px, 7.7vh, 87px);
+  }
+
+  .opponents[data-count="5"] .opponent,
+  .opponents[data-count="6"] .opponent {
+    width: clamp(150px, 17vh, 190px);
+  }
+
+  .opponents[data-count="5"] .opponentBack,
+  .opponents[data-count="6"] .opponentBack {
+    width: clamp(34px, 4.1vh, 46px);
+    height: clamp(51px, 6.2vh, 69px);
   }
 
   .opponentFace {
@@ -4114,4 +4177,131 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
     0 0 0 2px rgba(183, 255, 36, .55),
     0 0 16px rgba(183, 255, 36, .35),
     0 12px 22px rgba(0, 0, 0, .5);
+}
+
+
+/* =========================================================
+   ЗНАК СПЕЦКАРТЫ НА ВЕСЬ СТОЛ
+
+   Ход соперника длится доли секунды, и по маленькой карте в
+   центре не успеваешь понять, что случилось. В мобильном UNO
+   спецкарта разворачивает свой знак во весь стол — здесь то
+   же самое, знаком нашей колоды.
+
+   Размер, маски и заливка берутся у карты: одна и та же
+   картинка, только больше.
+   ========================================================= */
+
+.cardFlash {
+  position: absolute;
+
+  left: 50%;
+  top: 46%;
+
+  transform: translate(-50%, -50%) scale(.72);
+
+  /*
+    Под картами, а не поверх: вспышка должна сообщать, что
+    случилось, а не закрывать стол. Поверх она читается как
+    сбой отрисовки — карты пропадают на секунду.
+  */
+  z-index: 2;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.cardFlash.show {
+  animation: acidCardFlash 1.05s cubic-bezier(.16, .84, .28, 1) forwards;
+}
+
+/* лучи из-под знака */
+.cardFlash::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 200%;
+  aspect-ratio: 1;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  z-index: -1;
+
+  background:
+    radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--suit, var(--purple)) 34%, transparent),
+      transparent 70%
+    );
+
+  filter: blur(14px);
+}
+
+@keyframes acidCardFlash {
+
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.62);
+  }
+
+  22% {
+    opacity: .6;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+
+  58% {
+    opacity: .42;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .cardFlash.show {
+    animation-duration: .3s;
+  }
+}
+
+
+/*
+  Ширина задаётся с тем же весом, что и общее правило знака:
+  иначе выигрывают его 56% и вспышка занимает весь стол.
+*/
+.cardFlash[data-v] {
+  width: min(30vh, 23vw);
+
+  aspect-ratio: 1;
+}
+
+
+/* =========================================================
+   ПОЛНОЭКРАННАЯ НАДПИСЬ НА МОНИТОРЕ
+
+   На телефоне она во весь экран уместна, на мониторе тем же
+   кеглем занимает половину поля и мешает смотреть на стол.
+   Здесь она меньше и держится дольше — прочитать успеваешь
+   именно за счёт времени, а не размера.
+   ========================================================= */
+
+@media (min-width: 1000px) {
+
+  #v9Burst {
+    font-size: clamp(26px, 3.4vh, 40px);
+
+    padding: 10px 20px;
+
+    letter-spacing: .06em;
+  }
 }

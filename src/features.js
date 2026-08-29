@@ -340,6 +340,48 @@
 
 
   /*
+    Знак сыгранной спецкарты разворачивается на весь стол. Так
+    сделано в мобильном UNO, и не ради красоты: ход соперника
+    длится доли секунды, и по одной маленькой карте в центре
+    не успеваешь понять, что именно случилось.
+
+    У цифр знака нет — на них стол не мигает, иначе вспышка
+    перестанет что-либо значить.
+  */
+  const FLASH_VALUES = [
+    "skip", "reverse", "+2", "+4", "wild"
+  ];
+
+
+  function flashCard(card) {
+
+    const el = $$("cardFlash");
+
+    if (
+      !el ||
+      !card ||
+      !FLASH_VALUES.includes(card.value)
+    ) {
+      return;
+    }
+
+    el.dataset.v = card.value;
+
+    el.style.setProperty(
+      "--suit",
+      `var(--${card.color === "wild" ? "magenta" : card.color})`
+    );
+
+    el.classList.remove("show");
+
+    /* перезапуск анимации: без этого подряд идущие спецкарты мигают один раз */
+    void el.offsetWidth;
+
+    el.classList.add("show");
+  }
+
+
+  /*
     Карта действия обязана звучать крупнее цифры. В мобильном
     UNO разрыв между ними примерно в пятнадцать децибел и
     вдвое-втрое большая длина: одинаковый щелчок на «5» и на
@@ -383,6 +425,8 @@
         AcidSound.play(
           cueFor(event.card)
         );
+
+        flashCard(event.card);
 
         if (event.card.color === "wild") {
           flashColor(event.color);

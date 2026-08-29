@@ -232,6 +232,50 @@
     null;
 
 
+  /*
+    Надпись про штраф. Ник в ней не нужен: игрок и так видит,
+    кто ходил, а вот сколько карт прилетело — главное. Фраза
+    каждый раз своя, иначе за партию она превращается в шум,
+    который перестаёшь читать.
+  */
+  const PENALTY_WORDS = [
+    "ЛОВИ",
+    "ПРИЛЕТЕЛО",
+    "НА РУКИ",
+    "РАЗБИРАЙ",
+    "УГОЩАЙСЯ",
+    "ДЕРЖИ",
+    "В КАРМАН",
+    "ПОДАРОЧЕК",
+    "НЕ ЗЕВАЙ",
+    "ЗАБИРАЙ"
+  ];
+
+
+  let lastPenaltyWord91 = -1;
+
+
+  function penaltyWord91(count) {
+
+    let i = lastPenaltyWord91;
+
+    /* две одинаковые подряд читаются как зависшая надпись */
+    while (
+      i === lastPenaltyWord91 &&
+      PENALTY_WORDS.length > 1
+    ) {
+      i =
+        Math.floor(
+          Math.random() * PENALTY_WORDS.length
+        );
+    }
+
+    lastPenaltyWord91 = i;
+
+    return `${PENALTY_WORDS[i]} +${count}`;
+  }
+
+
   function burst91(
     text,
     type = ""
@@ -281,7 +325,12 @@
           el.className = "";
 
         },
-        650
+
+        /*
+          Полторы секунды вместо шестисот пятидесяти: прежней
+          вспышки не хватало, чтобы дочитать фразу до конца.
+        */
+        1500
       );
   }
 
@@ -3116,7 +3165,7 @@
       if (penalty) {
 
         burst91(
-          `+${cards.length}`,
+          penaltyWord91(cards.length),
           "danger"
         );
       }
@@ -3702,7 +3751,7 @@
 
 
         burst91(
-          `${seatName(seat)} +${cards.length}`,
+          penaltyWord91(cards.length),
           "danger"
         );
 
