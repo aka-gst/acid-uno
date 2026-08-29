@@ -740,19 +740,36 @@
     --arc-ry: 24%;
   }
 
+  /*
+    Полный стол на телефоне: крайние соперники стоят у самых
+    границ экрана, и их вееры срезало. Дугу поджимаем — она
+    единственное, чем тут можно подвинуть.
+  */
+  .opponents[data-count="5"],
+  .opponents[data-count="6"] {
+    --arc-rx: 33%;
+  }
+
   .opponent {
-    width: 84px;
+    width: 96px;
   }
 
   .opponentFan {
-    height: 26px;
+    height: 34px;
   }
 
+  /*
+    Рубашка соперника была в шестнадцать точек — на телефоне
+    это уже не карта, а полоска, и сколько их у соперника,
+    приходилось читать по цифре рядом с именем.
+  */
   .opponentBack {
-    width: 16px;
-    height: 24px;
+    width: 22px;
+    height: 33px;
 
-    margin-left: -8px;
+    --fan-step: 9px;
+
+    margin-left: -11px;
   }
 
   .opponentName {
@@ -1696,6 +1713,81 @@
     opacity: 1;
 
     transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   ШАПКА НА БОЛЬШОМ ЭКРАНЕ
+
+   Значки были телефонного размера и в 39 точек: на
+   мониторе это четыре одинаковых серых квадратика, в
+   которые надо всматриваться. Кнопка растёт, рамка
+   становится заметной, а подпись перестаёт прятаться
+   в наведении — её видно сразу.
+   ========================================================= */
+
+@media (min-width: 900px) {
+
+  .iconButton {
+    width: 52px;
+    height: 52px;
+
+    border-radius: 15px;
+
+    border-color: rgba(255, 255, 255, .3);
+
+    font-size: 25px;
+
+    box-shadow:
+      inset 0 0 13px rgba(255, 255, 255, .06),
+      0 0 22px rgba(155, 48, 255, .28);
+  }
+
+  .iconButton:hover {
+    border-color: rgba(183, 255, 36, .6);
+
+    box-shadow:
+      inset 0 0 13px rgba(255, 255, 255, .08),
+      0 0 26px rgba(183, 255, 36, .3);
+  }
+}
+
+
+/*
+  От 1150 точек рядом с значком помещается и подпись —
+  тогда гадать, что делает кнопка, уже не приходится вовсе,
+  и всплывающая подсказка становится лишней.
+*/
+@media (min-width: 1150px) {
+
+  .iconButton {
+    width: auto;
+
+    padding: 0 17px 0 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .iconButton::before {
+    content: attr(data-tip);
+
+    order: 2;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: .12em;
+
+    color: rgba(255, 255, 255, .78);
+  }
+
+  .iconButton::after {
+    display: none;
   }
 }
 
@@ -3374,14 +3466,11 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
 @media (min-width: 900px) {
 
-  .opponent {
-    width: 122px;
-  }
-
-  .opponentBack {
-    width: 26px;
-    height: 39px;
-  }
+  /*
+    Размер соперника задаётся ниже, одним блоком на все
+    большие экраны: держать две лесенки — верный способ
+    получить между ними ступеньку.
+  */
 
   .opponentFace {
     font-size: 20px;
@@ -3993,11 +4082,20 @@ html[data-deck="acid"] .deckUno {
    даже на низком ноутбуке соперник перестаёт быть крошкой.
    ========================================================= */
 
-@media (min-width: 1000px) {
+@media (min-width: 900px) {
 
   :root {
     --table-max-w: 1240px;
     --table-max-h: 700px;
+
+    /*
+      Мера размера соперника: меньшее из высоты и ширины
+      окна. Три значения — на стол до трёх, на четверых и
+      на пять-семь мест.
+    */
+    --pod-2: min(11vh, 8.4vw);
+    --pod-4: min(9.2vh, 7vw);
+    --pod-6: min(7.4vh, 5.6vw);
   }
 
   /*
@@ -4030,55 +4128,84 @@ html[data-deck="acid"] .deckUno {
   }
 
   /*
+    Полный стол: крайние сидят у самых краёв экрана, и веер
+    крупных рубашек уходил за границу — у двоих соперников
+    было не видно, сколько у них карт. Дугу поджимаем.
+  */
+  .opponents[data-count="5"],
+  .opponents[data-count="6"] {
+    --arc-rx: 39%;
+  }
+
+  /*
     Размер зависит от того, сколько их за столом: втроём места
     вдоволь и соперник должен быть крупным, всемером дуга
     забита и значки обязаны ужаться, иначе налезут друг на
     друга.
+
+    Мера — меньшее из высоты и ширины окна. Раньше считали
+    только по высоте, и на любом ноутбуке — а там высота
+    around 700-800 точек — все размеры садились на нижнюю
+    границу. Отсюда и бралось «карты у бота крошечные»:
+    ширина монитора в расчёт не шла вовсе.
+
+    Нижние границы подняты: даже когда они срабатывают,
+    рубашка соперника должна читаться как карта, а не как
+    полоска.
   */
   .opponent {
-    width: clamp(206px, 25vh, 280px);
+    width: clamp(240px, min(28vh, 21vw), 320px);
   }
 
   .opponentBack {
-    width: clamp(62px, 7.6vh, 88px);
-    height: clamp(93px, 11.4vh, 132px);
+    width: clamp(84px, var(--pod-2), 118px);
+    height: clamp(126px, calc(var(--pod-2) * 1.5), 177px);
 
     /*
       Шаг раскладки растёт вместе с картой: при прежних
       четырнадцати точках крупные рубашки складывались почти
       в одну и веер переставал показывать количество.
     */
-    --fan-step: clamp(26px, 3.1vh, 36px);
+    --fan-step: clamp(29px, calc(var(--pod-2) * .35), 41px);
 
-    margin-left: calc(clamp(62px, 7.6vh, 88px) / -2);
+    margin-left:
+      calc(clamp(84px, var(--pod-2), 118px) / -2);
   }
 
   .opponents[data-count="4"] .opponent {
-    width: clamp(178px, 21vh, 236px);
+    width: clamp(200px, min(23vh, 17.5vw), 264px);
   }
 
   .opponents[data-count="4"] .opponentBack {
-    width: clamp(52px, 6.4vh, 74px);
-    height: clamp(78px, 9.6vh, 111px);
+    width: clamp(70px, var(--pod-4), 98px);
+    height: clamp(105px, calc(var(--pod-4) * 1.5), 147px);
 
-    --fan-step: clamp(22px, 2.6vh, 30px);
+    --fan-step: clamp(24px, calc(var(--pod-4) * .35), 34px);
 
-    margin-left: calc(clamp(52px, 6.4vh, 74px) / -2);
+    margin-left:
+      calc(clamp(70px, var(--pod-4), 98px) / -2);
   }
 
   .opponents[data-count="5"] .opponent,
   .opponents[data-count="6"] .opponent {
-    width: clamp(150px, 17vh, 190px);
+    width: clamp(166px, min(19vh, 14vw), 210px);
   }
 
+  /*
+    Нижняя граница здесь ниже, чем у просторных столов: в
+    небольшом окне на семь мест крайние вееры иначе уходят
+    за край экрана, и у двоих соперников не видно, сколько
+    у них карт.
+  */
   .opponents[data-count="5"] .opponentBack,
   .opponents[data-count="6"] .opponentBack {
-    width: clamp(42px, 5.1vh, 58px);
-    height: clamp(63px, 7.7vh, 87px);
+    width: clamp(46px, var(--pod-6), 78px);
+    height: clamp(69px, calc(var(--pod-6) * 1.5), 117px);
 
-    --fan-step: clamp(17px, 2vh, 23px);
+    --fan-step: clamp(16px, calc(var(--pod-6) * .35), 26px);
 
-    margin-left: calc(clamp(42px, 5.1vh, 58px) / -2);
+    margin-left:
+      calc(clamp(46px, var(--pod-6), 78px) / -2);
   }
 
   .opponentFace {
@@ -4213,10 +4340,70 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
    clip-path, а он срезает и box-shadow вместе с ней.
    ========================================================= */
 
+/*
+  Простой уровень: подходящая карта не «слегка светится»,
+  а выезжает из веера. Свечения мало — карты и без того
+  неоновые, и зелёный ореол теряется среди их собственных
+  рамок. Сдвиг вверх видно с любого расстояния и при любом
+  цвете карты.
+
+  Неподходящие при этом не гаснут — их специально просили
+  не затемнять, — а слегка опускаются: разница между
+  поднятой и опущенной читается вдвое лучше, чем одна
+  поднятая сама по себе.
+*/
+html[data-level="calm"] #hand.is-turn .handCard.v9-unplayable {
+  translate: 0 9px;
+}
+
+html[data-level="calm"] #hand.is-turn .handCard.v9-playable,
+html[data-level="calm"] #hand.is-turn .handCard.playable {
+  translate: 0 -22px;
+
+  filter:
+    brightness(1.22)
+    saturate(1.15)
+    drop-shadow(0 0 4px rgba(183, 255, 36, 1))
+    drop-shadow(0 0 12px rgba(183, 255, 36, .85))
+    drop-shadow(0 0 30px rgba(183, 255, 36, .5));
+}
+
 #hand.is-hint .handCard.v9-playable,
 #hand.is-hint .handCard.playable {
   animation:
     handHint 1.5s ease-in-out infinite;
+}
+
+html[data-level="calm"] #hand.is-hint .handCard.v9-playable,
+html[data-level="calm"] #hand.is-hint .handCard.playable {
+  animation:
+    calmHint 1.6s ease-in-out infinite;
+}
+
+@keyframes calmHint {
+
+  0%,
+  100% {
+    translate: 0 -22px;
+
+    filter:
+      brightness(1.22)
+      saturate(1.15)
+      drop-shadow(0 0 4px rgba(183, 255, 36, 1))
+      drop-shadow(0 0 12px rgba(183, 255, 36, .85))
+      drop-shadow(0 0 30px rgba(183, 255, 36, .5));
+  }
+
+  50% {
+    translate: 0 -32px;
+
+    filter:
+      brightness(1.36)
+      saturate(1.25)
+      drop-shadow(0 0 6px rgba(183, 255, 36, 1))
+      drop-shadow(0 0 18px rgba(183, 255, 36, 1))
+      drop-shadow(0 0 44px rgba(183, 255, 36, .7));
+  }
 }
 
 @keyframes handHint {
@@ -4277,6 +4464,8 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
 
   #hand.is-hint .handCard.v9-playable,
   #hand.is-hint .handCard.playable,
+  html[data-level="calm"] #hand.is-hint .handCard.v9-playable,
+  html[data-level="calm"] #hand.is-hint .handCard.playable,
   #deck.is-hint {
     animation: none;
   }

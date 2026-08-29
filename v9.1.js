@@ -37,8 +37,6 @@
 
     playerUnoTimer: null,
 
-    hintTimer: null,
-
     botUnoCalled: false,
     botUnoVulnerable: false,
     botUnoTimer: null,
@@ -100,6 +98,8 @@
 
 
       updatePlayableGlow91();
+
+      armHint91();
     }
   }
 
@@ -107,23 +107,12 @@
   /* =======================================================
      ПОДСКАЗКА
 
-     Только для спокойного стола. Если ход стоит без
-     движения, игра сама показывает, что можно сделать:
-     подсвечивает подходящие карты, а когда таких нет —
+     Только для спокойного стола. Каждый свой ход игрок
+     видит, чем можно сходить, а если нечем — что жать
      колоду. Это не автоход: карту всё равно кладёт человек.
      ======================================================= */
 
-  const HINT_AFTER_MS = 5000;
-
-
   function clearHint91() {
-
-    clearTimeout(
-      V91.hintTimer
-    );
-
-    V91.hintTimer = null;
-
 
     $("hand")
       ?.classList
@@ -142,6 +131,13 @@
   clearHint = clearHint91;
 
 
+  /*
+    Подсказка включается сразу, а не через паузу: тому, кто
+    не знает правил, нечего ждать пять секунд — он и через
+    пять не поймёт, чего от него хотят. Каждый свой ход он
+    видит, какими картами можно сходить, а если нельзя
+    ни одной — что жать колоду.
+  */
   function armHint91() {
 
     clearHint91();
@@ -157,49 +153,21 @@
     }
 
 
-    V91.hintTimer =
-      setTimeout(
-        () => {
+    if (
+      player.some(card => canPlay(card))
+    ) {
 
-          if (
-            !calmMode ||
-            gameOver ||
-            turn !== "player"
-          ) {
+      $("hand")
+        ?.classList
+        .add("is-hint");
 
-            return;
-          }
+      return;
+    }
 
 
-          const canMove =
-            document
-              .querySelectorAll(
-                "#hand .handCard.v9-playable"
-              )
-              .length > 0;
-
-
-          if (canMove) {
-
-            $("hand")
-              ?.classList
-              .add("is-hint");
-
-            return;
-          }
-
-
-          $("deck")
-            ?.classList
-            .add("is-hint");
-
-          AcidFX.status(
-            "НЕЧЕМ ХОДИТЬ — ЖМИ КОЛОДУ"
-          );
-
-        },
-        HINT_AFTER_MS
-      );
+    $("deck")
+      ?.classList
+      .add("is-hint");
   }
 
 
@@ -3075,7 +3043,51 @@
   }
 
 
+  /*
+    На спокойном столе строка под столом не сообщает
+    положение дел, а говорит, что сделать. «ТВОЙ ХОД» —
+    бесполезная новость тому, кто не знает, чем ходить
+    можно, а чем нельзя.
+  */
+  function calmStatus91() {
+
+    if (turn !== "player") {
+
+      return null;
+    }
+
+
+    const canMove =
+      player.some(card => canPlay(card));
+
+
+    if (drawPenalty > 0) {
+
+      return canMove
+        ? `ШТРАФ +${drawPenalty} · НАКРОЙ ИЛИ БЕРИ`
+        : `ШТРАФ +${drawPenalty} · ЖМИ КОЛОДУ`;
+    }
+
+
+    return canMove
+      ? "ТЯНИ ГОРЯЩУЮ КАРТУ В ЦЕНТР"
+      : "НЕЧЕМ ХОДИТЬ · ЖМИ КОЛОДУ";
+  }
+
+
   function turnStatus91() {
+
+    if (calmMode) {
+
+      const calm =
+        calmStatus91();
+
+
+      if (calm) {
+        return calm;
+      }
+    }
+
 
     if (turn === "player") {
 
@@ -5251,6 +5263,14 @@
 
 
       armHint91();
+
+
+      if (calmMode) {
+
+        AcidFX.status(
+          turnStatus91()
+        );
+      }
     };
 
 
@@ -5322,6 +5342,23 @@
 
 
   render();
+
+
+  /*
+    Первая партия раздаётся в game.js ещё до того, как этот
+    файл её обернёт, — поэтому подсказку для неё включаем
+    здесь вручную. Иначе спокойный стол начинался молча и
+    оживал только со второй партии.
+  */
+  armHint91();
+
+
+  if (calmMode) {
+
+    AcidFX.status(
+      turnStatus91()
+    );
+  }
 
 
   console.log(
