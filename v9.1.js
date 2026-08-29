@@ -3928,6 +3928,8 @@
         «Джо положила» — ровно та мелочь, по которой видно,
         что текст писали не для людей.
       */
+      window.AcidCoach?.notify("bot");
+
       window.AcidCoach?.say(
         chosenColor
           ? `ХОД ${seatName(seat)}: ЧЁРНАЯ, ` +

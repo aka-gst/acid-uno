@@ -5768,17 +5768,33 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   pointer-events: none;
 }
 
+/*
+  Шторки не ловят касания никогда. Кольцо здесь — указание,
+  а не забор: на телефоне тап по подсвеченной колоде не
+  должен зависеть от того, попал ли он в окошко ровно.
+*/
 .coachTour .coachShade {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
+
 /*
-  Шаг ждёт действия: карту тащат из руки в центр, и путь
-  проходит прямо по затемнению. На это время оно перестаёт
-  ловить касания целиком.
+  Действие сделано — затемнение уходит, и человек своими
+  глазами видит результат: карту, которая прилетела в руку,
+  или ту, что легла на стол. Без этой паузы обучение
+  выглядело так, будто нажатие ничего не сделало.
 */
-.coachTour.is-acting .coachShade {
-  pointer-events: none;
+.coachTour.is-done .coachShade {
+  opacity: 0;
+}
+
+.coachTour.is-done .coachSpot {
+  border-color: rgba(183, 255, 36, .5);
+
+  box-shadow:
+    0 0 26px rgba(183, 255, 36, .45);
+
+  animation: none;
 }
 
 .coachCard {
@@ -5818,6 +5834,8 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 */
 .coachShade {
   position: absolute;
+
+  transition: opacity .35s ease;
 
   /*
     Почти глухая: при девяти десятых сквозь неё просвечивал
@@ -5923,6 +5941,20 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 
 .coachAsk.hidden {
   display: none;
+}
+
+/*
+  Та же строка после действия: не просьба, а подтверждение.
+  Пульс снимаем — просить больше нечего.
+*/
+.coachAsk.done {
+  border-style: solid;
+
+  border-color: rgba(183, 255, 36, .9);
+
+  background: rgba(183, 255, 36, .16);
+
+  animation: none;
 }
 
 @keyframes coachAskPulse {

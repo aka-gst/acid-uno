@@ -168,6 +168,20 @@ const AcidCoach = (() => {
 
   function update() {
 
+    /*
+      Соперник мог и не походить: после «+4» он забирает
+      карты и пропускает ход. Шаг, который ждёт его карту,
+      закрываем по возвращению хода — иначе обучение висит
+      на нём до скончания века.
+    */
+    if (
+      waiting === "bot" &&
+      turn === "player"
+    ) {
+      notify("bot");
+    }
+
+
     if (holdTimer) {
       return;
     }
@@ -275,10 +289,14 @@ const AcidCoach = (() => {
      ======================================================= */
 
   /*
-    Шаги. У шага с ключом «ждём» нет кнопки «дальше»: он
-    закрывается тем, что человек сам сделает нужное
-    действие. Смотреть, как показывают пять картинок, и
-    научиться играть — разные вещи.
+    Шаги. Почти каждый требует действия: у такого шага нет
+    кнопки «дальше», он закрывается тем, что человек сам
+    сделает нужное.
+
+    И у каждого есть «готово» — короткая пауза после
+    действия, когда затемнение уходит и видно результат.
+    Без неё карта прилетала в затемнённую руку: человек
+    нажимал колоду и был уверен, что ничего не произошло.
   */
   const STEPS = [
     {
@@ -287,40 +305,60 @@ const AcidCoach = (() => {
         "ЭТО КОЛОДА. ИЗ НЕЁ БЕРУТ КАРТУ, " +
         "КОГДА ХОДИТЬ НЕЧЕМ.",
       ждём: "draw",
-      просьба: "НАЖМИ КОЛОДУ — ВОЗЬМЁШЬ ОДНУ КАРТУ"
-    },
-    {
-      target: "discard",
-      text:
-        "ЭТО СТОЛ. СВОЮ КАРТУ КЛАДЁШЬ СЮДА — " +
-        "ПЕРЕТАСКИВАЕШЬ ЕЁ ПАЛЬЦЕМ ИЛИ МЫШЬЮ."
-    },
-    {
-      target: "currentColor",
-      text:
-        "ЗДЕСЬ НАПИСАН ЦВЕТ, КОТОРЫМ СЕЙЧАС ИГРАЮТ. " +
-        "ПОДХОДИТ КАРТА ЭТОГО ЦВЕТА — ИЛИ ТАКАЯ ЖЕ " +
-        "ПО ЗНАЧКУ."
+      просьба: "НАЖМИ КОЛОДУ",
+      готово: "ВОТ ОНА — НОВАЯ КАРТА У ТЕБЯ В РУКЕ",
+      светНаГотово: "hand"
     },
     {
       target: "hand",
       text:
         "ЭТО ТВОИ КАРТЫ. КОТОРЫЕ ПРИПОДНЯЛИСЬ И ГОРЯТ — " +
-        "ТЕМИ МОЖНО ХОДИТЬ.",
+        "ТЕМИ МОЖНО ХОДИТЬ ПРЯМО СЕЙЧАС.",
       ждём: "play",
       просьба: "ПЕРЕТАЩИ ЛЮБУЮ ГОРЯЩУЮ КАРТУ В ЦЕНТР",
+      готово: "ЛЕГЛА! ТЕПЕРЬ ИГРАЮТ ЕЮ",
+      светНаГотово: "discard",
       /* горящих может и не оказаться — тогда просим добрать */
       запасная: {
         просьба: "ГОРЯЩИХ НЕТ — ЖМИ КОЛОДУ, ПОКА НЕ ПОЯВИТСЯ",
         ждём: "draw",
-        target: "deck"
+        target: "deck",
+        готово: "ВЗЯЛА КАРТУ. ЕСЛИ ЗАГОРЕЛАСЬ — КЛАДИ ЕЁ",
+        светНаГотово: "hand"
       }
+    },
+    {
+      /*
+        Светим на стол, а не на соперника: значок соперника
+        занимает всю верхнюю дугу, и затемнение вокруг него
+        не затемняет ничего. А смотреть надо туда, куда
+        ляжет его карта.
+      */
+      target: "discard",
+      text:
+        "ТЕПЕРЬ ХОДИТ СОПЕРНИК. СМОТРИ, ЧТО ОН ПОЛОЖИТ — " +
+        "ОТ ЭТОГО ЗАВИСИТ ТВОЙ СЛЕДУЮЩИЙ ХОД.",
+      ждём: "bot",
+      просьба: "ЖДЁМ СОПЕРНИКА",
+      готово: "ОН СХОДИЛ. ТЕПЕРЬ СНОВА ТЫ",
+      светНаГотово: "discard"
     },
     {
       target: "hand",
       text:
-        "ВОТ И ВСЯ ИГРА. КТО ПЕРВЫМ ОСТАНЕТСЯ БЕЗ КАРТ — " +
-        "ТОТ И ВЫИГРАЛ.",
+        "ЦВЕТ НА СТОЛЕ ПОМЕНЯЛСЯ — ЗНАЧИТ, ПОМЕНЯЛИСЬ И " +
+        "ГОРЯЩИЕ КАРТЫ. ХОДИ ЕЩЁ РАЗ САМА.",
+      ждём: "любое",
+      просьба: "ПОЛОЖИ КАРТУ ИЛИ НАЖМИ КОЛОДУ",
+      готово: "ВОТ И ВСЁ, ЧТО НУЖНО УМЕТЬ",
+      светНаГотово: "hand"
+    },
+    {
+      target: "hand",
+      text:
+        "КТО ПЕРВЫМ ОСТАНЕТСЯ БЕЗ КАРТ — ТОТ И ВЫИГРАЛ. " +
+        "ПОДСКАЗКА ВНИЗУ БУДЕТ ПОДСКАЗЫВАТЬ ВЕСЬ ОСТАЛЬНОЙ " +
+        "ПУТЬ.",
       конец: true
     }
   ];
@@ -328,7 +366,7 @@ const AcidCoach = (() => {
 
   let tourStep = 0;
 
-  /* какого действия ждёт текущий шаг: "play", "draw" или null */
+  /* какого действия ждёт шаг: "play", "draw", "bot", "любое" */
   let waiting = null;
 
 
@@ -393,25 +431,160 @@ const AcidCoach = (() => {
   */
   function notify(kind) {
 
+    const layer =
+      $("coachTour");
+
+
     if (
-      waiting !== kind ||
-      !$("coachTour") ||
-      $("coachTour").classList.contains("hidden")
+      !waiting ||
+      !layer ||
+      layer.classList.contains("hidden")
     ) {
       return;
     }
 
+
+    if (
+      waiting !== kind &&
+      !(
+        waiting === "любое" &&
+        (kind === "play" || kind === "draw")
+      )
+    ) {
+      return;
+    }
+
+
     waiting = null;
 
+
+    const step =
+      currentStep || STEPS[tourStep];
+
+
     /*
-      Пауза, чтобы человек увидел результат своего действия
-      раньше, чем экран снова затемнится.
+      Показ результата. Затемнение уходит совсем, прожектор
+      переезжает туда, где результат видно, и человек своими
+      глазами видит, что его действие сработало.
     */
+    layer.classList.add("is-done");
+
+    layer.classList.remove("is-acting");
+
+
+    if (step.светНаГотово) {
+
+      placeSpot(
+        $(step.светНаГотово)
+      );
+    }
+
+
+    const ask =
+      $("coachAsk");
+
+    if (ask) {
+
+      ask.textContent =
+        step.готово || "ГОТОВО";
+
+      ask.classList.remove("hidden");
+
+      ask.classList.add("done");
+    }
+
+
     setTimeout(
-      () => showStep(tourStep + 1),
-      1100
+      () => {
+
+        layer.classList.remove("is-done");
+
+        ask?.classList.remove("done");
+
+        showStep(tourStep + 1);
+      },
+      1900
     );
   }
+
+
+  /*
+    Поставить прожектор и шторки вокруг элемента.
+  */
+  function placeSpot(target) {
+
+    const spot =
+      $("coachSpot");
+
+    if (!target || !spot) {
+      return;
+    }
+
+
+    const box =
+      target.getBoundingClientRect();
+
+    const pad = 14;
+
+    const left = box.left - pad;
+    const top = box.top - pad;
+    const width = box.width + pad * 2;
+    const height = box.height + pad * 2;
+
+    spot.style.left = `${left}px`;
+    spot.style.top = `${top}px`;
+    spot.style.width = `${width}px`;
+    spot.style.height = `${height}px`;
+
+
+    const shade = (id, css) =>
+      Object.assign($(id).style, css);
+
+    shade("shadeTop", {
+      left: "0px",
+      top: "0px",
+      width: "100%",
+      height: `${Math.max(0, top)}px`
+    });
+
+    shade("shadeBottom", {
+      left: "0px",
+      top: `${top + height}px`,
+      width: "100%",
+      height: `${Math.max(0, window.innerHeight - top - height)}px`
+    });
+
+    shade("shadeLeft", {
+      left: "0px",
+      top: `${Math.max(0, top)}px`,
+      width: `${Math.max(0, left)}px`,
+      height: `${height}px`
+    });
+
+    shade("shadeRight", {
+      left: `${left + width}px`,
+      top: `${Math.max(0, top)}px`,
+      width: `${Math.max(0, window.innerWidth - left - width)}px`,
+      height: `${height}px`
+    });
+
+
+    /*
+      Объяснение ставим по ту сторону подсвеченного места,
+      где больше свободного экрана.
+    */
+    $("coachTour")
+      ?.querySelector(".coachCard")
+      ?.classList
+      .toggle(
+        "below",
+        box.top < window.innerHeight / 2
+      );
+  }
+
+
+  /* шаг с уже подставленным запасным сценарием */
+  let currentStep = null;
 
 
   function showStep(index) {
@@ -451,90 +624,45 @@ const AcidCoach = (() => {
     }
 
 
+    /*
+      Ход соперника мог уже пройти, пока читали прошлый шаг.
+      Ждать его второй раз незачем — обучение бы зависло.
+    */
+    if (
+      step.ждём === "bot" &&
+      turn === "player"
+    ) {
+
+      step = {
+        ...step,
+        ждём: "любое",
+        просьба: "ПОЛОЖИ КАРТУ ИЛИ НАЖМИ КОЛОДУ",
+        target: "hand"
+      };
+    }
+
+
+    currentStep = step;
+
     waiting =
       step.ждём || null;
 
 
-    const target =
-      $(step.target);
-
-
-    const spot =
-      $("coachSpot");
-
-    if (target && spot) {
-
-      const box =
-        target.getBoundingClientRect();
-
-      const pad = 14;
-
-      const left = box.left - pad;
-      const top = box.top - pad;
-      const width = box.width + pad * 2;
-      const height = box.height + pad * 2;
-
-      spot.style.left = `${left}px`;
-      spot.style.top = `${top}px`;
-      spot.style.width = `${width}px`;
-      spot.style.height = `${height}px`;
-
-
-      const shade = (id, css) =>
-        Object.assign($(id).style, css);
-
-      shade("shadeTop", {
-        left: "0px",
-        top: "0px",
-        width: "100%",
-        height: `${Math.max(0, top)}px`
-      });
-
-      shade("shadeBottom", {
-        left: "0px",
-        top: `${top + height}px`,
-        width: "100%",
-        height: `${Math.max(0, window.innerHeight - top - height)}px`
-      });
-
-      shade("shadeLeft", {
-        left: "0px",
-        top: `${Math.max(0, top)}px`,
-        width: `${Math.max(0, left)}px`,
-        height: `${height}px`
-      });
-
-      shade("shadeRight", {
-        left: `${left + width}px`,
-        top: `${Math.max(0, top)}px`,
-        width: `${Math.max(0, window.innerWidth - left - width)}px`,
-        height: `${height}px`
-      });
-
-
-      /*
-        Объяснение ставим по ту сторону подсвеченного места,
-        где больше свободного экрана.
-      */
-      const card =
-        layer.querySelector(".coachCard");
-
-      card.classList.toggle(
-        "below",
-        box.top < window.innerHeight / 2
-      );
-    }
+    placeSpot(
+      $(step.target)
+    );
 
 
     /*
-      Пока ждём действия, затемнение не должно перехватывать
-      касания: карту тащат из руки в центр, и путь проходит
-      прямо по нему.
+      Пока ждём действия, затемнение не ловит касания: карту
+      тащат из руки в центр, и путь проходит прямо по нему.
     */
     layer.classList.toggle(
       "is-acting",
       Boolean(waiting)
     );
+
+    layer.classList.remove("is-done");
 
 
     $("coachStep").textContent =
@@ -549,6 +677,8 @@ const AcidCoach = (() => {
 
     ask.textContent =
       step.просьба || "";
+
+    ask.classList.remove("done");
 
     ask.classList.toggle(
       "hidden",
@@ -581,6 +711,8 @@ const AcidCoach = (() => {
   function closeTour() {
 
     waiting = null;
+
+    currentStep = null;
 
     $("coachTour")
       ?.classList
