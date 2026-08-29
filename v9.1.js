@@ -1112,7 +1112,7 @@
       */
       window.AcidAssets?.dressFace(
         el.querySelector(".opponentFace"),
-        seat.index - 1
+        seatFaceIndex(seat.index)
       );
 
       el.classList.toggle(

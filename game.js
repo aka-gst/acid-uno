@@ -207,6 +207,29 @@ function seatName(index) {
   );
 }
 
+/*
+  Какой портрет надеть на место. Не номер стула, а номер
+  имени: «Ржавый Кларенс» должен быть ржавым за любым
+  столом, а не менять лицо от партии к партии.
+
+  Порядок портретов в assets/ повторяет порядок имён в
+  BOT_NAMES — это записано в docs/prompts.md, по нему их и
+  рисуют. Имени нет в списке (живой игрок в комнате) —
+  возвращаемся к номеру места.
+*/
+function seatFaceIndex(index) {
+
+  const at =
+    AcidRules.BOT_NAMES.indexOf(
+      seatName(index)
+    );
+
+  return at >= 0
+    ? at
+    : Math.max(0, index - 1);
+}
+
+
 function seatCount() {
   return seats.length;
 }
