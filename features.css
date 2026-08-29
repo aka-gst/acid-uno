@@ -584,7 +584,7 @@
 
   transform:
     translateX(
-      calc((var(--i) - var(--half)) * 14px)
+      calc((var(--i) - var(--half)) * var(--fan-step, 14px))
     )
     rotate(
       calc((var(--i) - var(--half)) * 7deg)
@@ -2333,83 +2333,84 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 }
 
 /*
-  Толщина стопок. Прежние слои были смещены на три пикселя и
-  сливались с фоном, а после — уходили вправо, прямо под карту
-  сброса, и прятались за ней.
+  Толщина стопок. Смещения намеренно мелкие: колода — это
+  пачка карт, а не лесенка. Прежние восемь точек на слой
+  превращали её в развёрнутый веер сбоку.
 
-  Поэтому стопки разведены в разные стороны: колода толстеет
-  влево-вниз, сброс — вправо-вниз. Слои живут на самой видимой
-  карте: у колоды это рубашка, у сброса — подложка, потому что
-  ауру цвета трогать нельзя.
+  Стопки разведены в разные стороны: колода толстеет
+  влево-вниз, сброс — вправо-вниз, иначе одна прячется под
+  другой. Слои живут на самой видимой карте: у колоды это
+  рубашка, у сброса — подложка, потому что ауру цвета трогать
+  нельзя.
 */
 html #deck[data-thick="1"] .deckBack {
   box-shadow:
-    -8px 7px 0 -1px rgba(176, 128, 255, 0.85);
+    -4px 3px 0 -1px rgba(176, 128, 255, 0.69);
 }
 
 html #deck[data-thick="2"] .deckBack {
   box-shadow:
-    -8px 7px 0 -1px rgba(176, 128, 255, 0.85),
-    -16px 14px 0 -1px rgba(176, 128, 255, 0.75);
+    -4px 3px 0 -1px rgba(176, 128, 255, 0.69),
+    -8px 6px 0 -1px rgba(176, 128, 255, 0.58);
 }
 
 html #deck[data-thick="3"] .deckBack {
   box-shadow:
-    -8px 7px 0 -1px rgba(176, 128, 255, 0.85),
-    -16px 14px 0 -1px rgba(176, 128, 255, 0.75),
-    -24px 21px 0 -1px rgba(138, 82, 232, 0.65);
+    -4px 3px 0 -1px rgba(176, 128, 255, 0.69),
+    -8px 6px 0 -1px rgba(176, 128, 255, 0.58),
+    -12px 9px 0 -1px rgba(138, 82, 232, 0.47);
 }
 
 html #deck[data-thick="4"] .deckBack {
   box-shadow:
-    -8px 7px 0 -1px rgba(176, 128, 255, 0.85),
-    -16px 14px 0 -1px rgba(176, 128, 255, 0.75),
-    -24px 21px 0 -1px rgba(138, 82, 232, 0.65),
-    -32px 28px 0 -1px rgba(138, 82, 232, 0.55);
+    -4px 3px 0 -1px rgba(176, 128, 255, 0.69),
+    -8px 6px 0 -1px rgba(176, 128, 255, 0.58),
+    -12px 9px 0 -1px rgba(138, 82, 232, 0.47),
+    -16px 12px 0 -1px rgba(138, 82, 232, 0.36);
 }
 
 html #deck[data-thick="5"] .deckBack {
   box-shadow:
-    -8px 7px 0 -1px rgba(176, 128, 255, 0.85),
-    -16px 14px 0 -1px rgba(176, 128, 255, 0.75),
-    -24px 21px 0 -1px rgba(138, 82, 232, 0.65),
-    -32px 28px 0 -1px rgba(138, 82, 232, 0.55),
-    -40px 35px 0 -1px rgba(138, 82, 232, 0.45);
+    -4px 3px 0 -1px rgba(176, 128, 255, 0.69),
+    -8px 6px 0 -1px rgba(176, 128, 255, 0.58),
+    -12px 9px 0 -1px rgba(138, 82, 232, 0.47),
+    -16px 12px 0 -1px rgba(138, 82, 232, 0.36),
+    -20px 15px 0 -1px rgba(138, 82, 232, 0.25);
 }
 
 .discardPile[data-thick="1"]::before {
   box-shadow:
-    7px 6px 0 -1px rgba(255, 255, 255, 0.63);
+    4px 3px 0 -1px rgba(255, 255, 255, 0.51);
 }
 
 .discardPile[data-thick="2"]::before {
   box-shadow:
-    7px 6px 0 -1px rgba(255, 255, 255, 0.63),
-    14px 12px 0 -1px rgba(255, 255, 255, 0.54);
+    4px 3px 0 -1px rgba(255, 255, 255, 0.51),
+    8px 6px 0 -1px rgba(255, 255, 255, 0.42);
 }
 
 .discardPile[data-thick="3"]::before {
   box-shadow:
-    7px 6px 0 -1px rgba(255, 255, 255, 0.63),
-    14px 12px 0 -1px rgba(255, 255, 255, 0.54),
-    21px 18px 0 -1px rgba(255, 255, 255, 0.45);
+    4px 3px 0 -1px rgba(255, 255, 255, 0.51),
+    8px 6px 0 -1px rgba(255, 255, 255, 0.42),
+    12px 9px 0 -1px rgba(255, 255, 255, 0.33);
 }
 
 .discardPile[data-thick="4"]::before {
   box-shadow:
-    7px 6px 0 -1px rgba(255, 255, 255, 0.63),
-    14px 12px 0 -1px rgba(255, 255, 255, 0.54),
-    21px 18px 0 -1px rgba(255, 255, 255, 0.45),
-    28px 24px 0 -1px rgba(255, 255, 255, 0.36);
+    4px 3px 0 -1px rgba(255, 255, 255, 0.51),
+    8px 6px 0 -1px rgba(255, 255, 255, 0.42),
+    12px 9px 0 -1px rgba(255, 255, 255, 0.33),
+    16px 12px 0 -1px rgba(255, 255, 255, 0.24);
 }
 
 .discardPile[data-thick="5"]::before {
   box-shadow:
-    7px 6px 0 -1px rgba(255, 255, 255, 0.63),
-    14px 12px 0 -1px rgba(255, 255, 255, 0.54),
-    21px 18px 0 -1px rgba(255, 255, 255, 0.45),
-    28px 24px 0 -1px rgba(255, 255, 255, 0.36),
-    35px 30px 0 -1px rgba(255, 255, 255, 0.27);
+    4px 3px 0 -1px rgba(255, 255, 255, 0.51),
+    8px 6px 0 -1px rgba(255, 255, 255, 0.42),
+    12px 9px 0 -1px rgba(255, 255, 255, 0.33),
+    16px 12px 0 -1px rgba(255, 255, 255, 0.24),
+    20px 15px 0 -1px rgba(255, 255, 255, 0.15);
 }
 
 /* =========================================================
@@ -4005,8 +4006,17 @@ html[data-deck="acid"] .deckUno {
   }
 
   .opponentBack {
-    width: clamp(50px, 6.1vh, 70px);
-    height: clamp(75px, 9.2vh, 105px);
+    width: clamp(62px, 7.6vh, 88px);
+    height: clamp(93px, 11.4vh, 132px);
+
+    /*
+      Шаг раскладки растёт вместе с картой: при прежних
+      четырнадцати точках крупные рубашки складывались почти
+      в одну и веер переставал показывать количество.
+    */
+    --fan-step: clamp(26px, 3.1vh, 36px);
+
+    margin-left: calc(clamp(62px, 7.6vh, 88px) / -2);
   }
 
   .opponents[data-count="4"] .opponent {
@@ -4014,8 +4024,12 @@ html[data-deck="acid"] .deckUno {
   }
 
   .opponents[data-count="4"] .opponentBack {
-    width: clamp(42px, 5.1vh, 58px);
-    height: clamp(63px, 7.7vh, 87px);
+    width: clamp(52px, 6.4vh, 74px);
+    height: clamp(78px, 9.6vh, 111px);
+
+    --fan-step: clamp(22px, 2.6vh, 30px);
+
+    margin-left: calc(clamp(52px, 6.4vh, 74px) / -2);
   }
 
   .opponents[data-count="5"] .opponent,
@@ -4025,8 +4039,12 @@ html[data-deck="acid"] .deckUno {
 
   .opponents[data-count="5"] .opponentBack,
   .opponents[data-count="6"] .opponentBack {
-    width: clamp(34px, 4.1vh, 46px);
-    height: clamp(51px, 6.2vh, 69px);
+    width: clamp(42px, 5.1vh, 58px);
+    height: clamp(63px, 7.7vh, 87px);
+
+    --fan-step: clamp(17px, 2vh, 23px);
+
+    margin-left: calc(clamp(42px, 5.1vh, 58px) / -2);
   }
 
   .opponentFace {
