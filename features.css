@@ -735,7 +735,12 @@
       чтобы веер проходил под ними, низ дуги при этом всё
       равно далеко до руки.
     */
-    --arc-y: 37%;
+    /*
+      Вершина дуги — это arc-y минус arc-ry. При прежних
+      числах она приходилась ровно на кнопки шапки, и веер
+      соперника лез под них: интерфейс перекрывал сам себя.
+    */
+    --arc-y: 45%;
     --arc-rx: 38%;
     --arc-ry: 24%;
   }
@@ -759,20 +764,20 @@
     ужимаемся.
   */
   .opponent {
-    width: 168px;
+    width: 196px;
   }
 
   .opponentFan {
-    height: 62px;
+    height: 76px;
   }
 
   .opponentBack {
-    width: 42px;
-    height: 63px;
+    width: 52px;
+    height: 78px;
 
-    --fan-step: 17px;
+    --fan-step: 21px;
 
-    margin-left: -21px;
+    margin-left: -26px;
   }
 
   /*
@@ -5835,29 +5840,34 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   text-align: left;
 }
 
+/*
+  Кружок с вопросом не читался как кнопка «пройти обучение
+  заново» — он вообще ни о чём не говорил. Теперь это
+  подписанная кнопка.
+*/
 .coachAgain {
   flex: none;
 
-  width: 26px;
-  height: 26px;
+  padding: 6px 10px;
 
-  border-radius: 50%;
+  border-radius: 9px;
 
   border:
-    1px solid rgba(183, 255, 36, .45);
+    1px solid rgba(183, 255, 36, .5);
 
-  background: rgba(183, 255, 36, .1);
+  background: rgba(183, 255, 36, .12);
 
   color: var(--acid);
 
   font-family: inherit;
-  font-size: 13px;
+  font-size: 9px;
   font-weight: 1000;
 
-  cursor: pointer;
+  letter-spacing: .1em;
 
-  display: grid;
-  place-items: center;
+  white-space: nowrap;
+
+  cursor: pointer;
 }
 
 .coachAgain:hover {
@@ -5905,24 +5915,17 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 }
 
 /*
-  Шторки не ловят касания никогда. Кольцо здесь — указание,
-  а не забор: на телефоне тап по подсвеченной колоде не
-  должен зависеть от того, попал ли он в окошко ровно.
+  Шаг ждёт нажатия — кольцо само становится кнопкой поверх
+  подсвеченного места. Иначе тап зависел от того, дошёл ли
+  он до настоящей кнопки под ним, а на телефоне он доходил
+  не всегда.
 */
-.coachTour .coachShade {
-  pointer-events: none;
+.coachTour.is-tappable .coachSpot {
+  pointer-events: auto;
+
+  cursor: pointer;
 }
 
-
-/*
-  Действие сделано — затемнение уходит, и человек своими
-  глазами видит результат: карту, которая прилетела в руку,
-  или ту, что легла на стол. Без этой паузы обучение
-  выглядело так, будто нажатие ничего не сделало.
-*/
-.coachTour.is-done .coachShade {
-  opacity: 0;
-}
 
 .coachTour.is-done .coachSpot {
   border-color: rgba(183, 255, 36, .5);
@@ -5963,24 +5966,6 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   */
   pointer-events: none;
 }
-
-/*
-  Шторки затемнения. Четыре прямоугольника вокруг
-  подсвеченного места — см. коммент в src/coach.js.
-*/
-.coachShade {
-  position: absolute;
-
-  transition: opacity .35s ease;
-
-  /*
-    Почти глухая: при девяти десятых сквозь неё просвечивал
-    неоновый логотип и читался как второе подсвеченное
-    место.
-  */
-  background: rgba(3, 1, 8, .95);
-}
-
 
 .coachCard {
   position: absolute;
@@ -6312,9 +6297,13 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
     top: 4px;
     bottom: auto;
 
-    left: 50%;
+    /*
+      Не по центру: справа стоят кнопки шапки, слева
+      логотип. Строка занимает ровно промежуток между ними.
+    */
+    left: 46%;
 
-    width: min(62vw, 560px);
+    width: min(54vw, 500px);
 
     padding: 4px 8px 4px 11px;
 
@@ -6332,10 +6321,9 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   }
 
   .coachAgain {
-    width: 20px;
-    height: 20px;
+    padding: 4px 7px;
 
-    font-size: 10px;
+    font-size: 8px;
   }
 
 
@@ -6440,9 +6428,14 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 
 @media (orientation: landscape) and (max-height: 560px) {
 
+  /*
+    Ещё мельче, чем казалось нужным: рука в альбоме съедала
+    стол снизу и закрывала сброс. При 322 точках высоты
+    карта выходит в 45x68 — стол остаётся видимым целиком.
+  */
   :root {
-    --card-w: clamp(48px, 17vh, 74px);
-    --card-h: clamp(72px, 25.5vh, 111px);
+    --card-w: clamp(42px, 14vh, 62px);
+    --card-h: clamp(63px, 21vh, 93px);
   }
 
   /*
@@ -6451,11 +6444,16 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
     ложится прямо на колоду со сбросом.
   */
   #table {
-    top: 51%;
+    top: 48%;
 
     height: min(38vh, 126px);
 
     width: min(calc(100vw - 190px), 470px);
+  }
+
+  /* стопки выше середины стола — под ними проходит рука */
+  #center {
+    top: 40%;
   }
 
   /*

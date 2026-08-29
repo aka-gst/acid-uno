@@ -468,18 +468,12 @@ const AcidCoach = (() => {
     layer.className = "coachTour hidden";
 
     /*
-      Затемнение — четыре шторки вокруг подсвеченного места,
-      а не одна огромная тень. Тень со спредом в 9999 точек
-      Chrome прорисовывает не всегда: у неё выходит текстура
-      в двадцать тысяч точек по стороне, и часть экрана
-      остаётся незатемнённой — выглядит так, будто подсвечен
-      совсем не тот угол.
+      Затемнения нет вовсе. Оно закрывало собой ровно то, на
+      что показывало: то руку, то стол, то место второго
+      действия. Куда смотреть, говорит кольцо, и этого
+      достаточно.
     */
     layer.innerHTML =
-      '<div class="coachShade" id="shadeTop"></div>' +
-      '<div class="coachShade" id="shadeBottom"></div>' +
-      '<div class="coachShade" id="shadeLeft"></div>' +
-      '<div class="coachShade" id="shadeRight"></div>' +
       '<div class="coachSpot" id="coachSpot"></div>' +
       '<div class="coachCard">' +
       '<div class="coachStep" id="coachStep"></div>' +
@@ -617,37 +611,6 @@ const AcidCoach = (() => {
     spot.style.height = `${height}px`;
 
 
-    const shade = (id, css) =>
-      Object.assign($(id).style, css);
-
-    shade("shadeTop", {
-      left: "0px",
-      top: "0px",
-      width: "100%",
-      height: `${Math.max(0, top)}px`
-    });
-
-    shade("shadeBottom", {
-      left: "0px",
-      top: `${top + height}px`,
-      width: "100%",
-      height: `${Math.max(0, window.innerHeight - top - height)}px`
-    });
-
-    shade("shadeLeft", {
-      left: "0px",
-      top: `${Math.max(0, top)}px`,
-      width: `${Math.max(0, left)}px`,
-      height: `${height}px`
-    });
-
-    shade("shadeRight", {
-      left: `${left + width}px`,
-      top: `${Math.max(0, top)}px`,
-      width: `${Math.max(0, window.innerWidth - left - width)}px`,
-      height: `${height}px`
-    });
-
 
     /*
       Объяснение ставим по ту сторону подсвеченного места,
@@ -762,14 +725,39 @@ const AcidCoach = (() => {
     );
 
 
-    /*
-      Пока ждём действия, затемнение не ловит касания: карту
-      тащат из руки в центр, и путь проходит прямо по нему.
-    */
     layer.classList.toggle(
       "is-acting",
       Boolean(waiting)
     );
+
+
+    /*
+      Шаг ждёт нажатия на колоду — тогда само кольцо и
+      становится кнопкой. Оно лежит ровно поверх колоды, и
+      промахнуться мимо него нельзя: что бы ни случилось с
+      настоящей кнопкой под ним, нажатие дойдёт.
+
+      На телефоне это оказалось единственным надёжным
+      способом: тап по колоде почему-то доходил не всегда, а
+      обучение вставало на первом же шаге.
+    */
+    const spotButton =
+      waiting === "draw";
+
+    layer.classList.toggle(
+      "is-tappable",
+      spotButton
+    );
+
+    const ring = $("coachSpot");
+
+    if (ring) {
+
+      ring.onclick =
+        spotButton
+          ? () => $(step.target)?.click()
+          : null;
+    }
 
     layer.classList.remove("is-done");
 
