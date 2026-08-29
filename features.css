@@ -6591,9 +6591,16 @@ html[data-skin-art="1"] .cardSkin {
     неё лежит номинал, которому уже приходилось помогать
     тёмным ореолом.
   */
-  mix-blend-mode: overlay;
+  /*
+    Soft-light, а не overlay. Overlay темнит там, где под
+    ним темно, — а под ним как раз тёмная карта, и цветное
+    поле уходило в чёрное: масть переставала читаться, и
+    карты выглядели тусклыми. Soft-light трогает светлоту
+    мягче и цвет не съедает.
+  */
+  mix-blend-mode: soft-light;
 
-  opacity: .5;
+  opacity: .34;
 }
 
 /*
@@ -6921,4 +6928,249 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
   letter-spacing: .1em;
 
   cursor: pointer;
+}
+
+
+/* =========================================================
+   КОЛЬЦО ЦВЕТА НА СТОЛЕ ДЛЯ ДВОИХ
+
+   На двоих направление хода бессмысленно — ход просто
+   возвращается, — но само кольцо несёт и второе сообщение:
+   оно горит текущим цветом стола. Раньше при двух местах
+   оно пряталось целиком, и цвет приходилось читать
+   надписью сбоку.
+
+   Стрелки убираем, кольцо оставляем.
+   ========================================================= */
+
+.direction.solo .dirHead {
+  display: none;
+}
+
+.direction.solo .dirRibbon {
+  /*
+    Лента сходит на нет к хвосту — на двоих это читалось бы
+    как направление, которого нет. Делаем её ровной по
+    толщине и приглушаем: это фон, а не указатель.
+  */
+  opacity: .5;
+}
+
+.direction.solo {
+  animation: none;
+}
+
+
+/* =========================================================
+   СОПЕРНИК: ПОРТРЕТ СЛЕВА, ИМЯ ПОД КАРТАМИ
+
+   Раньше портрет был зажат внутри узкой плашки между именем
+   и числом — крупным он там быть не мог по определению.
+   Теперь он стоит отдельно слева от веера, а имя и число
+   ушли под карты, туда, где их ищут глазами.
+
+   Стоит в конце файла намеренно: выше объявлены размеры
+   плашки и веера для каждого экрана, и эти правила должны
+   лечь поверх них.
+   ========================================================= */
+
+.opponent {
+  display: grid;
+
+  grid-template-columns: auto 1fr;
+
+  align-items: center;
+
+  justify-items: stretch;
+
+  gap: 9px;
+}
+
+.opponentSide {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 3px;
+
+  min-width: 0;
+}
+
+
+/*
+  Рубашки в веере стоят абсолютно и разъезжаются шире своей
+  колонки — они шире её и выше. Портрет и подпись поэтому
+  поднимаем слоем: иначе карты ложатся поверх и того, и
+  другого, и кажется, что портрета нет вовсе.
+*/
+.opponent .opponentFace,
+.opponent .opponentPlate {
+  position: relative;
+
+  z-index: 3;
+}
+
+/* портрет крупный и круглый, вне плашки */
+.opponent .opponentFace {
+  width: 2.9em;
+  height: 2.9em;
+
+  flex: none;
+
+  border-radius: 50%;
+
+  border:
+    2px solid rgba(181, 93, 255, .5);
+
+  /*
+    background-color, а не сокращённое background: сокращение
+    сбрасывает и background-size, а он у портрета cover. С
+    auto картинка в 512 точек ложилась в кружок 73 точки
+    один к одному, и в кадр попадал тёмный угол — портрета
+    будто не было вовсе.
+  */
+  background-color: rgba(12, 6, 26, .9);
+
+  background-size: cover;
+  background-position: center 22%;
+
+  overflow: hidden;
+}
+
+.opponent.is-active .opponentFace {
+  border-color: var(--acid);
+}
+
+/* плашка теперь только подпись под картами */
+.opponent .opponentPlate {
+  gap: 8px;
+
+  padding: 3px 10px;
+
+  border-radius: 10px;
+}
+
+/* имя вернулось: под картами ему есть место на любом экране */
+.opponent .opponentName {
+  display: block;
+
+  max-width: 11ch;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/*
+   В альбоме соперники сидят по бокам стола — портрету сбоку
+   уже некуда, он встаёт сверху.
+*/
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .opponent {
+    grid-template-columns: 1fr;
+
+    justify-items: center;
+
+    gap: 3px;
+  }
+
+  .opponent .opponentFace {
+    width: 2.1em;
+    height: 2.1em;
+  }
+
+  .opponent .opponentName {
+    max-width: 9ch;
+  }
+}
+
+
+/* =========================================================
+   КНОПКИ ШАПКИ ОДНОГО РАЗМЕРА
+
+   Подписи разной длины, и «на главную» переносилось на две
+   строки: кнопка становилась выше соседних, а значок в ней
+   уезжал наверх. Ряд выглядел собранным наспех.
+   ========================================================= */
+
+@media (min-width: 1150px) and (min-height: 620px) {
+
+  .iconButton {
+    height: 52px;
+
+    white-space: nowrap;
+
+    flex-wrap: nowrap;
+  }
+
+  .iconButton::before {
+    white-space: nowrap;
+  }
+}
+
+
+/* =========================================================
+   ВЕЕР РОВНО ПО ВЫСОТЕ КАРТЫ
+
+   Рубашки стоят в веере абсолютно, и контейнер про их высоту
+   ничего не знал: он был в 50 точек при картах в 135. Карты
+   свисали вниз и ложились на имя — то самое имя, которое
+   должно быть под ними.
+
+   Высота задаётся теми же выражениями, что и высота
+   рубашки, для каждого размера стола.
+   ========================================================= */
+
+.opponentFan {
+  height: 46px;
+}
+
+@media (max-width: 620px) {
+
+  .opponentFan {
+    height: 82px;
+  }
+
+  .opponents[data-count="3"] .opponentFan,
+  .opponents[data-count="4"] .opponentFan {
+    height: 49px;
+  }
+
+  .opponents[data-count="5"] .opponentFan,
+  .opponents[data-count="6"] .opponentFan {
+    height: 39px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .opponentFan {
+    height: 47px;
+  }
+
+  .opponents[data-count="4"] .opponentFan,
+  .opponents[data-count="5"] .opponentFan,
+  .opponents[data-count="6"] .opponentFan {
+    height: 34px;
+  }
+}
+
+@media (min-width: 900px) and (min-height: 620px) {
+
+  .opponentFan {
+    height: clamp(126px, calc(var(--pod-2) * 1.5), 177px);
+  }
+
+  .opponents[data-count="4"] .opponentFan {
+    height: clamp(105px, calc(var(--pod-4) * 1.5), 147px);
+  }
+
+  .opponents[data-count="5"] .opponentFan,
+  .opponents[data-count="6"] .opponentFan {
+    height: clamp(84px, calc(var(--pod-6) * 1.5), 117px);
+  }
 }

@@ -985,6 +985,15 @@
       (seat.index - 1 + OPPONENT_FACES) %
       OPPONENT_FACES;
 
+    /*
+      Портрет вынесен из плашки и стоит отдельно, слева от
+      веера: там он может быть крупным, а раньше был зажат
+      между именем и числом внутри узкой плашки. Имя и число
+      ушли под карты — туда, где их и ищут глазами.
+
+      В альбоме соперники сидят по бокам стола, и портрет там
+      встаёт сверху: сбоку ему просто некуда — см. CSS.
+    */
     return `
       <button
         class="opponent"
@@ -993,17 +1002,22 @@
         style="--sx:${spot.x.toFixed(3)};--sy:${spot.y.toFixed(3)}"
         aria-label="${seatName(seat.index)}"
       >
-        <span class="opponentFan"></span>
+        <span
+          class="opponentFace"
+          data-face="${face}"
+        ><svg viewBox="0 0 60 28" preserveAspectRatio="none"><polyline
+          points="${WAVE_POINTS[face]}"
+        /></svg></span>
 
-        <span class="opponentPlate">
-          <span
-            class="opponentFace"
-            data-face="${face}"
-          ><svg viewBox="0 0 60 28" preserveAspectRatio="none"><polyline
-            points="${WAVE_POINTS[face]}"
-          /></svg></span>
-          <span class="opponentName">${seatName(seat.index)}</span>
-          <span class="opponentCount">0</span>
+        <span class="opponentSide">
+
+          <span class="opponentFan"></span>
+
+          <span class="opponentPlate">
+            <span class="opponentName">${seatName(seat.index)}</span>
+            <span class="opponentCount">0</span>
+          </span>
+
         </span>
       </button>
     `;
@@ -1579,8 +1593,21 @@
       return;
     }
 
+    /*
+      Кольцо показываем всегда, а не только за столом от
+      трёх мест. На двоих направление и правда ничего не
+      значит — ход просто возвращается, — но кольцо носит и
+      второе сообщение: оно окрашено в текущий цвет стола.
+      Без него понять, каким цветом сейчас играют, можно
+      было только по надписи сбоку.
+
+      Стрелки на двоих гасятся (класс solo), остаётся ровное
+      цветное кольцо вокруг стопок.
+    */
+    el.classList.remove("hidden");
+
     el.classList.toggle(
-      "hidden",
+      "solo",
       !multiSeat91()
     );
 
