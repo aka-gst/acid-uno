@@ -1193,6 +1193,55 @@
       el.style.setProperty("--sy", spot.y.toFixed(3));
       el.style.setProperty("--tilt", `${spot.tilt.toFixed(1)}deg`);
 
+
+      /*
+        Настоящая ширина веера. Рубашки стоят абсолютно и
+        разъезжаются от середины, поэтому колонка сетки про
+        их размах ничего не знает — и портрет, стоящий рядом,
+        оказывался под крайней картой.
+
+        Подбирать ширину значка руками я уже пробовал: у
+        каждого размера экрана и каждого числа мест она своя,
+        и рано или поздно какая-нибудь пара расходится.
+
+        Мерим по самим картам, а не по --fan-step: он задан
+        через clamp(), и число из этой строки не вынуть —
+        parseFloat возвращал NaN, а запасные четырнадцать
+        точек давали ширину вдвое меньше настоящей. Портрет
+        от этого и оставался под краем веера.
+
+        Во время раздачи не меряем: карты сдвинуты анимацией,
+        и замер вышел бы случайным.
+      */
+      const backs =
+        el.querySelectorAll(".opponentBack");
+
+      if (
+        backs.length &&
+        !$("game")?.classList.contains("is-dealing")
+      ) {
+
+        let left = Infinity;
+        let right = -Infinity;
+
+        backs.forEach(card => {
+
+          const box =
+            card.getBoundingClientRect();
+
+          left = Math.min(left, box.left);
+          right = Math.max(right, box.right);
+        });
+
+        if (right > left) {
+
+          el.style.setProperty(
+            "--fan-w",
+            `${Math.round(right - left)}px`
+          );
+        }
+      }
+
       el.classList.toggle(
         "is-active",
         seat.index === activeSeat &&
