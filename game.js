@@ -847,6 +847,17 @@ function renderHand() {
         `${pos.rot}deg`
       );
 
+      /*
+        Номер карты в руке. Нужен только раздаче: по нему
+        каждая карта вылетает из колоды со своей задержкой,
+        и стол собирается на глазах, а не появляется
+        собранным.
+      */
+      el.style.setProperty(
+        "--deal-i",
+        String(index)
+      );
+
       el.style.setProperty(
         "--scale",
         pos.scale

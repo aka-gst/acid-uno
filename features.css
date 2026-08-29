@@ -4506,12 +4506,18 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
   поднятой и опущенной читается вдвое лучше, чем одна
   поднятая сама по себе.
 */
-html[data-level="calm"] #hand.is-turn .handCard.v9-unplayable {
+/*
+  Подходящая карта выезжает из веера — на любом уровне, а не
+  только на учебном. Свечения под картой мало: оно тонет
+  среди собственных неоновых рамок соседок. Видно движение,
+  а не блик.
+*/
+#hand.is-turn .handCard.v9-unplayable {
   translate: 0 9px;
 }
 
-html[data-level="calm"] #hand.is-turn .handCard.v9-playable,
-html[data-level="calm"] #hand.is-turn .handCard.playable {
+#hand.is-turn .handCard.v9-playable,
+#hand.is-turn .handCard.playable {
   translate: 0 -22px;
 
   filter:
@@ -4522,14 +4528,45 @@ html[data-level="calm"] #hand.is-turn .handCard.playable {
     drop-shadow(0 0 30px rgba(183, 255, 36, .5));
 }
 
+
+/*
+  И горящий контур по самой карте. Тень снаружи карту не
+  обводит — восьмиугольник режется clip-path, а он срезает
+  и её. Поэтому кольцо рисуется внутренней тенью на том же
+  слое, где живёт рамка: оно повторяет форму карты точно.
+*/
+#hand.is-turn .handCard.v9-playable::after,
+#hand.is-turn .handCard.playable::after {
+  border-color: rgba(183, 255, 36, .9);
+
+  box-shadow:
+    inset 0 0 0 2px rgba(183, 255, 36, .95),
+    inset 0 0 16px rgba(183, 255, 36, .55);
+
+  animation:
+    playableRim 1.5s ease-in-out infinite;
+}
+
+@keyframes playableRim {
+
+  0%,
+  100% {
+    opacity: .55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 #hand.is-hint .handCard.v9-playable,
 #hand.is-hint .handCard.playable {
   animation:
     handHint 1.5s ease-in-out infinite;
 }
 
-html[data-level="calm"] #hand.is-hint .handCard.v9-playable,
-html[data-level="calm"] #hand.is-hint .handCard.playable {
+#hand.is-hint .handCard.v9-playable,
+#hand.is-hint .handCard.playable {
   animation:
     calmHint 1.6s ease-in-out infinite;
 }
@@ -7172,5 +7209,198 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
   .opponents[data-count="5"] .opponentFan,
   .opponents[data-count="6"] .opponentFan {
     height: clamp(84px, calc(var(--pod-6) * 1.5), 117px);
+  }
+}
+
+
+/* =========================================================
+   ПОРТРЕТ РЯДОМ С КАРТАМИ, А НЕ ПОВЕРХ НИХ
+
+   Рубашки в веере стоят абсолютно и разъезжаются шире своей
+   колонки: при семи картах это под двести точек, а колонке
+   доставалось меньше сотни — портрет оказывался под краем
+   веера.
+
+   За столом на одного-двух соперников места вдоволь, и
+   значок просто становится шире. Дальше места нет, и
+   портрет уезжает наверх — как в альбоме.
+   ========================================================= */
+
+.opponents[data-count="1"] .opponent,
+.opponents[data-count="2"] .opponent {
+  width: 300px;
+}
+
+.opponents:not([data-count="1"]):not([data-count="2"]) .opponent {
+  grid-template-columns: 1fr;
+
+  justify-items: center;
+
+  gap: 2px;
+}
+
+.opponents:not([data-count="1"]):not([data-count="2"]) .opponentFace {
+  width: 2.1em;
+  height: 2.1em;
+}
+
+
+@media (max-width: 620px) {
+
+  .opponents[data-count="1"] .opponent,
+  .opponents[data-count="2"] .opponent {
+    width: 292px;
+  }
+}
+
+
+@media (min-width: 900px) and (min-height: 620px) {
+
+  .opponents[data-count="1"] .opponent,
+  .opponents[data-count="2"] .opponent {
+    width: clamp(330px, min(40vh, 30vw), 430px);
+  }
+}
+
+
+/*
+  В альбоме соперники сидят по краям стола, и портрет там
+  наверху у всех — правило выше про широкий значок туда не
+  распространяется.
+*/
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .opponents[data-count="1"] .opponent,
+  .opponents[data-count="2"] .opponent {
+    width: 132px;
+  }
+}
+
+
+/* =========================================================
+   КОЛЬЦО КРУТИТСЯ И ГОВОРИТ, ЧЕЙ ХОД
+
+   Раньше оно просто висело: направление читалось только по
+   форме лент, а чей сейчас ход — вообще никак.
+
+   Теперь кольцо медленно идёт в ту сторону, куда идёт круг,
+   и меняет цвет по тому, кто ходит: кислотное, когда ход
+   твой, и цвет стола, когда думает соперник. Крутится
+   поворотом, а не тенью, — это дёшево и не рвёт кадры.
+   ========================================================= */
+
+.direction {
+  animation:
+    dirSpin 18s linear infinite;
+}
+
+.direction.reversed {
+  animation-direction: reverse;
+}
+
+@keyframes dirSpin {
+
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 360deg;
+  }
+}
+
+/*
+  Эллипс в альбоме вращать нельзя — он качается, и это сразу
+  видно. Там кольцо стоит, а чей ход, говорит цвет.
+*/
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .direction {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .direction {
+    animation: none;
+  }
+}
+
+
+/* твой ход — кольцо кислотное и ярче */
+.direction.is-mine .dirRibbon,
+.direction.is-mine .dirHead {
+  fill: var(--acid);
+}
+
+.direction.is-mine {
+  filter:
+    drop-shadow(0 0 14px rgba(183, 255, 36, .55));
+}
+
+
+/* =========================================================
+   РАЗДАЧА
+
+   Карты вылетают из колоды по очереди: своя рука — по
+   номеру карты, вееры соперников — по номеру рубашки.
+   Задержка считается из этих номеров, поэтому очередь не
+   нужно вести из кода.
+
+   Летит только сдвиг и прозрачность — никаких теней и
+   фильтров: на столе на семерых это полсотни карт разом.
+   ========================================================= */
+
+#game.is-dealing .handCard {
+  animation:
+    dealInHand .38s cubic-bezier(.18, .82, .2, 1) backwards;
+
+  animation-delay:
+    calc(var(--deal-i, 0) * 65ms);
+}
+
+@keyframes dealInHand {
+
+  from {
+    translate: 0 -160px;
+
+    scale: .55;
+
+    opacity: 0;
+  }
+}
+
+
+#game.is-dealing .opponentBack {
+  animation:
+    dealInBack .34s cubic-bezier(.18, .82, .2, 1) backwards;
+
+  /*
+    Соперники получают карты вперемешку со своей рукой —
+    смещение в 30 мс, чтобы очередь читалась как раздача по
+    кругу, а не как два отдельных потока.
+  */
+  animation-delay:
+    calc(var(--i, 0) * 65ms + 30ms);
+}
+
+@keyframes dealInBack {
+
+  from {
+    translate: 0 90px;
+
+    scale: .5;
+
+    opacity: 0;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+  #game.is-dealing .handCard,
+  #game.is-dealing .opponentBack {
+    animation: none;
   }
 }
