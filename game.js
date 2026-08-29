@@ -337,45 +337,12 @@ function startGame() {
    CARD HTML
    ========================================================= */
 
-/*
-  Подпись под номиналом. В классической колоде она скрыта,
-  в кислотной это половина лица карты: спецкарты там зовутся
-  своими именами, а не «пропуск» и «разворот».
-*/
-function cardWord(value) {
-  switch (value) {
-    case "skip":
-      return "BLOCK";
-
-    case "reverse":
-      return "REVOLT";
-
-    case "wild":
-      return "ACID WILD";
-
-    case "+2":
-      return "ДОЗА";
-
-    case "+4":
-      return "ВЫБРОС";
-
-    default:
-      /*
-        У числовой карты имени нет: «ACID UNO» на каждой
-        из семидесяти шести — шум, который мешает читать
-        сам номинал.
-      */
-      return "";
-  }
-}
-
 function cardFaceHTML(card) {
   const label = cardLabel(card.value);
 
   return `
     <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
     <div class="value" data-v="${card.value}">${label}</div>
-    <span class="cardWord" aria-hidden="true">${cardWord(card.value)}</span>
     <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>
   `;
 }
@@ -1237,11 +1204,16 @@ document
         hub.style.removeProperty("--hub");
       };
 
-      button.addEventListener("pointerenter", showHub);
+      /*
+        Только нажатие, без наведения. Подсветка по наведению
+        выглядит так, будто цвет уже выбран, хотя выбором тут
+        является лишь клик или тап — и рука над столом успевает
+        «выбрать» цвет мимоходом.
+      */
       button.addEventListener("pointerdown", showHub);
-      button.addEventListener("focus", showHub);
+      button.addEventListener("pointerup", clearHub);
+      button.addEventListener("pointercancel", clearHub);
       button.addEventListener("pointerleave", clearHub);
-      button.addEventListener("blur", clearHub);
     }
   );
 

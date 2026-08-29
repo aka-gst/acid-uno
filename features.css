@@ -1656,13 +1656,10 @@
 
 #hand .handCard.v9-unplayable {
   /*
-    Разница должна читаться боковым зрением, а не бить в глаза.
-    Лёгкого приглушения хватает: масть остаётся яркой, рука не
-    выглядит выключенной.
+    Приглушения здесь больше нет: разницу делает свет от
+    играбельной карты. Правило оставлено ради перехода.
   */
-  filter:
-    brightness(.86)
-    saturate(.88);
+  filter: none;
 
   transition: filter .18s ease;
 }
@@ -2039,42 +2036,6 @@
    ========================================================= */
 
 /* подпись показывается только в кислотной колоде */
-.cardWord {
-  display: none;
-}
-
-html[data-deck="acid"] .cardWord {
-  position: absolute;
-
-  left: 0;
-  right: 0;
-
-  /*
-    Не у нижней кромки: веер руки нарочно уходит за нижний
-    край экрана, и подпись — половина лица кислотной карты —
-    там просто не видна.
-  */
-  top: 68%;
-
-  z-index: 6;
-
-  display: block;
-
-  font-size: 7px;
-  font-weight: 900;
-
-  letter-spacing: .14em;
-
-  text-align: center;
-
-  color: currentColor;
-
-  opacity: .75;
-
-  pointer-events: none;
-}
-
-
 html[data-deck="acid"] .card,
 html[data-deck="acid"] .handCard,
 html[data-deck="acid"] .flyingCard {
@@ -2593,10 +2554,6 @@ html #deck[data-thick="5"] .deckBack {
 */
 .hand.is-crowded .handCard .value {
   opacity: 1;
-}
-
-.hand.is-crowded .handCard .cardWord {
-  display: none;
 }
 
 .hand.is-crowded .handCard .cardCorner {
@@ -4139,17 +4096,18 @@ html[data-deck="acid"] .deckUno {
    по свечению одной карты.
    ========================================================= */
 
+/*
+  Карты, которыми ходить нельзя, не гасятся вовсе. Разницу
+  делает свет от играбельной карты, а не темнота от остальных:
+  затемнение половины веера читается как поломка, а не как
+  подсказка.
+*/
 #hand .handCard.v9-unplayable {
-  /*
-    Гашение должно отличать, а не выключать карту: прежние
-    сорок процентов яркости превращали половину веера в чёрные
-    прямоугольники, по которым уже ничего не прочитать.
-  */
-  filter: brightness(.66) saturate(.72);
+  filter: none;
 
-  opacity: .88;
+  opacity: 1;
 
-  transition: filter 90ms ease, opacity 90ms ease;
+  transition: filter 90ms ease, box-shadow 90ms ease;
 }
 
 /*
@@ -4163,20 +4121,31 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
   opacity: 1;
 }
 
+/*
+  Играбельная карта светится сама.
+
+  Свечение обязано быть drop-shadow, а не box-shadow: у
+  кислотной карты срезаны углы через clip-path, а он обрезает
+  и тень — контур просто не рисовался, и подсветки не было
+  видно вовсе, сколько её ни усиливай. drop-shadow идёт по
+  силуэту после обрезки.
+*/
 #hand .handCard.v9-playable,
 #hand .handCard.playable {
-  filter: brightness(1.06);
+  filter: brightness(1.14) saturate(1.1);
 
   opacity: 1;
 }
 
-/* и один общий контур, чтобы играбельные читались как группа */
-.hand.is-turn .handCard.v9-playable,
-.hand.is-turn .handCard.playable {
-  box-shadow:
-    0 0 0 2px rgba(183, 255, 36, .55),
-    0 0 16px rgba(183, 255, 36, .35),
-    0 12px 22px rgba(0, 0, 0, .5);
+/* #hand в селекторе обязателен: без него базовое правило с
+   идентификатором перебивает это по специфичности */
+#hand.is-turn .handCard.v9-playable,
+#hand.is-turn .handCard.playable {
+  filter:
+    brightness(1.14)
+    saturate(1.1)
+    drop-shadow(0 0 5px rgba(183, 255, 36, .9))
+    drop-shadow(0 0 16px rgba(183, 255, 36, .5));
 }
 
 
@@ -4389,8 +4358,11 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
   clip-path: polygon(50% 50%, 0 100%, 0 0);
 }
 
-.colorWheel .pick:hover,
-.colorWheel .pick:focus-visible,
+/*
+  :hover здесь намеренно нет: наведение читается как сделанный
+  выбор, хотя выбором является только нажатие.
+*/
+.colorWheel .pick:active,
 .colorWheel .pick.hot {
   filter: brightness(1.22) saturate(1.1);
 
