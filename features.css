@@ -775,18 +775,23 @@
     margin-left: -21px;
   }
 
+  /*
+    Портрет считается от размера шрифта: сама картинка —
+    2.1em. В референсе аватар занимает около десятой части
+    экрана, у нас выходило вдвое меньше.
+  */
   .opponentFace {
-    font-size: 22px;
+    font-size: 34px;
   }
 
   .opponentCount {
-    font-size: 21px;
+    font-size: 24px;
   }
 
   .opponentPlate {
-    padding: 6px 12px 6px 7px;
+    padding: 7px 14px 7px 8px;
 
-    border-radius: 16px;
+    border-radius: 20px;
   }
 
 
@@ -812,12 +817,12 @@
 
   .opponents[data-count="3"] .opponentFace,
   .opponents[data-count="4"] .opponentFace {
-    font-size: 17px;
+    font-size: 25px;
   }
 
   .opponents[data-count="3"] .opponentCount,
   .opponents[data-count="4"] .opponentCount {
-    font-size: 16px;
+    font-size: 18px;
   }
 
 
@@ -843,7 +848,7 @@
 
   .opponents[data-count="5"] .opponentFace,
   .opponents[data-count="6"] .opponentFace {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .opponents[data-count="5"] .opponentCount,
@@ -897,11 +902,11 @@
   }
 
   .opponentFace {
-    font-size: 17px;
+    font-size: 26px;
   }
 
   .opponentCount {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .opponents[data-count="4"] .opponent,
@@ -1849,7 +1854,7 @@
    в наведении — её видно сразу.
    ========================================================= */
 
-@media (min-width: 900px) {
+@media (min-width: 900px) and (min-height: 620px) {
 
   .iconButton {
     width: 52px;
@@ -1881,7 +1886,7 @@
   тогда гадать, что делает кнопка, уже не приходится вовсе,
   и всплывающая подсказка становится лишней.
 */
-@media (min-width: 1150px) {
+@media (min-width: 1150px) and (min-height: 620px) {
 
   .iconButton {
     width: auto;
@@ -3587,7 +3592,7 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
    размера: карты в веере читались как крошки.
    ========================================================= */
 
-@media (min-width: 900px) {
+@media (min-width: 900px) and (min-height: 620px) {
 
   /*
     Размер соперника задаётся ниже, одним блоком на все
@@ -4205,7 +4210,15 @@ html[data-deck="acid"] .deckUno {
    даже на низком ноутбуке соперник перестаёт быть крошкой.
    ========================================================= */
 
-@media (min-width: 900px) {
+/*
+  Порог по высоте обязателен. Телефон в альбоме — это 930
+  точек по ширине и триста с небольшим по высоте: без него
+  сюда попадал именно он и получал раскладку монитора —
+  карты в руке во всю высоту экрана, а стол под ними. Тот же
+  порог стоит в style.css и v9.1.css, где раскладку задают
+  остальные правила.
+*/
+@media (min-width: 900px) and (min-height: 620px) {
 
   :root {
     --table-max-w: 1240px;
@@ -4332,7 +4345,7 @@ html[data-deck="acid"] .deckUno {
   }
 
   .opponentFace {
-    font-size: clamp(23px, 2.8vh, 32px);
+    font-size: clamp(31px, 3.7vh, 44px);
   }
 
   .opponentName {
@@ -4715,7 +4728,7 @@ html[data-level="calm"] #hand.is-hint .handCard.playable {
    именно за счёт времени, а не размера.
    ========================================================= */
 
-@media (min-width: 1000px) {
+@media (min-width: 1000px) and (min-height: 620px) {
 
   #v9Burst {
     font-size: clamp(26px, 3.4vh, 40px);
@@ -5852,7 +5865,7 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 }
 
 
-@media (min-width: 900px) {
+@media (min-width: 900px) and (min-height: 620px) {
 
   .coachLine {
     font-size: 14px;
@@ -6376,5 +6389,140 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
     margin-top: 7px;
 
     font-size: 10px;
+  }
+}
+
+
+/* =========================================================
+   ЧЕЙ ХОД — КАК В РЕФЕРЕНСЕ
+
+   В UNO Mobile ход обозначен не бледной рамкой, а золотым
+   кольцом вокруг портрета: с любого расстояния видно, кто
+   сейчас думает. У нас ходящего было видно только по
+   лёгкому свечению плашки.
+   ========================================================= */
+
+.opponent.is-active .opponentFace[data-art="1"] {
+  box-shadow:
+    0 0 0 3px var(--acid),
+    0 0 18px rgba(183, 255, 36, .75),
+    0 0 34px rgba(183, 255, 36, .4);
+}
+
+.opponent.is-active .opponentPlate {
+  border-color: rgba(183, 255, 36, .85);
+
+  background: rgba(20, 32, 6, .92);
+}
+
+
+/*
+  А кто ходит сейчас — ты. Своя плашка внизу тоже должна
+  говорить об этом, иначе за столом на семерых непонятно,
+  дошла ли очередь.
+*/
+.opponent:not(.is-active) .opponentFace[data-art="1"] {
+  filter: saturate(.75) brightness(.82);
+}
+
+
+/* =========================================================
+   ТЕЛЕФОН В АЛЬБОМЕ: НИЗКИЙ ЭКРАН
+
+   Safari в альбоме забирает панелями около сотни точек, и
+   от 430 остаётся чуть больше трёхсот. Карта в руке при
+   базовых 126 точках занимала в такой высоте почти сорок
+   процентов экрана и налезала на стол.
+
+   Размер карты привязан к высоте окна: на 330 точках карта
+   выходит примерно в 88, и под столом остаётся полоса.
+   ========================================================= */
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  :root {
+    --card-w: clamp(48px, 17vh, 74px);
+    --card-h: clamp(72px, 25.5vh, 111px);
+  }
+
+  /*
+    Стол опущен: сверху идёт строка наставника, под ней
+    сидит соперник, и только потом стол. Иначе его веер
+    ложится прямо на колоду со сбросом.
+  */
+  #table {
+    top: 51%;
+
+    height: min(38vh, 126px);
+
+    width: min(calc(100vw - 190px), 470px);
+  }
+
+  /*
+    Дуга ниже строки наставника, но выше стола: в трёхстах
+    точках высоты это единственная полоса, где соперник
+    помещается целиком, вместе с веером.
+
+    Считать надо не по arc-y, а по arc-y минус arc-ry: у
+    стола на двоих соперник один и сидит ровно в вершине
+    дуги. С прежними числами вершина уезжала за верхний край
+    экрана, и веер было не видно вообще.
+  */
+  .opponents {
+    --arc-y: 40%;
+    --arc-ry: 15%;
+  }
+
+  .actionHUD {
+    top: auto;
+
+    bottom: calc(var(--safe-bottom) + 4px);
+
+    left: 14px;
+
+    transform: none;
+
+    justify-content: flex-start;
+  }
+
+  /*
+    Уменьшая стопки, нельзя забыть про translate: он и держит
+    их в середине стола. Один scale затирает его целиком —
+    колода со сбросом уезжают в правый нижний угол.
+  */
+  #center {
+    transform:
+      translate(-50%, -50%)
+      scale(.82);
+  }
+}
+
+
+/*
+  Совсем низкий альбом — Safari с раскрытой панелью вкладок.
+  Здесь уже нечем жертвовать, кроме размера карты.
+*/
+@media (orientation: landscape) and (max-height: 380px) {
+
+  :root {
+    --card-w: clamp(44px, 15.5vh, 60px);
+    --card-h: clamp(66px, 23vh, 90px);
+  }
+
+  #table {
+    top: 52%;
+
+    height: min(36vh, 110px);
+  }
+
+  .opponents {
+    --arc-y: 38%;
+    --arc-ry: 14%;
+  }
+
+  #center {
+    transform:
+      translate(-50%, -50%)
+      scale(.72);
   }
 }
