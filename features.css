@@ -7354,7 +7354,7 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
 
 #game.is-dealing .handCard {
   animation:
-    dealInHand .38s cubic-bezier(.18, .82, .2, 1) backwards;
+    dealInHand .42s cubic-bezier(.2, .78, .24, 1) backwards;
 
   animation-delay:
     calc(var(--deal-i, 0) * 65ms);
@@ -7363,9 +7363,13 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
 @keyframes dealInHand {
 
   from {
-    translate: 0 -160px;
+    translate:
+      var(--deal-hand-x, 0)
+      var(--deal-hand-y, -160px);
 
-    scale: .55;
+    rotate: -220deg;
+
+    scale: .45;
 
     opacity: 0;
   }
@@ -7388,9 +7392,13 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
 @keyframes dealInBack {
 
   from {
-    translate: 0 90px;
+    translate:
+      var(--deal-fan-x, 0)
+      var(--deal-fan-y, 90px);
 
-    scale: .5;
+    rotate: 200deg;
+
+    scale: .45;
 
     opacity: 0;
   }
@@ -7404,3 +7412,54 @@ html[data-skin-art="1"] .handCard.wild .cardSkin {
     animation: none;
   }
 }
+
+
+/* =========================================================
+   СТАРТОВЫЙ ОТСЧЁТ
+
+   Три, два, один над пустым столом — как в референсе.
+   Пока идёт счёт, карт на столе нет вовсе: иначе считать
+   нечего, партия уже как будто идёт.
+   ========================================================= */
+
+#game.is-waiting .handCard,
+#game.is-waiting .opponentBack {
+  opacity: 0;
+}
+
+.startCount {
+  position: fixed;
+
+  left: 50%;
+  top: 42%;
+
+  z-index: 20040;
+
+  transform: translate(-50%, -50%);
+
+  font-family: inherit;
+  font-size: clamp(96px, 22vh, 190px);
+  font-weight: 1000;
+
+  line-height: 1;
+
+  letter-spacing: -.04em;
+
+  color: var(--acid);
+
+  text-shadow:
+    0 0 18px rgba(183, 255, 36, .85),
+    0 0 54px rgba(183, 255, 36, .45),
+    0 6px 0 rgba(4, 2, 9, .55);
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+/*
+  Сама вспышка каждого тика запускается из v9.1.js через
+  Web Animations: классом второй и третий тик не игрались —
+  снятие и возврат класса в одном кадре браузер сворачивает
+  в ничто, и цифра оставалась невидимой.
+*/

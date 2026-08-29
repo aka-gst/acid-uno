@@ -5447,6 +5447,61 @@
   const DEAL_MS = 1150;
 
 
+  /*
+    Стартовый отсчёт — как в референсе: три, два, один над
+    пустым столом, и только потом раздача. На учебном столе
+    его нет: там некуда торопиться, а обратный счёт — это
+    ровно про «скорее, скорее».
+  */
+  async function countdown91() {
+
+    let el = $("startCount");
+
+    if (!el) {
+
+      el = document.createElement("div");
+
+      el.id = "startCount";
+
+      el.className = "startCount";
+
+      document.body.appendChild(el);
+    }
+
+
+    for (const n of [3, 2, 1]) {
+
+      if (gameOver) {
+        return;
+      }
+
+      el.textContent = String(n);
+
+      /*
+        Анимация запускается из кода, а не классом. Классом
+        второй и третий тик просто не игрались: снятие и
+        возврат класса в одном кадре браузер сворачивает в
+        ничто, и цифра оставалась в конечном состоянии
+        анимации — то есть невидимой.
+      */
+      el.animate(
+        [
+          { opacity: 0, scale: 1.8 },
+          { opacity: 1, scale: 1, offset: .22 },
+          { opacity: 1, scale: 1, offset: .74 },
+          { opacity: 0, scale: .82 }
+        ],
+        {
+          duration: 760,
+          easing: "cubic-bezier(.2,.8,.25,1)"
+        }
+      );
+
+      await wait91(760);
+    }
+  }
+
+
   async function dealAnimation91() {
 
     const game = $("game");
@@ -5455,14 +5510,77 @@
       return;
     }
 
-    game.classList.add("is-dealing");
+    /*
+      Откуда лететь. В референсе карты уходят из колоды и
+      кувыркаются по дороге, а не падают сверху — колода на
+      столе стоит не по центру, и «сверху» выглядит так,
+      будто карты берутся из воздуха.
+
+      Считаем смещение от колоды до руки и до веера соперника
+      и отдаём его в CSS: сама анимация там.
+    */
+    const deckBox =
+      $("deck")?.getBoundingClientRect();
+
+    const handBox =
+      $("hand")?.getBoundingClientRect();
+
+    const fanBox =
+      document
+        .querySelector(".opponentFan")
+        ?.getBoundingClientRect();
+
+
+    const offset = (from, to) =>
+      from && to
+        ? [
+            Math.round(
+              (from.left + from.width / 2) -
+              (to.left + to.width / 2)
+            ),
+            Math.round(
+              (from.top + from.height / 2) -
+              (to.top + to.height / 2)
+            )
+          ]
+        : [0, -160];
+
+
+    const [handX, handY] =
+      offset(deckBox, handBox);
+
+    const [fanX, fanY] =
+      offset(deckBox, fanBox);
+
+
+    game.style.setProperty("--deal-hand-x", `${handX}px`);
+    game.style.setProperty("--deal-hand-y", `${handY}px`);
+    game.style.setProperty("--deal-fan-x", `${fanX}px`);
+    game.style.setProperty("--deal-fan-y", `${fanY}px`);
 
 
     /*
-      Пока карты летят, соперник не ходит: иначе первая же
-      его карта ляжет на стол посреди раздачи.
+      Пока идёт вступление, соперник не ходит: иначе первая
+      же его карта ляжет на стол посреди раздачи.
     */
     beginAction91();
+
+
+    /*
+      На время отсчёта карты просто спрятаны — стол должен
+      быть пустым, иначе считать нечего.
+    */
+    if (!calmMode) {
+
+      game.classList.add("is-waiting");
+
+      await countdown91();
+
+      game.classList.remove("is-waiting");
+    }
+
+
+    game.classList.add("is-dealing");
 
 
     await wait91(DEAL_MS);
