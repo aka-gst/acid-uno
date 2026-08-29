@@ -900,9 +900,21 @@
       Радиусы и центр дуги задаются в CSS: в альбоме стол
       шире и ниже, в портрете выше и уже.
     */
+    /*
+      Наклон веера. В референсе карты соперника лежат вдоль
+      его стороны стола, а не всегда горизонтально: сидящий
+      слева держит их почти вертикально, сидящий сверху —
+      плашмя.
+
+      Считается от вершины дуги: 270 градусов — это верх, и
+      там наклона нет. Коэффициент меньше единицы намеренно —
+      полный поворот ставит крайние вееры строго вертикально,
+      и они перестают читаться как карты в руке.
+    */
     return {
       x: Math.cos(radians),
-      y: Math.sin(radians)
+      y: Math.sin(radians),
+      tilt: (angles[index] - 270) * .68
     };
   }
 
@@ -999,7 +1011,7 @@
         class="opponent"
         type="button"
         data-seat="${seat.index}"
-        style="--sx:${spot.x.toFixed(3)};--sy:${spot.y.toFixed(3)}"
+        style="--sx:${spot.x.toFixed(3)};--sy:${spot.y.toFixed(3)};--tilt:${spot.tilt.toFixed(1)}deg"
         aria-label="${seatName(seat.index)}"
       >
         <span
@@ -1179,6 +1191,7 @@
 
       el.style.setProperty("--sx", spot.x.toFixed(3));
       el.style.setProperty("--sy", spot.y.toFixed(3));
+      el.style.setProperty("--tilt", `${spot.tilt.toFixed(1)}deg`);
 
       el.classList.toggle(
         "is-active",
