@@ -4305,3 +4305,145 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
     letter-spacing: .06em;
   }
 }
+
+
+/* =========================================================
+   ВЫБОР ЦВЕТА — БАРАБАН
+
+   Было четыре плоских кнопки в ряд: по ним приходится
+   прицеливаться, и с самой картой они никак не связаны.
+   Стало то же кольцо из четырёх мастей, что нарисовано на
+   чёрной карте, — ведёшь пальцем, сектор разгорается, в
+   центре пишется название. Порядок секторов тот же, что в
+   градиенте знака: розовый сверху, жёлтый справа, зелёный
+   снизу, голубой слева.
+   ========================================================= */
+
+.colorWindow .colors {
+  display: none;
+}
+
+.colorWheel {
+  position: relative;
+
+  width: min(64vw, 42vh, 320px);
+
+  aspect-ratio: 1;
+
+  margin: 18px auto 6px;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, .12),
+    0 0 34px rgba(139, 61, 255, .35),
+    inset 0 0 40px rgba(0, 0, 0, .55);
+
+  transition: transform .3s ease, opacity .3s ease;
+}
+
+.colorWheel .pick {
+  position: absolute;
+
+  inset: 0;
+
+  width: auto;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  cursor: pointer;
+
+  transition: filter .16s ease;
+
+  filter: brightness(.82) saturate(1);
+}
+
+.colorWheel .pick.red {
+  background: var(--red);
+
+  clip-path: polygon(50% 50%, 0 0, 100% 0);
+}
+
+.colorWheel .pick.yellow {
+  background: var(--yellow);
+
+  clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+}
+
+.colorWheel .pick.green {
+  background: var(--green);
+
+  clip-path: polygon(50% 50%, 100% 100%, 0 100%);
+}
+
+.colorWheel .pick.blue {
+  background: var(--blue);
+
+  clip-path: polygon(50% 50%, 0 100%, 0 0);
+}
+
+.colorWheel .pick:hover,
+.colorWheel .pick:focus-visible,
+.colorWheel .pick.hot {
+  filter: brightness(1.22) saturate(1.1);
+
+  outline: none;
+}
+
+/* ступица с названием — она же перекрывает стык секторов */
+.wheelHub {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 46%;
+  aspect-ratio: 1;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(24, 14, 38, .97),
+      rgba(6, 3, 12, .99) 72%
+    );
+
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, .1),
+    0 0 22px rgba(0, 0, 0, .6);
+
+  font-size: clamp(11px, 2.4vh, 16px);
+  font-weight: 900;
+
+  letter-spacing: .16em;
+
+  text-align: center;
+
+  color: var(--hub, rgba(248, 247, 255, .55));
+
+  text-shadow: 0 0 12px color-mix(in srgb, var(--hub, transparent) 70%, transparent);
+
+  pointer-events: none;
+
+  transition: color .16s ease;
+}
+
+/* выбрал — барабан схлопывается в центр стола */
+.colorWheel.collapsing {
+  transform: scale(.14);
+
+  opacity: 0;
+}

@@ -1164,11 +1164,84 @@ document
 
       button.addEventListener(
         "click",
-        () =>
-          chooseColor(
-            button.dataset.color
-          )
+        () => {
+
+          /*
+            Барабан схлопывается в центр стола, и только потом
+            уходит выбор: иначе окно исчезает мгновенно и
+            непонятно, что именно ты нажал.
+          */
+          const wheel = $("colorWheel");
+
+          wheel?.classList.add("collapsing");
+
+          window.setTimeout(
+            () => {
+
+              wheel?.classList.remove("collapsing");
+
+              chooseColor(button.dataset.color);
+            },
+            230
+          );
+        }
       );
+
+
+      /*
+        Название масти пишется в ступице: сектор без подписи
+        приходится угадывать по оттенку, а «розовый» у нас
+        вместо красного — тем более.
+      */
+      const HUB_WORDS = {
+        red: "РОЗОВЫЙ",
+        yellow: "ЖЁЛТЫЙ",
+        green: "ЗЕЛЁНЫЙ",
+        blue: "ГОЛУБОЙ"
+      };
+
+      const hub = $("wheelHub");
+
+      const showHub = () => {
+
+        /* класс, а не :hover — на телефоне наведения нет */
+        document
+          .querySelectorAll(".colorWheel .pick")
+          .forEach(other => other.classList.remove("hot"));
+
+        button.classList.add("hot");
+
+        if (!hub) {
+          return;
+        }
+
+        hub.textContent =
+          HUB_WORDS[button.dataset.color];
+
+        hub.style.setProperty(
+          "--hub",
+          `var(--${button.dataset.color})`
+        );
+      };
+
+      const clearHub = () => {
+
+        button.classList.remove("hot");
+
+        if (!hub) {
+          return;
+        }
+
+        hub.textContent = "ВЫБЕРИ";
+
+        hub.style.removeProperty("--hub");
+      };
+
+      button.addEventListener("pointerenter", showHub);
+      button.addEventListener("pointerdown", showHub);
+      button.addEventListener("focus", showHub);
+      button.addEventListener("pointerleave", clearHub);
+      button.addEventListener("blur", clearHub);
     }
   );
 
