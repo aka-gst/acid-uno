@@ -980,6 +980,16 @@
         seat.hand.length
       );
 
+
+      /*
+        Портрет ложится в ту же плашку, где живёт волна. Нет
+        картинки — волна остаётся, стол не рассыпается.
+      */
+      window.AcidAssets?.dressFace(
+        el.querySelector(".opponentFace"),
+        seat.index - 1
+      );
+
       el.classList.toggle(
         "is-active",
         seat.index === activeSeat &&

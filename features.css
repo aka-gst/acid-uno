@@ -5115,3 +5115,107 @@ html[data-skin="crt"] .value[data-v] {
   box-shadow:
     0 0 12px color-mix(in srgb, var(--wave) 55%, transparent);
 }
+
+
+/* =========================================================
+   РИСОВАННЫЕ КАРТИНКИ
+
+   Всё, что лежит в assets/, главнее нарисованного кодом.
+   Файлов может не быть — тогда работает прежний вариант, и
+   ни одно из этих правил не включается.
+   ========================================================= */
+
+/* ---------- фон арены ---------- */
+
+.arena[data-art="1"] {
+  background-size: cover;
+
+  background-position: center 62%;
+
+  background-repeat: no-repeat;
+}
+
+/*
+  Поверх рисованной арены сетка выглядит разметкой на
+  фотографии, поэтому от неё остаётся только намёк.
+*/
+.arena[data-art="1"] .arenaFloor {
+  opacity: .12;
+}
+
+.arena[data-art="1"] .arenaHorizon,
+.arena[data-art="1"] .arenaFog {
+  opacity: .18;
+}
+
+/* стол на рисованном полу должен читаться как стол */
+.arena[data-art="1"] ~ #table .tableInner,
+.arena[data-art="1"] + #table .tableInner {
+  background: rgba(6, 3, 13, .5);
+}
+
+
+/* ---------- портрет соперника ---------- */
+
+.opponentFace[data-art="1"] {
+  width: 2.1em;
+  height: 2.1em;
+
+  border-radius: 50%;
+
+  background-size: cover;
+  background-position: center 22%;
+}
+
+/* волна прячется, но остаётся в разметке про запас */
+.opponentFace[data-art="1"] svg {
+  display: none;
+}
+
+.opponentFace[data-art="1"]::after {
+  background: none;
+
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, .7);
+}
+
+
+/* ---------- рубашка ---------- */
+
+html[data-back-art="1"] .deckBack {
+  background-image: var(--card-back);
+
+  background-size: cover;
+
+  background-position: center;
+}
+
+html[data-back-art="1"] .deckAcid,
+html[data-back-art="1"] .deckBack::after,
+html[data-back-art="1"] .deckBack::before {
+  display: none;
+}
+
+html[data-back-art="1"] .opponentBack {
+  background-image: var(--card-back);
+
+  background-size: cover;
+
+  background-position: center;
+}
+
+html[data-back-art="1"] .opponentBack::after {
+  display: none;
+}
+
+html[data-back-art="1"] #botCards .v9-bot-card {
+  background-image: var(--card-back);
+
+  background-size: cover;
+
+  background-position: center;
+}
+
+html[data-back-art="1"] #botCards .v9-bot-card::after {
+  display: none;
+}
