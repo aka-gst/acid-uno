@@ -4419,3 +4419,106 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
 
   opacity: 0;
 }
+
+
+/* =========================================================
+   РУБАШКИ СОПЕРНИКОВ — ПОД КИСЛОТНУЮ КОЛОДУ
+
+   Колода в центре стала тёмной со знаком, а рубашки в руках
+   соперников остались лиловыми от прежней колоды. Из-за этого
+   с тёмной колоды летели чужие фиолетовые карты — рубашка
+   обязана совпадать с той, что лежит в центре.
+   ========================================================= */
+
+html[data-deck="acid"] .opponentBack,
+html[data-deck="acid"] #botCards .v9-bot-card {
+  border-color: rgba(183, 255, 36, .5);
+
+  background:
+    radial-gradient(
+      ellipse at 50% 32%,
+      rgba(26, 15, 40, .97),
+      rgba(7, 4, 14, .99) 74%
+    );
+
+  box-shadow:
+    0 0 6px rgba(183, 255, 36, .22),
+    0 2px 6px rgba(0, 0, 0, .55);
+}
+
+html[data-deck="acid"] .opponentBack::after,
+html[data-deck="acid"] #botCards .v9-bot-card::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 58%;
+  aspect-ratio: 1;
+
+  transform: translate(-50%, -50%);
+
+  background: var(--acid);
+
+  opacity: .72;
+
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   СВЕЧЕНИЕ КАРТЫ — С СЕРЕДИНЫ НА КРАЯ
+
+   Номинал полыхал так, что каждая карта в руке выглядела
+   подсвеченной, и понять, какой из них можно ходить, было
+   нельзя. Свет с цифры убавлен, а по кромке карты добавлено
+   ровное свечение мастью — карта читается целиком, но не
+   спорит с зелёным ореолом играбельной.
+   ========================================================= */
+
+html[data-deck="acid"] .card .value,
+html[data-deck="acid"] .handCard .value,
+html[data-deck="acid"] .flyingCard .value {
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, .9),
+    0 0 7px var(--suit);
+}
+
+html[data-deck="acid"] .card::after,
+html[data-deck="acid"] .handCard::after,
+html[data-deck="acid"] .flyingCard::after {
+  box-shadow:
+    inset 0 0 10px color-mix(in srgb, var(--suit) 45%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--suit) 18%, transparent);
+}
+
+
+/* =========================================================
+   БАРАБАН: НАВЕДЕНИЕ ПОДСВЕЧИВАЕТ, НО НЕ ВЫБИРАЕТ
+
+   Совсем без отклика сектор выглядит неживым. Наведение
+   слегка поднимает сектор, но название масти в ступице
+   появляется только при нажатии — выбор по-прежнему делает
+   лишь клик или тап.
+   ========================================================= */
+
+.colorWheel .pick:hover {
+  filter: brightness(1.04) saturate(1.06);
+}

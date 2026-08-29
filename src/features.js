@@ -860,23 +860,11 @@
       );
 
 
-    const note =
-      $$("lobbyNote");
-
-    if (note) {
-
-      note.textContent =
-        clockOff
-          ? "БЕЗ ЧАСОВ — ДО ПОСЛЕДНЕЙ КАРТЫ"
-          : `ТАЙМЕР ${
-              AcidRules.formatClock(
-                AcidRules.matchLimitFor(
-                  chosenSeats,
-                  chosenHumans
-                )
-              )
-            } · ПОТОМ СЧИТАЕМ ОЧКИ`;
-    }
+    /*
+      Строку про длину таймера убрали из меню: она объясняла
+      то, что и так понятно из флажка, и была лишней в и без
+      того плотном экране.
+    */
   }
 
 
