@@ -940,6 +940,102 @@
 }
 
 
+/* =========================================================
+   УРОВЕНЬ
+
+   Две широкие карточки, а не галочка: простой стол должен
+   быть виден с порога тому, кто впервые сел за игру, — и
+   должен объяснять себя сам, без «как играть».
+   ========================================================= */
+
+.levelPicker {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 7px;
+}
+
+.levelPick {
+  padding: 10px 11px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid rgba(181, 93, 255, .32);
+
+  background: rgba(255, 255, 255, .03);
+
+  color: rgba(255, 255, 255, .6);
+
+  font-family: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    color .2s ease,
+    background .2s ease;
+}
+
+.levelPick b {
+  display: block;
+
+  font-size: 13px;
+  font-weight: 1000;
+
+  letter-spacing: .08em;
+}
+
+.levelPick em {
+  display: block;
+
+  margin-top: 3px;
+
+  font-style: normal;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  letter-spacing: .04em;
+
+  color: rgba(255, 255, 255, .34);
+}
+
+.levelPick.chosen {
+  border-color: rgba(183, 255, 36, .85);
+
+  background: rgba(183, 255, 36, .1);
+
+  color: var(--acid);
+
+  box-shadow:
+    0 0 10px rgba(183, 255, 36, .22);
+}
+
+.levelPick.chosen em {
+  color: rgba(183, 255, 36, .55);
+}
+
+
+/*
+  Простой стол сам выключает часы. Флажок при этом не
+  прячется — иначе непонятно, куда он делся, — а гаснет
+  и перестаёт нажиматься.
+*/
+.lobbySetup.calm .clockToggle {
+  opacity: .5;
+
+  cursor: default;
+}
+
+
 /* число игроков — одной строкой, а не сеткой */
 .seatPicker {
   display: grid;
@@ -4102,6 +4198,93 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
     saturate(1.1)
     drop-shadow(0 0 5px rgba(183, 255, 36, .9))
     drop-shadow(0 0 16px rgba(183, 255, 36, .5));
+}
+
+
+/* =========================================================
+   ПОДСКАЗКА ПРОСТОГО СТОЛА
+
+   Ход стоит без движения — игра показывает, куда смотреть.
+   Не стрелкой и не текстом поверх стола: карты, которыми
+   можно сходить, начинают дышать, и рука сама тянется
+   к ним. Ходит всё равно человек.
+
+   Тень тут только drop-shadow: восьмиугольник карты режется
+   clip-path, а он срезает и box-shadow вместе с ней.
+   ========================================================= */
+
+#hand.is-hint .handCard.v9-playable,
+#hand.is-hint .handCard.playable {
+  animation:
+    handHint 1.5s ease-in-out infinite;
+}
+
+@keyframes handHint {
+
+  0%,
+  100% {
+    filter:
+      brightness(1.14)
+      saturate(1.1)
+      drop-shadow(0 0 5px rgba(183, 255, 36, .9))
+      drop-shadow(0 0 16px rgba(183, 255, 36, .5));
+
+    translate: 0 0;
+  }
+
+  50% {
+    filter:
+      brightness(1.3)
+      saturate(1.2)
+      drop-shadow(0 0 9px rgba(183, 255, 36, 1))
+      drop-shadow(0 0 26px rgba(183, 255, 36, .75));
+
+    translate: 0 -7px;
+  }
+}
+
+
+/* нечем ходить — дышит колода */
+#deck.is-hint {
+  animation:
+    deckHint 1.5s ease-in-out infinite;
+}
+
+@keyframes deckHint {
+
+  0%,
+  100% {
+    filter: none;
+
+    scale: 1;
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 10px rgba(183, 255, 36, .8))
+      drop-shadow(0 0 24px rgba(183, 255, 36, .45));
+
+    scale: 1.05;
+  }
+}
+
+
+/*
+  Подсказка — приглашение, а не мельтешение: тем, кому
+  движение мешает, она остаётся статичной подсветкой.
+*/
+@media (prefers-reduced-motion: reduce) {
+
+  #hand.is-hint .handCard.v9-playable,
+  #hand.is-hint .handCard.playable,
+  #deck.is-hint {
+    animation: none;
+  }
+
+  #deck.is-hint {
+    filter:
+      drop-shadow(0 0 10px rgba(183, 255, 36, .8));
+  }
 }
 
 

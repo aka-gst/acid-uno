@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 
 const R = require("../src/rules.js");
 const M = require("../src/match.js");
+const B = require("../src/bot.js");
 
 
 /* Кладём место в известное состояние, минуя раздачу. */
@@ -559,4 +560,38 @@ test("карты не появляются и не исчезают за всю 
 
     assert.equal(state.over, true, `seed ${seed}: партия не кончилась`);
   }
+});
+
+
+/* =========================================================
+   ПРОСТОЙ УРОВЕНЬ
+   ========================================================= */
+
+test("простой бот забирает штраф, а не накрывает своим", () => {
+
+  const state =
+    stage(
+      table(2, card("red", "5"), [
+        [],
+        [card("red", "+2"), card("blue", "9")]
+      ]),
+      {
+        activeSeat: 1,
+        drawPenalty: 2,
+        penaltyType: "+2"
+      }
+    );
+
+
+  assert.equal(
+    B.decide(state, 1, () => 0, true).type,
+    "draw"
+  );
+
+
+  /* обычный уровень кластер копит */
+  assert.equal(
+    B.decide(state, 1, () => 0, false).type,
+    "play"
+  );
 });

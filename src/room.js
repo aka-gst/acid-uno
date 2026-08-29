@@ -576,6 +576,12 @@
             ?.classList
             .contains("on");
 
+        /*
+          Простой уровень — про одиночную игру с ботами:
+          за живым столом полсилы играть не за кого.
+        */
+        calmMode = false;
+
         AcidSound.play("card");
 
         const answer =

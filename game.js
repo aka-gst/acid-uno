@@ -37,6 +37,35 @@ let seats = [];
 
 let tableSize = 2;
 
+/*
+  Спокойный стол — режим для того, кто разбирается в
+  правилах впервые. Флаг живёт здесь, а не в состоянии
+  партии: правила от него не меняются, меняется только то,
+  как сильно играет соперник и сколько игра подсказывает.
+  Редьюсер о нём знать не должен — иначе одна и та же
+  раздача считалась бы по-разному.
+*/
+let calmMode =
+  (() => {
+
+    /*
+      Уровень читается прямо здесь, а не в лобби: первая
+      партия раздаётся при загрузке страницы, до того как
+      меню вообще успевает появиться. Ключ общий с
+      features.js, где его и записывают.
+    */
+    try {
+
+      return (
+        localStorage.getItem("acid-uno-level") === "calm"
+      );
+
+    } catch (error) {
+
+      return false;
+    }
+  })();
+
 let activeSeat = 0;
 
 let direction = 1;
@@ -64,6 +93,7 @@ let playerDraw;
 let playerPlay;
 let botTurn;
 let botPlay;
+let clearHint;
 let currentColor = "red";
 
 let drawPenalty = 0;
@@ -1060,7 +1090,9 @@ function bestBotColor(
 function botChoose(indexes) {
   return AcidRules.chooseCard(
     bot,
-    indexes
+    indexes,
+    null,
+    calmMode
   );
 }
 
@@ -1088,6 +1120,8 @@ async function finish(
   actionBusy = false;
 
   cancelDrag(true);
+
+  clearHint?.();
 
   await AcidFX.flash(
     playerWon

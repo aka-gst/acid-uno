@@ -346,3 +346,63 @@ test("пустая рука по гонгу — ноль очков и побе�
   assert.equal(result.winner, "player");
   assert.equal(result.points.player, 0);
 });
+
+
+/* =========================================================
+   ПРОСТОЙ УРОВЕНЬ
+   ========================================================= */
+
+test("на простом столе бот кладёт обычную карту, а не +4", () => {
+
+  const hand = [
+    card("wild", "+4"),
+    card("red", "5"),
+    card("red", "skip")
+  ];
+
+  const indexes = [0, 1, 2];
+
+  /*
+    Шум выключен: выбор должен держаться на раскладе,
+    а не на удаче броска.
+  */
+  const still = () => 0;
+
+  assert.equal(
+    R.chooseCard(hand, indexes, still, true),
+    1
+  );
+
+  assert.equal(
+    R.chooseCard(hand, indexes, still, false),
+    0
+  );
+});
+
+
+test("простой бот всё же ходит спецкартой, если другой нет", () => {
+
+  const hand = [
+    card("red", "+2"),
+    card("wild", "+4")
+  ];
+
+  assert.equal(
+    R.chooseCard(hand, [0, 1], () => 0, true),
+    0
+  );
+});
+
+
+test("к концу партии простой бот не начинает бить", () => {
+
+  const hand = [
+    card("red", "+2"),
+    card("blue", "3")
+  ];
+
+  assert.equal(
+    R.chooseCard(hand, [0, 1], () => 0, true),
+    1
+  );
+});

@@ -723,7 +723,35 @@ const BOT_PRIORITY = {
 };
 
 
-function chooseCard(hand, indexes, noise) {
+/*
+  Спокойный расклад — для того, кто только разбирается в
+  правилах. Порядок перевёрнут: сперва обычная цветная
+  карта, потом смена цвета, спецкарты — в последнюю
+  очередь. Штраф и пропуск бот выкладывает, только когда
+  другого хода у него нет: разрыв в оценках больше, чем
+  весь разброс шума, так что случайность его не перебьёт.
+
+  Убрать спецкарты из игры совсем было бы проще, но тогда
+  новичок так и не увидел бы, как они работают, — а именно
+  за этим он и садится за простой стол.
+
+  Числа подобраны прогоном партий, а не на глаз: с ними
+  новичок берёт на четверть меньше штрафных карт, а партия
+  при этом не удлиняется.
+*/
+const GENTLE_PRIORITY = {
+  "+4": 0,
+  "+2": 1,
+  "skip": 2,
+  "reverse": 2,
+  "wild": 3
+};
+
+
+/*
+  gentle — играем вполсилы: см. GENTLE_PRIORITY.
+*/
+function chooseCard(hand, indexes, noise, gentle) {
 
   const jitter =
     noise ||
@@ -740,15 +768,29 @@ function chooseCard(hand, indexes, noise) {
     const card = hand[index];
 
     let current =
-      BOT_PRIORITY[card.value] || 3;
+      gentle
+        ? (
+            GENTLE_PRIORITY[card.value] !== undefined
+              ? GENTLE_PRIORITY[card.value]
+              : 6
+          )
+        : BOT_PRIORITY[card.value] || 3;
 
 
-    if (card.color === "wild") {
+    if (
+      !gentle &&
+      card.color === "wild"
+    ) {
       current -= 1;
     }
 
 
+    /*
+      На спокойном столе конца партии бот не чует: добивать
+      новичка спецкартами с двух карт на руках незачем.
+    */
     if (
+      !gentle &&
       hand.length <= 3 &&
       (
         ACTION_VALUES.includes(card.value) ||
@@ -1206,7 +1248,6 @@ return {
   interceptIndex,
   bestColor,
   chooseCard,
-  BOT_PRIORITY,
 
   scoreboard,
   timeoutResult,

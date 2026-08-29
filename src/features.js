@@ -572,6 +572,14 @@
   let clockOff = false;
 
 
+  /*
+    Простой уровень часы выключает. Выставить флажок надо
+    и при возвращении в игру, а не только по нажатию: иначе
+    сохранённый уровень поднимался бы с включёнными часами.
+    Само значение восстанавливается ниже, вместе с уровнем.
+  */
+
+
   let lastTick = 0;
 
   let tickTimer = null;
@@ -894,6 +902,35 @@
 
 
   /*
+    Уровень запоминается между заходами: тот, кому нужен
+    простой стол, не должен выбирать его каждый раз заново.
+  */
+  const LEVEL_KEY =
+    "acid-uno-level";
+
+
+  let chosenCalm =
+    (() => {
+
+      try {
+
+        return (
+          localStorage.getItem(LEVEL_KEY) === "calm"
+        );
+
+      } catch (error) {
+
+        return false;
+      }
+    })();
+
+
+  if (chosenCalm) {
+    clockOff = true;
+  }
+
+
+  /*
     Живых игроков пока всегда один. Значение уже участвует
     в расчёте лимита, поэтому мультиплееру останется только
     его выставить.
@@ -902,6 +939,28 @@
 
 
   function paintLobby() {
+
+    document
+      .querySelectorAll(".levelPick")
+      .forEach(button =>
+        button.classList.toggle(
+          "chosen",
+          (button.dataset.level === "calm") ===
+            chosenCalm
+        )
+      );
+
+
+    /*
+      На простом столе часы выключены и переключать их
+      нечем: обратный отсчёт — ровно то, что мешает
+      разбираться в правилах без спешки.
+    */
+    document
+      .querySelector(".lobbySetup")
+      ?.classList
+      .toggle("calm", chosenCalm);
+
 
     document
       .querySelectorAll(".seatPick")
@@ -980,6 +1039,11 @@
       "click",
       () => {
 
+        if (chosenCalm) {
+
+          return;
+        }
+
         clockOff = !clockOff;
 
         AcidSound.play("draw");
@@ -989,12 +1053,61 @@
     );
 
 
+  document
+    .querySelectorAll(".levelPick")
+    .forEach(button =>
+      button.addEventListener(
+        "click",
+        () => {
+
+          chosenCalm =
+            button.dataset.level === "calm";
+
+
+          try {
+
+            localStorage.setItem(
+              LEVEL_KEY,
+              chosenCalm ? "calm" : "normal"
+            );
+
+          } catch (error) {
+
+            /* приватный режим — играем без памяти */
+          }
+
+
+          /*
+            Простой стол — это стол на двоих: следить за
+            шестью соперниками в первой партии невозможно.
+            Число мест всё равно остаётся под рукой, если
+            захочется позвать больше.
+          */
+          if (chosenCalm) {
+
+            chosenSeats =
+              AcidRules.MIN_SEATS;
+
+            clockOff = true;
+          }
+
+
+          AcidSound.play("card");
+
+          paintLobby();
+        }
+      )
+    );
+
+
   $$("lobbyStart")
     ?.addEventListener(
       "click",
       () => {
 
         tableSize = chosenSeats;
+
+        calmMode = chosenCalm;
 
         closeLobby();
 

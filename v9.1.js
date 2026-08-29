@@ -37,6 +37,8 @@
 
     playerUnoTimer: null,
 
+    hintTimer: null,
+
     botUnoCalled: false,
     botUnoVulnerable: false,
     botUnoTimer: null,
@@ -69,6 +71,8 @@
 
     V91.actionDepth++;
 
+    clearHint91();
+
     document
       .documentElement
       .classList
@@ -97,6 +101,105 @@
 
       updatePlayableGlow91();
     }
+  }
+
+
+  /* =======================================================
+     ПОДСКАЗКА
+
+     Только для спокойного стола. Если ход стоит без
+     движения, игра сама показывает, что можно сделать:
+     подсвечивает подходящие карты, а когда таких нет —
+     колоду. Это не автоход: карту всё равно кладёт человек.
+     ======================================================= */
+
+  const HINT_AFTER_MS = 5000;
+
+
+  function clearHint91() {
+
+    clearTimeout(
+      V91.hintTimer
+    );
+
+    V91.hintTimer = null;
+
+
+    $("hand")
+      ?.classList
+      .remove("is-hint");
+
+    $("deck")
+      ?.classList
+      .remove("is-hint");
+  }
+
+
+  /*
+    Партия может кончиться посреди раздумья — тогда гасит
+    подсказку game.js через эту ссылку.
+  */
+  clearHint = clearHint91;
+
+
+  function armHint91() {
+
+    clearHint91();
+
+
+    if (
+      !calmMode ||
+      gameOver ||
+      turn !== "player"
+    ) {
+
+      return;
+    }
+
+
+    V91.hintTimer =
+      setTimeout(
+        () => {
+
+          if (
+            !calmMode ||
+            gameOver ||
+            turn !== "player"
+          ) {
+
+            return;
+          }
+
+
+          const canMove =
+            document
+              .querySelectorAll(
+                "#hand .handCard.v9-playable"
+              )
+              .length > 0;
+
+
+          if (canMove) {
+
+            $("hand")
+              ?.classList
+              .add("is-hint");
+
+            return;
+          }
+
+
+          $("deck")
+            ?.classList
+            .add("is-hint");
+
+          AcidFX.status(
+            "НЕЧЕМ ХОДИТЬ — ЖМИ КОЛОДУ"
+          );
+
+        },
+        HINT_AFTER_MS
+      );
   }
 
 
@@ -255,7 +358,58 @@
   let lastPenaltyWord91 = -1;
 
 
-  function penaltyWord91(count) {
+  /*
+    «2 КАРТ» в счётчике под колодой глаз не режет, а во
+    фразе — режет. Считаем по-русски.
+  */
+  function cardsWord91(count) {
+
+    const tens =
+      count % 100;
+
+    const ones =
+      count % 10;
+
+
+    if (
+      tens >= 11 &&
+      tens <= 14
+    ) {
+      return "КАРТ";
+    }
+
+    if (ones === 1) {
+      return "КАРТУ";
+    }
+
+    if (
+      ones >= 2 &&
+      ones <= 4
+    ) {
+      return "КАРТЫ";
+    }
+
+    return "КАРТ";
+  }
+
+
+  /*
+    mine — карты забирает живой игрок.
+
+    На спокойном столе шутки убраны: «УГОЩАЙСЯ +4» смешно
+    тому, кто уже понял, что произошло, а тому, кто
+    разбирается, надо сказать прямым текстом, кто и сколько
+    карт сейчас взял.
+  */
+  function penaltyWord91(count, mine) {
+
+    if (calmMode) {
+
+      return mine
+        ? `БЕРЁШЬ ${count} ${cardsWord91(count)}`
+        : `СОПЕРНИК БЕРЁТ ${count} ${cardsWord91(count)}`;
+    }
+
 
     let i = lastPenaltyWord91;
 
@@ -2642,9 +2796,104 @@
      SPECIAL EFFECT
      ======================================================= */
 
-  async function specialEffect91(card) {
+  /*
+    Спокойный стол называет вещи своими именами. «ПРОПУСК»
+    понятен тому, кто уже играл; тому, кто разбирается,
+    нужно сказать, чей теперь ход и сколько карт брать.
+
+    mine — карту положил живой игрок: «+2 соперникy» и
+    «+2 тебе» это разные новости, а карта одна и та же.
+  */
+  function calmWord91(card, mine) {
+
+    const pair =
+      seatCount() === 2;
+
+
+    if (card.value === "+2") {
+
+      return mine
+        ? "+2 СОПЕРНИКУ"
+        : "+2 ТЕБЕ · ВОЗЬМЁШЬ ДВЕ";
+    }
+
+
+    if (card.value === "+4") {
+
+      return mine
+        ? "+4 СОПЕРНИКУ · ЦВЕТ ТВОЙ"
+        : "+4 ТЕБЕ · ВОЗЬМЁШЬ ЧЕТЫРЕ";
+    }
+
+
+    if (
+      card.value === "skip" ||
+      card.value === "reverse"
+    ) {
+
+      const word =
+        card.value === "skip"
+          ? "ПРОПУСК"
+          : "РАЗВОРОТ";
+
+
+      /*
+        На двоих обе карты означают одно: ход возвращается
+        тому, кто их положил.
+      */
+      if (pair) {
+
+        return mine
+          ? `${word} · ХОДИШЬ СНОВА`
+          : `${word} · СОПЕРНИК ХОДИТ СНОВА`;
+      }
+
+
+      return card.value === "skip"
+        ? "ПРОПУСК · СОСЕД ОСТАЁТСЯ БЕЗ ХОДА"
+        : "РАЗВОРОТ · КРУГ ПОШЁЛ ОБРАТНО";
+    }
+
+
+    if (card.color === "wild") {
+
+      return mine
+        ? "ВЫБИРАЕШЬ ЦВЕТ"
+        : "ЦВЕТ ВЫБИРАЕТ СОПЕРНИК";
+    }
+
+
+    return null;
+  }
+
+
+  async function specialEffect91(card, mine) {
 
     if (!card) {
+      return;
+    }
+
+
+    if (calmMode) {
+
+      const word =
+        calmWord91(card, Boolean(mine));
+
+
+      if (word) {
+
+        burst91(
+          word,
+
+          card.value === "+2" || card.value === "+4"
+            ? "danger"
+            : "acid"
+        );
+
+
+        await wait91(230);
+      }
+
       return;
     }
 
@@ -2795,6 +3044,8 @@
     );
 
     render();
+
+    armHint91();
 
     /*
       В комнате за соседними местами живые люди: ждём их
@@ -2953,7 +3204,8 @@
 
 
     await specialEffect91(
-      card
+      card,
+      true
     );
 
 
@@ -3295,7 +3547,7 @@
       if (penalty) {
 
         burst91(
-          penaltyWord91(cards.length),
+          penaltyWord91(cards.length, true),
           "danger"
         );
       }
@@ -3631,7 +3883,8 @@
 
 
       await specialEffect91(
-        card
+        card,
+        false
       );
 
 
@@ -3753,8 +4006,14 @@
         botInterceptIndex();
 
 
+      /*
+        Перехват — правило не для первой партии: карта
+        соперника улетает вне очереди, и новичок теряет нить
+        того, чей сейчас ход. На спокойном столе его нет.
+      */
       if (
         interceptIndex !== -1 &&
+        !calmMode &&
         Math.random() < .82
       ) {
 
@@ -3812,10 +4071,9 @@
 
 
       await wait91(
-        randomBetween91(
-          55,
-          115
-        )
+        calmMode
+          ? randomBetween91(700, 1100)
+          : randomBetween91(55, 115)
       );
 
 
@@ -3840,8 +4098,15 @@
           botPlayableIndexes();
 
 
+        /*
+          На спокойном столе бот штраф не перекрывает, а
+          забирает: кластер «+2 накрыли +4, стало +6» —
+          первое, на чём новичок теряет нить. Та же
+          поблажка живёт в src/bot.js для комнаты.
+        */
         if (
-          defense.length > 0
+          defense.length > 0 &&
+          !calmMode
         ) {
 
           const choice =
@@ -3885,7 +4150,7 @@
 
 
         burst91(
-          penaltyWord91(cards.length),
+          penaltyWord91(cards.length, false),
           "danger"
         );
 
@@ -4251,7 +4516,8 @@
 
 
       await specialEffect91(
-        card
+        card,
+        true
       );
 
 
@@ -4405,6 +4671,52 @@
       AcidStore.online() ||
       !AcidStore.seatOf(AcidStore.mySeat())?.unoVulnerable
     ) {
+
+      return;
+    }
+
+
+    /*
+      На спокойном столе за забытое UNO не наказывают: окно
+      просто закрывается само, и об этом говорят вслух.
+      Кнопка при этом остаётся живой и её видно — иначе
+      правило так и не выучится.
+    */
+    if (calmMode) {
+
+      V91.playerUnoTimer =
+        setTimeout(
+          async () => {
+
+            if (gameOver) {
+              return;
+            }
+
+
+            const result =
+              await AcidStore.dispatch({
+                type: "closeUno",
+                target: AcidStore.mySeat()
+              });
+
+
+            if (result.error) {
+              return;
+            }
+
+
+            burst91(
+              "UNO! СКАЗАЛИ ЗА ТЕБЯ",
+              "acid"
+            );
+
+
+            render();
+
+          },
+          2600
+        );
+
 
       return;
     }
@@ -4780,7 +5092,10 @@
 
         render();
 
-        await specialEffect91(event.card);
+        await specialEffect91(
+          event.card,
+          event.seat === AcidStore.mySeat()
+        );
       }
 
 
@@ -4933,6 +5248,9 @@
 
 
       render();
+
+
+      armHint91();
     };
 
 
