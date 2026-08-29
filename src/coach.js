@@ -85,6 +85,86 @@ const AcidCoach = (() => {
   );
 
 
+  /*
+    Нажал колоду, а карта не пришла — значит, игра отклонила
+    добор молча: не твой ход или ещё идёт анимация. Молчание
+    здесь — худшее, что можно сделать: человек решает, что
+    сломалась игра или он сам.
+  */
+  let deckWatch = null;
+
+  document.addEventListener(
+    "click",
+    event => {
+
+      if (
+        waiting !== "draw" ||
+        !event.target?.closest?.("#deck")
+      ) {
+        return;
+      }
+
+      clearTimeout(deckWatch);
+
+      deckWatch =
+        setTimeout(
+          () => {
+
+            if (waiting !== "draw") {
+              return;
+            }
+
+            const ask = $("coachAsk");
+
+            if (!ask) {
+              return;
+            }
+
+            ask.textContent =
+              turn === "player"
+                ? "СЕКУНДУ — ИГРА ЕЩЁ ДОКЛАДЫВАЕТ КАРТЫ. ЖМИ ЕЩЁ РАЗ"
+                : "СЕЙЧАС ХОДИТ СОПЕРНИК. ДОЖДИСЬ СВОЕГО ХОДА И ЖМИ";
+          },
+          900
+        );
+    },
+    true
+  );
+
+
+  /*
+    Пока карту тащат, объяснение уходит почти в прозрачность:
+    на телефоне оно стоит ровно над столом и закрывает то
+    место, куда её и надо донести.
+  */
+  document.addEventListener(
+    "pointerdown",
+    event => {
+
+      if (!event.target?.closest?.(".handCard")) {
+        return;
+      }
+
+      $("coachTour")
+        ?.classList
+        .add("is-dragging");
+    },
+    true
+  );
+
+
+  ["pointerup", "pointercancel"].forEach(type =>
+    document.addEventListener(
+      type,
+      () =>
+        $("coachTour")
+          ?.classList
+          .remove("is-dragging"),
+      true
+    )
+  );
+
+
   /* =======================================================
      ИЗ ЧЕГО СКЛАДЫВАЕТСЯ ОБЪЯСНЕНИЕ
      ======================================================= */
@@ -573,12 +653,41 @@ const AcidCoach = (() => {
       Объяснение ставим по ту сторону подсвеченного места,
       где больше свободного экрана.
     */
-    $("coachTour")
-      ?.querySelector(".coachCard")
+    const card =
+      $("coachTour")
+        ?.querySelector(".coachCard");
+
+    card
       ?.classList
       .toggle(
         "below",
         box.top < window.innerHeight / 2
+      );
+
+
+    /*
+      Подсвечена рука — значит, карту сейчас понесут в
+      центр. Объяснение уводим под самую шапку, иначе оно
+      встанет ровно на пути.
+    */
+    card
+      ?.classList
+      .toggle(
+        "aside",
+        target.id === "hand"
+      );
+
+
+    /*
+      В альбоме места вниз нет, зато вдоволь вбок: карточку
+      уводим на ту половину экрана, где подсвеченного места
+      нет.
+    */
+    card
+      ?.classList
+      .toggle(
+        "right",
+        box.left + box.width / 2 < window.innerWidth / 2
       );
   }
 
@@ -785,10 +894,18 @@ const AcidCoach = (() => {
     const target =
       $("discard");
 
+    /*
+      Ждём и своего хода тоже. Первый шаг просит нажать
+      колоду, а добор в чужой ход игра молча отклоняет —
+      человек жмёт, ничего не происходит, и обучение
+      кончается на первом же экране.
+    */
     const ready =
       lobby?.classList.contains("hidden") &&
       target &&
-      target.getBoundingClientRect().width > 4;
+      target.getBoundingClientRect().width > 4 &&
+      turn === "player" &&
+      !gameOver;
 
 
     if (ready) {

@@ -11,17 +11,31 @@
 
   <meta name="theme-color" content="#08070d">
 
+  <!--
+    Айфон не смотрит в манифест: display standalone оттуда
+    он игнорирует, и без этих строк игра всегда открывается
+    внутри Safari — с адресной строкой сверху и панелью
+    вкладок снизу, которые съедают экран.
+
+    С ними «Поделиться → На экран «Домой»» даёт полноэкранный
+    запуск без единой полоски браузера.
+  -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ACID UNO">
+
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=104" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=104">
-  <link rel="manifest" href="manifest.webmanifest?v=104">
+  <link rel="icon" href="favicon.svg?v=111" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=111">
+  <link rel="manifest" href="manifest.webmanifest?v=111">
 
     
-  <link rel="stylesheet" href="style.css?v=104">
-  <link rel="stylesheet" href="effects.css?v=104">
-  <link rel="stylesheet" href="v9.1.css?v=104">
-  <link rel="stylesheet" href="features.css?v=104">
+  <link rel="stylesheet" href="style.css?v=111">
+  <link rel="stylesheet" href="effects.css?v=111">
+  <link rel="stylesheet" href="v9.1.css?v=111">
+  <link rel="stylesheet" href="features.css?v=111">
   
 </head>
 
@@ -895,20 +909,20 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=104"></script>
-<script src="src/rules.js?v=104"></script>
-<script src="src/match.js?v=104"></script>
-<script src="src/audio.js?v=104"></script>
-<script src="animations.js?v=104"></script>
-<script src="src/bot.js?v=104"></script>
-<script src="src/transport.js?v=104"></script>
-<script src="src/store.js?v=104"></script>
-<script src="game.js?v=104"></script>
-<script src="v9.1.js?v=104"></script>
-<script src="src/features.js?v=104"></script>
-<script src="src/coach.js?v=104"></script>
-<script src="src/room.js?v=104"></script>
-<script src="src/tutorial.js?v=104"></script>
+<script src="src/assets.js?v=111"></script>
+<script src="src/rules.js?v=111"></script>
+<script src="src/match.js?v=111"></script>
+<script src="src/audio.js?v=111"></script>
+<script src="animations.js?v=111"></script>
+<script src="src/bot.js?v=111"></script>
+<script src="src/transport.js?v=111"></script>
+<script src="src/store.js?v=111"></script>
+<script src="game.js?v=111"></script>
+<script src="v9.1.js?v=111"></script>
+<script src="src/features.js?v=111"></script>
+<script src="src/coach.js?v=111"></script>
+<script src="src/room.js?v=111"></script>
+<script src="src/tutorial.js?v=111"></script>
 
 </body>
 </html>

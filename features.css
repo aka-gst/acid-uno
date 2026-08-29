@@ -750,26 +750,105 @@
     --arc-rx: 33%;
   }
 
+  /*
+    Размер соперника на телефоне зависит от того, сколько их
+    за столом. Вдвоём над столом пустует вся верхняя треть —
+    и держать там значок в сорок точек было нечем оправдать:
+    сколько у соперника карт, приходилось читать по цифре, а
+    не видеть по вееру. Всемером место кончается, и тогда
+    ужимаемся.
+  */
   .opponent {
-    width: 96px;
+    width: 168px;
   }
 
   .opponentFan {
-    height: 34px;
+    height: 62px;
   }
 
-  /*
-    Рубашка соперника была в шестнадцать точек — на телефоне
-    это уже не карта, а полоска, и сколько их у соперника,
-    приходилось читать по цифре рядом с именем.
-  */
   .opponentBack {
-    width: 22px;
-    height: 33px;
+    width: 42px;
+    height: 63px;
+
+    --fan-step: 17px;
+
+    margin-left: -21px;
+  }
+
+  .opponentFace {
+    font-size: 22px;
+  }
+
+  .opponentCount {
+    font-size: 21px;
+  }
+
+  .opponentPlate {
+    padding: 6px 12px 6px 7px;
+
+    border-radius: 16px;
+  }
+
+
+  .opponents[data-count="3"] .opponent,
+  .opponents[data-count="4"] .opponent {
+    width: 118px;
+  }
+
+  .opponents[data-count="3"] .opponentFan,
+  .opponents[data-count="4"] .opponentFan {
+    height: 46px;
+  }
+
+  .opponents[data-count="3"] .opponentBack,
+  .opponents[data-count="4"] .opponentBack {
+    width: 30px;
+    height: 45px;
+
+    --fan-step: 12px;
+
+    margin-left: -15px;
+  }
+
+  .opponents[data-count="3"] .opponentFace,
+  .opponents[data-count="4"] .opponentFace {
+    font-size: 17px;
+  }
+
+  .opponents[data-count="3"] .opponentCount,
+  .opponents[data-count="4"] .opponentCount {
+    font-size: 16px;
+  }
+
+
+  .opponents[data-count="5"] .opponent,
+  .opponents[data-count="6"] .opponent {
+    width: 92px;
+  }
+
+  .opponents[data-count="5"] .opponentFan,
+  .opponents[data-count="6"] .opponentFan {
+    height: 36px;
+  }
+
+  .opponents[data-count="5"] .opponentBack,
+  .opponents[data-count="6"] .opponentBack {
+    width: 23px;
+    height: 35px;
 
     --fan-step: 9px;
 
-    margin-left: -11px;
+    margin-left: -12px;
+  }
+
+  .opponents[data-count="5"] .opponentFace,
+  .opponents[data-count="6"] .opponentFace {
+    font-size: 14px;
+  }
+
+  .opponents[data-count="5"] .opponentCount,
+  .opponents[data-count="6"] .opponentCount {
+    font-size: 14px;
   }
 
   .opponentName {
@@ -785,24 +864,67 @@
 @media (orientation: landscape) and (max-height: 560px) {
 
   .opponents {
-    --arc-y: 46%;
+    /*
+      Дуга опущена: сверху теперь идёт строка наставника, и
+      на прежней высоте значки соперников лезли под неё.
+    */
+    --arc-y: 52%;
     --arc-rx: 43%;
     --arc-ry: 30%;
   }
 
+  /*
+    В альбоме соперник был в 74 точки шириной, а его карта —
+    в четырнадцать. Это не карта, а полоска: сколько их у
+    соперника, приходилось читать по цифре. Места по ширине
+    здесь как раз вдоволь, тесно только по высоте.
+  */
   .opponent {
-    width: 74px;
+    width: 132px;
   }
 
   .opponentFan {
-    height: 22px;
+    height: 44px;
   }
 
   .opponentBack {
-    width: 14px;
-    height: 20px;
+    width: 30px;
+    height: 44px;
 
-    margin-left: -7px;
+    --fan-step: 12px;
+
+    margin-left: -15px;
+  }
+
+  .opponentFace {
+    font-size: 17px;
+  }
+
+  .opponentCount {
+    font-size: 16px;
+  }
+
+  .opponents[data-count="4"] .opponent,
+  .opponents[data-count="5"] .opponent,
+  .opponents[data-count="6"] .opponent {
+    width: 96px;
+  }
+
+  .opponents[data-count="4"] .opponentFan,
+  .opponents[data-count="5"] .opponentFan,
+  .opponents[data-count="6"] .opponentFan {
+    height: 32px;
+  }
+
+  .opponents[data-count="4"] .opponentBack,
+  .opponents[data-count="5"] .opponentBack,
+  .opponents[data-count="6"] .opponentBack {
+    width: 21px;
+    height: 31px;
+
+    --fan-step: 8px;
+
+    margin-left: -11px;
   }
 
   .opponentName {
@@ -1996,10 +2118,10 @@
 @media (orientation: landscape) and (max-height: 560px) {
 
   #table {
-    top: 37%;
+    top: 39%;
 
     height:
-      min(48vh, 196px);
+      min(44vh, 178px);
 
     width:
       min(calc(100vw - 210px), 470px);
@@ -2008,8 +2130,9 @@
   .actionHUD {
     bottom: auto;
 
-    top: 58%;
+    top: 60%;
   }
+
 }
 
 
@@ -5885,6 +6008,38 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   top: 74%;
 }
 
+/*
+  Подсвечена рука: карту понесут в центр, и объяснение на
+  своём обычном месте встало бы ровно на пути. Уводим его
+  под шапку и ужимаем.
+*/
+.coachCard.aside {
+  top: 4%;
+
+  transform: translate(-50%, 0);
+
+  padding: 14px 16px 12px;
+}
+
+.coachCard.aside .coachText {
+  margin-bottom: 11px;
+
+  font-size: 13px;
+}
+
+/*
+  А пока карту действительно тащат — почти исчезает совсем.
+*/
+.coachTour.is-dragging .coachCard {
+  opacity: .12;
+
+  pointer-events: none;
+}
+
+.coachCard {
+  transition: opacity .18s ease;
+}
+
 .coachStep {
   margin-bottom: 9px;
 
@@ -6121,4 +6276,105 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   background: rgba(183, 255, 36, .15);
 
   border-color: rgba(183, 255, 36, .8);
+}
+
+
+/* =========================================================
+   НАСТАВНИК И ОБУЧЕНИЕ В АЛЬБОМЕ
+
+   Стоит в самом конце файла намеренно: правила выше
+   объявлены без media и перебивали бы эти, окажись они
+   раньше. Один раз я на этом уже попался — строка
+   наставника в альбоме упрямо оставалась крупной.
+
+   Свободной полосы между столом и рукой в альбоме нет
+   совсем, поэтому строка уходит под верхний край и встаёт
+   между логотипом и кнопками. Дуга соперников для этого
+   опущена.
+   ========================================================= */
+
+@media (orientation: landscape) and (max-height: 560px) {
+
+  .coach {
+    top: 4px;
+    bottom: auto;
+
+    left: 50%;
+
+    width: min(62vw, 560px);
+
+    padding: 4px 8px 4px 11px;
+
+    gap: 7px;
+
+    border-radius: 10px;
+  }
+
+  .coachLine {
+    font-size: 9px;
+
+    line-height: 1.3;
+
+    letter-spacing: .02em;
+  }
+
+  .coachAgain {
+    width: 20px;
+    height: 20px;
+
+    font-size: 10px;
+  }
+
+
+  /* карточка обучения: ужимается и уходит вбок от стола */
+  .coachCard,
+  .coachCard.below,
+  .coachCard.aside {
+    top: 50%;
+
+    left: 23%;
+
+    width: min(300px, 38vw);
+
+    padding: 12px 14px 10px;
+
+    transform: translate(-50%, -50%);
+  }
+
+  /* подсвечено слева — уходим вправо, и наоборот */
+  .coachCard.right,
+  .coachCard.below.right,
+  .coachCard.aside.right {
+    left: 77%;
+  }
+
+  .coachStep {
+    margin-bottom: 6px;
+  }
+
+  .coachText {
+    margin-bottom: 9px;
+
+    font-size: 12px;
+
+    line-height: 1.35;
+  }
+
+  .coachAsk {
+    padding: 8px 10px;
+
+    font-size: 11px;
+  }
+
+  .coachNext {
+    padding: 9px 14px;
+
+    font-size: 12px;
+  }
+
+  .coachSkip {
+    margin-top: 7px;
+
+    font-size: 10px;
+  }
 }
