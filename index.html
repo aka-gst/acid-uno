@@ -27,15 +27,15 @@
 
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=156" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=156">
-  <link rel="manifest" href="manifest.webmanifest?v=156">
+  <link rel="icon" href="favicon.svg?v=160" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=160">
+  <link rel="manifest" href="manifest.webmanifest?v=160">
 
     
-  <link rel="stylesheet" href="style.css?v=156">
-  <link rel="stylesheet" href="effects.css?v=156">
-  <link rel="stylesheet" href="v9.1.css?v=156">
-  <link rel="stylesheet" href="features.css?v=156">
+  <link rel="stylesheet" href="style.css?v=160">
+  <link rel="stylesheet" href="effects.css?v=160">
+  <link rel="stylesheet" href="v9.1.css?v=160">
+  <link rel="stylesheet" href="features.css?v=160">
   
 </head>
 
@@ -131,6 +131,16 @@
 
 
       <button
+        id="restart"
+        class="iconButton"
+        aria-label="Начать заново"
+        data-tip="ЗАНОВО"
+      >
+        ↻
+      </button>
+
+
+      <button
         id="sound"
         class="iconButton soundButton"
         aria-label="Звук"
@@ -138,16 +148,6 @@
         aria-pressed="true"
       >
         🔊
-      </button>
-
-
-      <button
-        id="restart"
-        class="iconButton"
-        aria-label="Начать заново"
-        data-tip="ЗАНОВО"
-      >
-        ↻
       </button>
 
     </div>
@@ -283,6 +283,19 @@
           </g>
         </svg>
       </div>
+
+
+      <!--
+        Пока висит штраф, взять его можно по всей середине
+        стола, а не только по колоде: попадать в неё пальцем
+        под «+8» неудобно.
+      -->
+      <button
+        id="penaltyCatch"
+        class="penaltyCatch hidden"
+        type="button"
+        aria-label="Взять штраф"
+      ></button>
 
 
       <!-- КЛАСТЕР +2 / +4 -->
@@ -920,21 +933,21 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=156"></script>
-<script src="src/rules.js?v=156"></script>
-<script src="src/match.js?v=156"></script>
-<script src="src/audio.js?v=156"></script>
-<script src="animations.js?v=156"></script>
-<script src="src/bot.js?v=156"></script>
-<script src="src/transport.js?v=156"></script>
-<script src="src/store.js?v=156"></script>
-<script src="game.js?v=156"></script>
-<script src="v9.1.js?v=156"></script>
-<script src="src/features.js?v=156"></script>
-<script src="src/coach.js?v=156"></script>
-<script src="src/room.js?v=156"></script>
-<script src="src/tutorial.js?v=156"></script>
-<script src="src/artadmin.js?v=156"></script>
+<script src="src/assets.js?v=160"></script>
+<script src="src/rules.js?v=160"></script>
+<script src="src/match.js?v=160"></script>
+<script src="src/audio.js?v=160"></script>
+<script src="animations.js?v=160"></script>
+<script src="src/bot.js?v=160"></script>
+<script src="src/transport.js?v=160"></script>
+<script src="src/store.js?v=160"></script>
+<script src="game.js?v=160"></script>
+<script src="v9.1.js?v=160"></script>
+<script src="src/features.js?v=160"></script>
+<script src="src/coach.js?v=160"></script>
+<script src="src/room.js?v=160"></script>
+<script src="src/tutorial.js?v=160"></script>
+<script src="src/artadmin.js?v=160"></script>
 
 </body>
 </html>

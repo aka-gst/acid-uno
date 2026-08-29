@@ -104,6 +104,33 @@
   }
 
 
+  /*
+    Широкая область «взять штраф». Показывается только когда
+    штраф висит и ход твой: в остальное время она перехватила
+    бы перетаскивание карты в центр.
+  */
+  function syncPenaltyCatch91() {
+
+    const el = $("penaltyCatch");
+
+    if (!el) {
+      return;
+    }
+
+    el.classList.toggle(
+      "hidden",
+      !(drawPenalty > 0 && turn === "player" && !gameOver)
+    );
+  }
+
+
+  $("penaltyCatch")
+    ?.addEventListener(
+      "click",
+      () => playerDraw()
+    );
+
+
   /* =======================================================
      ПОДСКАЗКА
 
@@ -3184,6 +3211,8 @@
     );
 
     render();
+
+    syncPenaltyCatch91();
 
     armHint91();
 

@@ -1334,6 +1334,52 @@
 
 
   /*
+    «Заново» и «на главную» посреди партии — необратимо, и
+    оба стоят в шапке рядом с безобидными кнопками. Просто
+    спрашиваем.
+
+    Экран итога не в счёт: там партии уже нет.
+  */
+  function confirmLeave(event, question) {
+
+    if (gameOver) {
+      return;
+    }
+
+    if (!window.confirm(question)) {
+
+      event.preventDefault();
+
+      event.stopPropagation();
+    }
+  }
+
+
+  $$("restart")
+    ?.addEventListener(
+      "click",
+      event =>
+        confirmLeave(
+          event,
+          "Начать партию заново? Эта закончится."
+        ),
+      true
+    );
+
+
+  $$("homeLink")
+    ?.addEventListener(
+      "click",
+      event =>
+        confirmLeave(
+          event,
+          "Выйти на главную? Партия закончится."
+        ),
+      true
+    );
+
+
+  /*
     Из партии с живым игроком выйти нельзя. Случайное касание
     «сменить стол» или «заново» бросало комнату: игра уходила
     в меню, соперник оставался ждать, а вернуться было некуда.
