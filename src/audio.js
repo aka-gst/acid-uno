@@ -85,7 +85,11 @@ const AcidSound = (() => {
 
     master = ctx.createGain();
 
-    master.gain.value = .5;
+    /*
+      Было .5, и на ноутбуке игру приходилось слушать, а не
+      слышать: фон терялся в комнате целиком.
+    */
+    master.gain.value = .85;
 
     master.connect(ctx.destination);
 
@@ -292,7 +296,12 @@ const AcidSound = (() => {
 
     filter.connect(gain);
 
-    gain.connect(master);
+    /*
+      Шум тоже умеет идти на свою шину: щелчок в музыке
+      должен приглушаться вместе с ней, а не жить сам по
+      себе.
+    */
+    gain.connect(spec.bus || master);
 
     source.start(
       audio.currentTime + (spec.delay || 0)
@@ -540,9 +549,15 @@ const AcidSound = (() => {
   /* =======================================================
      МУЗЫКА
 
-     Ни одного файла: короткий круг из четырёх аккордов,
-     который собирается теми же осцилляторами. Играет тихо
-     и без ударных — это фон для настольной игры, а не трек.
+     Ни одного файла: круг из четырёх аккордов, собранный
+     теми же осцилляторами.
+
+     Раньше это был один аккорд раз в три секунды на
+     громкости в две сотых — технически музыка играла, а на
+     слух её просто не было. Теперь у круга есть пульс:
+     бас на сильных долях, тихий щелчок между ними и лид,
+     который ведёт мелодию поверх аккорда. Всё равно фон, но
+     фон, который слышно.
      ======================================================= */
 
   /* ля-минорный круг: Am - F - C - G */
@@ -553,7 +568,26 @@ const AcidSound = (() => {
     [196.00, 246.94, 293.66]
   ];
 
+
+  /*
+    Мелодия поверх круга — по ноте на долю, своя на каждый
+    аккорд. Ноль означает паузу: без пауз мотив превращается
+    в бесконечную гамму и начинает надоедать к третьему
+    кругу.
+  */
+  const LEAD = [
+    [659.25, 0, 587.33, 0, 523.25, 0, 587.33, 0],
+    [523.25, 0, 0, 440.00, 523.25, 0, 0, 0],
+    [523.25, 0, 587.33, 0, 659.25, 0, 0, 0],
+    [587.33, 0, 493.88, 0, 0, 587.33, 0, 0]
+  ];
+
+
   const STEP_MS = 3200;
+
+  const BEATS = 8;
+
+  const BEAT = STEP_MS / 1000 / BEATS;
 
 
   function musicStep() {
@@ -567,32 +601,84 @@ const AcidSound = (() => {
       return;
     }
 
+    const index =
+      music.step % CHORDS.length;
+
     const chord =
-      CHORDS[music.step % CHORDS.length];
+      CHORDS[index];
+
+    const lead =
+      LEAD[index];
 
     music.step++;
 
-    chord.forEach((frequency, index) =>
+
+    /* подушка: аккорд тянется весь такт */
+    chord.forEach((frequency, i) =>
       voice({
         type: "triangle",
         from: frequency,
         to: frequency,
-        length: STEP_MS / 1000 * 1.15,
-        gain: .028,
-        delay: index * .05,
+        length: STEP_MS / 1000 * 1.1,
+        gain: .085,
+        delay: i * .05,
         bus: music.gain
       })
     );
 
-    /* басовая нота на октаву ниже держит круг */
-    voice({
-      type: "sine",
-      from: chord[0] / 2,
-      to: chord[0] / 2,
-      length: STEP_MS / 1000 * 1.1,
-      gain: .05,
-      bus: music.gain
-    });
+
+    for (let beat = 0; beat < BEATS; beat++) {
+
+      const at = beat * BEAT;
+
+
+      /* бас на первой и пятой доле */
+      if (
+        beat === 0 ||
+        beat === 4
+      ) {
+
+        voice({
+          type: "sine",
+          from: chord[0] / 2,
+          to: chord[0] / 2,
+          length: BEAT * 1.6,
+          gain: beat === 0 ? .2 : .14,
+          delay: at,
+          bus: music.gain
+        });
+      }
+
+
+      /* щелчок между долями — держит темп */
+      if (beat % 2 === 1) {
+
+        noise({
+          length: .045,
+          gain: .022,
+          frequency: 6400,
+          delay: at,
+          bus: music.gain
+        });
+      }
+
+
+      const note =
+        lead[beat];
+
+      if (note) {
+
+        voice({
+          type: "triangle",
+          from: note,
+          to: note,
+          length: BEAT * 1.35,
+          gain: .045,
+          delay: at,
+          bus: music.gain
+        });
+      }
+    }
   }
 
 

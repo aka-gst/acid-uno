@@ -940,6 +940,15 @@
 
   function paintLobby() {
 
+    /*
+      Возвращаться некуда, если партия кончилась: там ждёт
+      экран итога, и кнопка увела бы в пустой стол.
+    */
+    $$("lobbyResume")
+      ?.classList
+      .toggle("hidden", gameOver);
+
+
     document
       .querySelectorAll(".levelPick")
       .forEach(button =>
@@ -995,6 +1004,14 @@
   }
 
 
+  /*
+    Часы шли, когда открывали меню? Тогда при возврате их
+    надо не запустить заново, а продолжить: иначе взгляд
+    в меню дарил бы игроку полную партию времени.
+  */
+  let clockWasRunning = false;
+
+
   function openLobby() {
 
     chosenSeats =
@@ -1003,12 +1020,47 @@
         seatCount() || AcidRules.MIN_SEATS
       );
 
+    clockWasRunning =
+      clock.running;
+
     stopClock();
 
     paintLobby();
 
     lobby?.classList.remove("hidden");
   }
+
+
+  /*
+    Вернуться в партию. «Стол и игроки» открывает то же
+    меню, что и «новая игра», и случайное касание уводило
+    из партии совсем — доиграть было уже нельзя.
+  */
+  function resumeGame() {
+
+    closeLobby();
+
+    if (clockWasRunning) {
+
+      clock.resume();
+
+      lastTick = performance.now();
+
+      paintClock(clock.advance(0));
+
+      clearInterval(tickTimer);
+
+      tickTimer =
+        setInterval(tick, 250);
+    }
+  }
+
+
+  $$("lobbyResume")
+    ?.addEventListener(
+      "click",
+      resumeGame
+    );
 
 
   function closeLobby() {

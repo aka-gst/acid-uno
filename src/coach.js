@@ -21,6 +21,8 @@
      AcidCoach.update()        пересобрать объяснение
      AcidCoach.refuse(card)    сказать, почему карта не легла
      AcidCoach.say(text, ms)   временная реплика
+     AcidCoach.notify(kind)    игрок сходил ("play") или
+                               взял из колоды ("draw")
      AcidCoach.tour()          показать экскурсию по столу
      AcidCoach.tourIfNew()     показать её один раз
    ========================================================= */
@@ -272,34 +274,62 @@ const AcidCoach = (() => {
      первом учебном столе и открывается заново из правил.
      ======================================================= */
 
+  /*
+    Шаги. У шага с ключом «ждём» нет кнопки «дальше»: он
+    закрывается тем, что человек сам сделает нужное
+    действие. Смотреть, как показывают пять картинок, и
+    научиться играть — разные вещи.
+  */
   const STEPS = [
-    {
-      target: "discard",
-      text:
-        "ЭТО СТОЛ. СЮДА КЛАДЁШЬ КАРТУ — " +
-        "ПЕРЕТАСКИВАЙ ЕЁ ПАЛЬЦЕМ ИЛИ МЫШЬЮ"
-    },
     {
       target: "deck",
       text:
-        "ЭТО КОЛОДА. ЖМЁШЬ ЕЁ, КОГДА ХОДИТЬ НЕЧЕМ, — " +
-        "БЕРЁШЬ ОДНУ КАРТУ"
+        "ЭТО КОЛОДА. ИЗ НЕЁ БЕРУТ КАРТУ, " +
+        "КОГДА ХОДИТЬ НЕЧЕМ.",
+      ждём: "draw",
+      просьба: "НАЖМИ КОЛОДУ — ВОЗЬМЁШЬ ОДНУ КАРТУ"
+    },
+    {
+      target: "discard",
+      text:
+        "ЭТО СТОЛ. СВОЮ КАРТУ КЛАДЁШЬ СЮДА — " +
+        "ПЕРЕТАСКИВАЕШЬ ЕЁ ПАЛЬЦЕМ ИЛИ МЫШЬЮ."
     },
     {
       target: "currentColor",
       text:
-        "ЗДЕСЬ НАПИСАН ЦВЕТ, КОТОРЫМ СЕЙЧАС ИГРАЮТ"
+        "ЗДЕСЬ НАПИСАН ЦВЕТ, КОТОРЫМ СЕЙЧАС ИГРАЮТ. " +
+        "ПОДХОДИТ КАРТА ЭТОГО ЦВЕТА — ИЛИ ТАКАЯ ЖЕ " +
+        "ПО ЗНАЧКУ."
     },
     {
       target: "hand",
       text:
         "ЭТО ТВОИ КАРТЫ. КОТОРЫЕ ПРИПОДНЯЛИСЬ И ГОРЯТ — " +
-        "ТЕМИ МОЖНО ХОДИТЬ"
+        "ТЕМИ МОЖНО ХОДИТЬ.",
+      ждём: "play",
+      просьба: "ПЕРЕТАЩИ ЛЮБУЮ ГОРЯЩУЮ КАРТУ В ЦЕНТР",
+      /* горящих может и не оказаться — тогда просим добрать */
+      запасная: {
+        просьба: "ГОРЯЩИХ НЕТ — ЖМИ КОЛОДУ, ПОКА НЕ ПОЯВИТСЯ",
+        ждём: "draw",
+        target: "deck"
+      }
+    },
+    {
+      target: "hand",
+      text:
+        "ВОТ И ВСЯ ИГРА. КТО ПЕРВЫМ ОСТАНЕТСЯ БЕЗ КАРТ — " +
+        "ТОТ И ВЫИГРАЛ.",
+      конец: true
     }
   ];
 
 
   let tourStep = 0;
+
+  /* какого действия ждёт текущий шаг: "play", "draw" или null */
+  let waiting = null;
 
 
   function tourLayer() {
@@ -336,6 +366,7 @@ const AcidCoach = (() => {
       '<div class="coachCard">' +
       '<div class="coachStep" id="coachStep"></div>' +
       '<div class="coachText" id="coachText"></div>' +
+      '<div class="coachAsk" id="coachAsk"></div>' +
       '<button class="coachNext" id="coachNext" type="button">' +
       "ДАЛЬШЕ</button>" +
       '<button class="coachSkip" id="coachSkip" type="button">' +
@@ -356,6 +387,33 @@ const AcidCoach = (() => {
   }
 
 
+  /*
+    Игра сообщает сюда, что человек сделал. Шаг, который
+    этого ждал, закрывается сам — без всякой кнопки.
+  */
+  function notify(kind) {
+
+    if (
+      waiting !== kind ||
+      !$("coachTour") ||
+      $("coachTour").classList.contains("hidden")
+    ) {
+      return;
+    }
+
+    waiting = null;
+
+    /*
+      Пауза, чтобы человек увидел результат своего действия
+      раньше, чем экран снова затемнится.
+    */
+    setTimeout(
+      () => showStep(tourStep + 1),
+      1100
+    );
+  }
+
+
   function showStep(index) {
 
     const layer =
@@ -372,18 +430,35 @@ const AcidCoach = (() => {
 
     tourStep = index;
 
-    const step =
+    let step =
       STEPS[index];
+
+
+    /*
+      Шаг просит сыграть, а играть нечем — берём запасной
+      сценарий, иначе обучение упрётся в невыполнимое.
+    */
+    if (
+      step.ждём === "play" &&
+      step.запасная &&
+      !player.some(card => canPlay(card))
+    ) {
+
+      step = {
+        ...step,
+        ...step.запасная
+      };
+    }
+
+
+    waiting =
+      step.ждём || null;
+
 
     const target =
       $(step.target);
 
 
-    /*
-      Прожектор — не вырез, а элемент с огромной тенью
-      вокруг: всё, кроме него, уходит в темноту. Так не
-      нужен ни канвас, ни маска.
-    */
     const spot =
       $("coachSpot");
 
@@ -451,15 +526,51 @@ const AcidCoach = (() => {
     }
 
 
+    /*
+      Пока ждём действия, затемнение не должно перехватывать
+      касания: карту тащат из руки в центр, и путь проходит
+      прямо по нему.
+    */
+    layer.classList.toggle(
+      "is-acting",
+      Boolean(waiting)
+    );
+
+
     $("coachStep").textContent =
       `${index + 1} ИЗ ${STEPS.length}`;
 
     $("coachText").textContent =
       step.text;
 
-    $("coachNext").textContent =
-      index === STEPS.length - 1
-        ? "ПОНЯТНО"
+
+    const ask =
+      $("coachAsk");
+
+    ask.textContent =
+      step.просьба || "";
+
+    ask.classList.toggle(
+      "hidden",
+      !step.просьба
+    );
+
+
+    /*
+      У шага с действием кнопки нет: он закроется сам, когда
+      человек сделает то, о чём просят.
+    */
+    const next =
+      $("coachNext");
+
+    next.classList.toggle(
+      "hidden",
+      Boolean(waiting)
+    );
+
+    next.textContent =
+      step.конец
+        ? "ИГРАЕМ"
         : "ДАЛЬШЕ";
 
 
@@ -468,6 +579,8 @@ const AcidCoach = (() => {
 
 
   function closeTour() {
+
+    waiting = null;
 
     $("coachTour")
       ?.classList
@@ -586,6 +699,7 @@ const AcidCoach = (() => {
     update,
     say,
     refuse,
+    notify,
     tour,
     tourIfNew
   };

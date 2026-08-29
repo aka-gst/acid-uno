@@ -4826,7 +4826,34 @@ html[data-deck="acid"] .handCard .value,
 html[data-deck="acid"] .flyingCard .value {
   text-shadow:
     0 0 2px rgba(255, 255, 255, .9),
-    0 0 7px var(--suit);
+    0 0 7px var(--suit),
+    0 0 14px rgba(0, 0, 0, .9);
+}
+
+
+/*
+  Тёмный ореол под цифрой. Материалы карты рисуют сетку и
+  штриховку своей же мастью, и розовая восьмёрка ложилась
+  на розовые линии — цифру приходилось угадывать. Ореол
+  гасит фактуру ровно под знаком и растворяется к краям,
+  так что карта остаётся той же.
+
+  Только под цифрой: у спецкарт знак нарисован маской по
+  фону, и любой фон здесь маска обрежет по своей форме —
+  вместо ореола вышел бы тёмный значок вместо цветного.
+*/
+html[data-deck="acid"] .card .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]),
+html[data-deck="acid"] .handCard .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]),
+html[data-deck="acid"] .flyingCard .value:not([data-v="skip"]):not([data-v="reverse"]):not([data-v="+2"]):not([data-v="+4"]):not([data-v="wild"]) {
+  padding: 4px 13px;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(4, 2, 9, .94) 0 38%,
+      rgba(4, 2, 9, .74) 60%,
+      rgba(4, 2, 9, 0) 84%
+    );
 }
 
 html[data-deck="acid"] .card::after,
@@ -5732,6 +5759,30 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
     затемнённом экране — будто подсвечивают именно их.
   */
   z-index: 19000;
+
+  /*
+    Сам слой касания не ловит — их ловят шторки. В окошке
+    между ними стол остаётся живым, и подсвеченную кнопку
+    можно нажать прямо во время обучения.
+  */
+  pointer-events: none;
+}
+
+.coachTour .coachShade {
+  pointer-events: auto;
+}
+
+/*
+  Шаг ждёт действия: карту тащат из руки в центр, и путь
+  проходит прямо по затемнению. На это время оно перестаёт
+  ловить касания целиком.
+*/
+.coachTour.is-acting .coachShade {
+  pointer-events: none;
+}
+
+.coachCard {
+  pointer-events: auto;
 }
 
 .coachTour.hidden {
@@ -5774,8 +5825,6 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
     место.
   */
   background: rgba(3, 1, 8, .95);
-
-  pointer-events: none;
 }
 
 
@@ -5840,6 +5889,56 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
   letter-spacing: .03em;
 
   color: #fff;
+}
+
+/*
+  Просьба сделать действие. Она заменяет собой кнопку
+  «дальше»: шаг закроется сам, когда человек сделает то,
+  о чём просят.
+*/
+.coachAsk {
+  margin-bottom: 4px;
+
+  padding: 11px 14px;
+
+  border-radius: 12px;
+
+  border:
+    1px dashed rgba(183, 255, 36, .55);
+
+  background: rgba(183, 255, 36, .07);
+
+  color: var(--acid);
+
+  font-size: 13px;
+  font-weight: 1000;
+
+  line-height: 1.4;
+
+  letter-spacing: .05em;
+
+  animation:
+    coachAskPulse 1.6s ease-in-out infinite;
+}
+
+.coachAsk.hidden {
+  display: none;
+}
+
+@keyframes coachAskPulse {
+
+  0%,
+  100% {
+    border-color: rgba(183, 255, 36, .55);
+  }
+
+  50% {
+    border-color: rgba(183, 255, 36, 1);
+  }
+}
+
+.coachNext.hidden {
+  display: none;
 }
 
 .coachNext {
@@ -5926,4 +6025,68 @@ html[data-back-art="1"] #botCards .v9-bot-card::after {
 
     line-height: 1.4;
   }
+}
+
+
+/* =========================================================
+   ВОЗВРАТ В ПАРТИЮ
+
+   «Стол и игроки» открывает то же меню, что и новая игра,
+   и раньше из партии так выходили насовсем. Кнопка стоит
+   над «как играть» и выглядит контурной: это не действие
+   меню, а выход из него.
+   ========================================================= */
+
+.lobbyResume {
+  width: 100%;
+
+  margin-top: 4px;
+
+  padding: 13px 18px;
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(183, 255, 36, .5);
+
+  background: rgba(183, 255, 36, .07);
+
+  color: var(--acid);
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 1000;
+
+  letter-spacing: .08em;
+
+  cursor: pointer;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.lobbyResume.hidden {
+  display: none;
+}
+
+.lobbyResume em {
+  display: block;
+
+  margin-top: 3px;
+
+  font-style: normal;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: .04em;
+
+  color: rgba(183, 255, 36, .55);
+}
+
+.lobbyResume:hover {
+  background: rgba(183, 255, 36, .15);
+
+  border-color: rgba(183, 255, 36, .8);
 }

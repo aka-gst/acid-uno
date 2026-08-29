@@ -3220,6 +3220,9 @@
     );
 
 
+    window.AcidCoach?.notify("play");
+
+
     await specialEffect91(
       card,
       true
@@ -3605,6 +3608,8 @@
         проверяется прямо на ней, и сразу видно, чем
         кончилось.
       */
+      window.AcidCoach?.notify("draw");
+
       window.AcidCoach?.say(
         canPlay(card)
           ? `В РУКУ: ${AcidRules.cardLabel(card)} — ЭТА ПОДХОДИТ, ` +
@@ -4568,6 +4573,9 @@
       animateHandFrom91(
         oldHand
       );
+
+
+      window.AcidCoach?.notify("play");
 
 
       await specialEffect91(
