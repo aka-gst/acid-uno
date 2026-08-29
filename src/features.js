@@ -711,6 +711,9 @@
 
     armBack();
 
+    /* новый стол — новый материал карты */
+    rollSkin();
+
     render();
   };
 
@@ -734,81 +737,49 @@
 
 
   /* =======================================================
-     КОЛОДА
+     МАТЕРИАЛ КАРТЫ
 
-     Два дизайна карт живут рядом и переключаются целиком
-     атрибутом на <html>: сравнить их можно только вживую,
-     на своей руке, а не по картинке.
+     Колода одна, но из чего она сделана — решает жребий на
+     каждую партию: плёнка, стекло, плата, трубка, кинескоп.
+     Выбор из меню убран намеренно: настройка, которую жмут
+     один раз и забывают, не стоит места на стартовом экране,
+     а случайный материал делает каждый стол непохожим на
+     прошлый, ничего не меняя в правилах.
      ======================================================= */
 
-  const DECK_KEY = "acid-uno-deck";
+  const SKINS = [
+    "film",
+    "glass",
+    "pcb",
+    "tube",
+    "crt"
+  ];
 
-  const DECKS = ["classic", "acid"];
+
+  let lastSkin = null;
 
 
-  function readDeck() {
+  function rollSkin() {
 
-    try {
-      const saved =
-        window.localStorage.getItem(DECK_KEY);
+    let skin = lastSkin;
 
-      /*
-        Кислотная колода — это и есть лицо игры, а классика
-        оставлена запасным вариантом для тех, кому привычнее.
-        Открываться игра должна в своём стиле, иначе всё
-        нарисованное для него никто и не увидит.
-      */
-      return DECKS.includes(saved)
-        ? saved
-        : "acid";
-
-    } catch (error) {
-      return "acid";
+    /* два одинаковых стола подряд смазывают весь смысл жребия */
+    while (skin === lastSkin && SKINS.length > 1) {
+      skin =
+        SKINS[
+          Math.floor(Math.random() * SKINS.length)
+        ];
     }
+
+    lastSkin = skin;
+
+    document.documentElement.dataset.skin = skin;
   }
 
 
-  function applyDeck(name) {
+  document.documentElement.dataset.deck = "acid";
 
-    const deck =
-      DECKS.includes(name) ? name : "acid";
-
-    document.documentElement.dataset.deck = deck;
-
-    document
-      .querySelectorAll(".deckPick")
-      .forEach(button =>
-        button.classList.toggle(
-          "chosen",
-          button.dataset.deck === deck
-        )
-      );
-
-    try {
-      window.localStorage.setItem(DECK_KEY, deck);
-
-    } catch (error) {
-      /* приватный режим — просто не запоминаем */
-    }
-  }
-
-
-  document
-    .querySelectorAll(".deckPick")
-    .forEach(button =>
-      button.addEventListener(
-        "click",
-        () => {
-
-          AcidSound.play("card");
-
-          applyDeck(button.dataset.deck);
-        }
-      )
-    );
-
-
-  applyDeck(readDeck());
+  rollSkin();
 
 
   /* =======================================================

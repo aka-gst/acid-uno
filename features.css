@@ -4540,3 +4540,248 @@ html[data-deck="acid"] .flyingCard::after {
 .colorWheel .pick:hover {
   filter: brightness(1.04) saturate(1.06);
 }
+
+
+/* =========================================================
+   ПЯТЬ МАТЕРИАЛОВ КАРТЫ
+
+   Каркас у карты один — восьмиугольник, неоновая рамка, знак
+   мастью. Меняется то, из чего карта как будто сделана.
+   Материал выбирается случайно на партию: за вечер стол ни
+   разу не повторяется, а правила и раскладка не меняются.
+
+   Атрибут data-skin ставится на <html> при старте партии.
+   ========================================================= */
+
+/* ---------- ПЛЁНКА: голографическая фольга ---------- */
+
+html[data-skin="film"] .card::before,
+html[data-skin="film"] .handCard::before,
+html[data-skin="film"] .flyingCard::before {
+  background:
+    linear-gradient(
+      118deg,
+      transparent 0 16%,
+      color-mix(in srgb, var(--suit) 36%, transparent) 29%,
+      transparent 43%,
+      color-mix(in srgb, var(--cyan) 24%, transparent) 57%,
+      transparent 69%,
+      color-mix(in srgb, var(--magenta) 26%, transparent) 83%,
+      transparent 95%
+    ),
+    radial-gradient(
+      ellipse at 50% 20%,
+      rgba(20, 11, 32, .96),
+      rgba(5, 2, 10, .99) 74%
+    );
+}
+
+html[data-skin="film"] .card .value,
+html[data-skin="film"] .handCard .value,
+html[data-skin="film"] .flyingCard .value {
+  color: #fff;
+
+  /* расщепление по краям — так печатают на фольге */
+  text-shadow:
+    1.6px 0 0 color-mix(in srgb, var(--magenta) 75%, transparent),
+    -1.6px 0 0 color-mix(in srgb, var(--cyan) 75%, transparent),
+    0 0 14px var(--suit);
+}
+
+
+/* ---------- СТЕКЛО: матовая пластина ---------- */
+
+html[data-skin="glass"] .card::before,
+html[data-skin="glass"] .handCard::before,
+html[data-skin="glass"] .flyingCard::before {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, .12),
+      rgba(255, 255, 255, .02) 46%,
+      rgba(255, 255, 255, .08)
+    ),
+    radial-gradient(
+      ellipse at 50% 62%,
+      color-mix(in srgb, var(--suit) 34%, transparent),
+      transparent 68%
+    ),
+    rgba(12, 7, 22, .66);
+}
+
+html[data-skin="glass"] .card::after,
+html[data-skin="glass"] .handCard::after,
+html[data-skin="glass"] .flyingCard::after {
+  border-color: rgba(255, 255, 255, .34);
+}
+
+html[data-skin="glass"] .card .value,
+html[data-skin="glass"] .handCard .value,
+html[data-skin="glass"] .flyingCard .value {
+  color: #fff;
+
+  text-shadow:
+    0 0 18px var(--suit),
+    0 2px 0 rgba(0, 0, 0, .35);
+}
+
+
+/* ---------- ПЛАТА: печатная плата ---------- */
+
+html[data-skin="pcb"] .card::before,
+html[data-skin="pcb"] .handCard::before,
+html[data-skin="pcb"] .flyingCard::before {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 49.3%,
+      color-mix(in srgb, var(--suit) 36%, transparent) 49.3% 50.7%,
+      transparent 50.7%
+    ),
+    linear-gradient(
+      0deg,
+      transparent 0 49.3%,
+      color-mix(in srgb, var(--suit) 22%, transparent) 49.3% 50.7%,
+      transparent 50.7%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--suit) 9%, transparent) 0 1px,
+      transparent 1px 13px
+    ),
+    radial-gradient(ellipse at 50% 30%, #0d1410, #050806 76%);
+}
+
+html[data-skin="pcb"] .card .value,
+html[data-skin="pcb"] .handCard .value,
+html[data-skin="pcb"] .flyingCard .value {
+  color: var(--suit);
+
+  text-shadow:
+    0 0 2px #fff,
+    0 0 12px var(--suit);
+}
+
+
+/* ---------- ТРУБКА: неоновая вывеска ---------- */
+
+html[data-skin="tube"] .card::before,
+html[data-skin="tube"] .handCard::before,
+html[data-skin="tube"] .flyingCard::before {
+  background:
+    radial-gradient(
+      ellipse at 50% 46%,
+      color-mix(in srgb, var(--suit) 15%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse at 50% 24%,
+      rgba(14, 8, 24, .98),
+      rgba(3, 1, 7, .99) 76%
+    );
+}
+
+/*
+  Цифра — полая трубка, а не залитый знак: контур толстый,
+  внутри пусто, вокруг ореол. Тонкая обводка выглядела просто
+  бледной цифрой, поэтому здесь она заметно жирнее.
+*/
+html[data-skin="tube"] .card .value,
+html[data-skin="tube"] .handCard .value,
+html[data-skin="tube"] .flyingCard .value {
+  color: transparent;
+
+  -webkit-text-stroke: 3.4px var(--suit);
+
+  text-shadow: none;
+
+  filter:
+    drop-shadow(0 0 2px #fff)
+    drop-shadow(0 0 10px var(--suit))
+    drop-shadow(0 0 26px var(--suit));
+}
+
+/* знаки светятся сильнее обычного — на трубке свет несёт всё */
+html[data-skin="tube"] .value[data-v] {
+  filter:
+    drop-shadow(0 0 3px #fff)
+    drop-shadow(0 0 14px var(--suit))
+    drop-shadow(0 0 32px var(--suit));
+}
+
+html[data-skin="tube"] .card::after,
+html[data-skin="tube"] .handCard::after,
+html[data-skin="tube"] .flyingCard::after {
+  opacity: .55;
+}
+
+
+/* ---------- ЭЛТ: кинескоп ---------- */
+
+html[data-skin="crt"] .card::before,
+html[data-skin="crt"] .handCard::before,
+html[data-skin="crt"] .flyingCard::before {
+  background:
+    /*
+      Апертурная решётка: на кинескопе пиксель — это три
+      цветные полоски, и вблизи их видно. Без них «строчки»
+      читаются просто как полосатая карта.
+    */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 40, 90, .16) 0 2px,
+      rgba(60, 255, 130, .16) 2px 4px,
+      rgba(70, 140, 255, .16) 4px 6px
+    ),
+    /* строчная развёртка */
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, .46) 0 2px,
+      rgba(255, 255, 255, .04) 2px 4px
+    ),
+    /* свечение люминофора вокруг номинала */
+    radial-gradient(
+      ellipse at 50% 44%,
+      color-mix(in srgb, var(--suit) 26%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(ellipse at 50% 30%, #0e0818, #040209 78%);
+}
+
+/* виньетка и блик стекла */
+html[data-skin="crt"] .card::after,
+html[data-skin="crt"] .handCard::after,
+html[data-skin="crt"] .flyingCard::after {
+  box-shadow:
+    inset 0 0 26px rgba(0, 0, 0, .8),
+    inset 0 0 10px color-mix(in srgb, var(--suit) 40%, transparent);
+
+  background:
+    linear-gradient(
+      152deg,
+      rgba(255, 255, 255, .08) 0 22%,
+      transparent 44%
+    );
+}
+
+html[data-skin="crt"] .card .value,
+html[data-skin="crt"] .handCard .value,
+html[data-skin="crt"] .flyingCard .value {
+  font-family: "Courier New", ui-monospace, monospace;
+
+  color: var(--suit);
+
+  /* люминофор растекается: ядро белое, вокруг цветной ореол */
+  text-shadow:
+    0 0 2px #fff,
+    0 0 9px var(--suit),
+    0 0 24px var(--suit),
+    0 0 46px color-mix(in srgb, var(--suit) 60%, transparent);
+}
+
+html[data-skin="crt"] .value[data-v] {
+  filter:
+    drop-shadow(0 0 2px #fff)
+    drop-shadow(0 0 12px var(--suit))
+    drop-shadow(0 0 30px var(--suit));
+}
