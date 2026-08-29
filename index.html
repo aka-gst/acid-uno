@@ -13,15 +13,15 @@
 
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=87" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=87">
-  <link rel="manifest" href="manifest.webmanifest?v=87">
+  <link rel="icon" href="favicon.svg?v=96" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=96">
+  <link rel="manifest" href="manifest.webmanifest?v=96">
 
     
-  <link rel="stylesheet" href="style.css?v=87">
-  <link rel="stylesheet" href="effects.css?v=87">
-  <link rel="stylesheet" href="v9.1.css?v=87">
-  <link rel="stylesheet" href="features.css?v=87">
+  <link rel="stylesheet" href="style.css?v=96">
+  <link rel="stylesheet" href="effects.css?v=96">
+  <link rel="stylesheet" href="v9.1.css?v=96">
+  <link rel="stylesheet" href="features.css?v=96">
   
 </head>
 
@@ -382,7 +382,37 @@
 
     </div>
 
+
   </section>
+
+
+  <!--
+    Строка наставника. Пустует на обычном уровне и
+    заполняется только на учебном — там она объясняет
+    правило хода на живых значениях.
+
+    Стоит отдельным блоком, а не внутри actionHUD: там
+    строка в ряд со статусом и цветом, а объяснению нужна
+    вся ширина.
+  -->
+  <div
+    id="coach"
+    class="coach hidden"
+  >
+
+    <span
+      id="coachLine"
+      class="coachLine"
+    ></span>
+
+    <button
+      id="coachAgain"
+      class="coachAgain"
+      type="button"
+      aria-label="Показать ещё раз, что где на столе"
+    >?</button>
+
+  </div>
 
 
   <!-- ======================================
@@ -850,19 +880,20 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=87"></script>
-<script src="src/rules.js?v=87"></script>
-<script src="src/match.js?v=87"></script>
-<script src="src/audio.js?v=87"></script>
-<script src="animations.js?v=87"></script>
-<script src="src/bot.js?v=87"></script>
-<script src="src/transport.js?v=87"></script>
-<script src="src/store.js?v=87"></script>
-<script src="game.js?v=87"></script>
-<script src="v9.1.js?v=87"></script>
-<script src="src/features.js?v=87"></script>
-<script src="src/room.js?v=87"></script>
-<script src="src/tutorial.js?v=87"></script>
+<script src="src/assets.js?v=96"></script>
+<script src="src/rules.js?v=96"></script>
+<script src="src/match.js?v=96"></script>
+<script src="src/audio.js?v=96"></script>
+<script src="animations.js?v=96"></script>
+<script src="src/bot.js?v=96"></script>
+<script src="src/transport.js?v=96"></script>
+<script src="src/store.js?v=96"></script>
+<script src="game.js?v=96"></script>
+<script src="v9.1.js?v=96"></script>
+<script src="src/features.js?v=96"></script>
+<script src="src/coach.js?v=96"></script>
+<script src="src/room.js?v=96"></script>
+<script src="src/tutorial.js?v=96"></script>
 
 </body>
 </html>

@@ -714,6 +714,107 @@ function bestColor(hand, excludingIndex) {
 }
 
 
+/* =========================================================
+   КАРТА СЛОВАМИ
+
+   Учебному уровню надо называть карты вслух: «эта не
+   подходит» ничему не учит, а «розовая 5 не подходит,
+   нужна голубая» — учит.
+
+   Цвет и номинал разделены точкой, а не согласованы в
+   роде: «жёлтый пропуск» и «жёлтая 6» требуют разных
+   окончаний, и любая попытка склеить их одной строкой
+   рано или поздно даёт «жёлтая пропуск».
+   ========================================================= */
+
+/*
+  Цвет нужен в двух родах, и обойтись одним не выйдет:
+  «цвет теперь ГОЛУБОЙ» и «подойдёт любая ГОЛУБАЯ» — про
+  одно и то же, но слова разные.
+*/
+const COLOR_WORDS = {
+  red: "РОЗОВЫЙ",
+  yellow: "ЖЁЛТЫЙ",
+  green: "ЗЕЛЁНЫЙ",
+  blue: "ГОЛУБОЙ",
+  wild: "ЧЁРНЫЙ"
+};
+
+
+const COLOR_WORDS_F = {
+  red: "РОЗОВАЯ",
+  yellow: "ЖЁЛТАЯ",
+  green: "ЗЕЛЁНАЯ",
+  blue: "ГОЛУБАЯ",
+  wild: "ЧЁРНАЯ"
+};
+
+
+const VALUE_WORDS = {
+  skip: "ПРОПУСК",
+  reverse: "РАЗВОРОТ",
+  wild: "СМЕНА ЦВЕТА",
+  "+2": "+2",
+  "+4": "+4"
+};
+
+
+/*
+  Спецкарты мужского рода, числа — женского («девятка»).
+  Отсюда «любой ПРОПУСК», но «любая 9».
+*/
+const MALE_VALUES = [
+  "skip",
+  "reverse"
+];
+
+
+function colorWord(color) {
+  return COLOR_WORDS[color] || "";
+}
+
+
+function colorWordF(color) {
+  return COLOR_WORDS_F[color] || "";
+}
+
+
+function valueWord(value) {
+  return VALUE_WORDS[value] || String(value);
+}
+
+
+/*
+  «Подойдёт ещё и такая же»: фраза про совпадение по
+  номиналу, уже согласованная в роде.
+*/
+function matchPhrase(value) {
+
+  return (
+    (
+      MALE_VALUES.includes(value)
+        ? "ЛЮБОЙ "
+        : "ЛЮБАЯ "
+    ) +
+    valueWord(value)
+  );
+}
+
+
+function cardLabel(card) {
+
+  if (!card) {
+    return "";
+  }
+
+  return (
+    colorWordF(card.color) +
+    " · " +
+    valueWord(card.value)
+  );
+}
+
+
 const BOT_PRIORITY = {
   "+4": 8,
   "+2": 7,
@@ -1248,6 +1349,14 @@ return {
   interceptIndex,
   bestColor,
   chooseCard,
+
+  COLOR_WORDS,
+  COLOR_WORDS_F,
+  colorWord,
+  colorWordF,
+  valueWord,
+  matchPhrase,
+  cardLabel,
 
   scoreboard,
   timeoutResult,

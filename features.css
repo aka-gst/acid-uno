@@ -5596,3 +5596,334 @@ html[data-back-art="1"] #botCards .v9-bot-card {
 html[data-back-art="1"] #botCards .v9-bot-card::after {
   display: none;
 }
+
+
+/* =========================================================
+   НАСТАВНИК
+
+   Строка под столом на учебном уровне. Она объясняет
+   правило хода на живых значениях — «на столе ГОЛУБОЙ · 6,
+   подойдёт любая голубая, любая 6 или чёрная», — и потому
+   длиннее обычного статуса: это предложение, а не ярлык.
+
+   Появляется только там, где нужна: на обычном уровне
+   модуль пишет пустую строку, и блок прячется.
+   ========================================================= */
+
+/*
+  actionHUD стоит абсолютно, поэтому и строка наставника
+  стоит абсолютно — иначе она уезжает в обычный поток и
+  всплывает под шапкой, поверх соперников.
+*/
+.coach {
+  position: absolute;
+
+  left: 50%;
+
+  bottom:
+    calc(
+      var(--safe-bottom) + 250px
+    );
+
+  transform: translateX(-50%);
+
+  z-index: 22;
+
+  width: min(620px, 92vw);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 12px 9px 15px;
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(183, 255, 36, .34);
+
+  background: rgba(10, 20, 4, .82);
+
+  box-shadow:
+    0 0 22px rgba(183, 255, 36, .12);
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.coach.hidden {
+  display: none;
+}
+
+.coachLine {
+  flex: 1;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  line-height: 1.45;
+
+  letter-spacing: .04em;
+
+  color: rgba(214, 255, 158, .95);
+
+  text-align: left;
+}
+
+.coachAgain {
+  flex: none;
+
+  width: 26px;
+  height: 26px;
+
+  border-radius: 50%;
+
+  border:
+    1px solid rgba(183, 255, 36, .45);
+
+  background: rgba(183, 255, 36, .1);
+
+  color: var(--acid);
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 1000;
+
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+}
+
+.coachAgain:hover {
+  background: rgba(183, 255, 36, .2);
+}
+
+
+@media (min-width: 900px) {
+
+  .coachLine {
+    font-size: 14px;
+  }
+
+  .coach {
+    padding: 11px 14px 11px 18px;
+  }
+}
+
+
+/* =========================================================
+   ЭКСКУРСИЯ ПО СТОЛУ
+
+   Прожектор сделан не вырезом в затемнении, а элементом с
+   огромной тенью вокруг: тень заливает весь экран, а само
+   пятно остаётся прозрачным. Ни канваса, ни маски.
+   ========================================================= */
+
+.coachTour {
+  position: fixed;
+  inset: 0;
+
+  /*
+    Выше шапки и логотипа: те стоят на своих слоях, и при
+    z-index в пару десятков оставались светлыми пятнами на
+    затемнённом экране — будто подсвечивают именно их.
+  */
+  z-index: 19000;
+}
+
+.coachTour.hidden {
+  display: none;
+}
+
+.coachSpot {
+  position: absolute;
+
+  border-radius: 18px;
+
+  border:
+    3px solid var(--acid);
+
+  box-shadow:
+    0 0 34px rgba(183, 255, 36, .85),
+    inset 0 0 34px rgba(183, 255, 36, .22);
+
+  animation:
+    coachSpotPulse 1.7s ease-in-out infinite;
+
+  /*
+    Без переезда: шторки затемнения встают на место сразу,
+    и кольцо, ползущее к ним треть секунды, все эти доли
+    секунды обводит не то место.
+  */
+  pointer-events: none;
+}
+
+/*
+  Шторки затемнения. Четыре прямоугольника вокруг
+  подсвеченного места — см. коммент в src/coach.js.
+*/
+.coachShade {
+  position: absolute;
+
+  /*
+    Почти глухая: при девяти десятых сквозь неё просвечивал
+    неоновый логотип и читался как второе подсвеченное
+    место.
+  */
+  background: rgba(3, 1, 8, .95);
+
+  pointer-events: none;
+}
+
+
+.coachCard {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: min(420px, 88vw);
+
+  padding: 20px 22px 18px;
+
+  border-radius: 20px;
+
+  border:
+    1px solid rgba(183, 255, 36, .4);
+
+  background: rgba(8, 16, 4, .97);
+
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, .7),
+    0 0 34px rgba(183, 255, 36, .2);
+
+  text-align: center;
+}
+
+/*
+  Подсвечено что-то в верхней половине экрана — карточку
+  уводим вниз, и наоборот: иначе она закрывает собой ровно
+  то, на что показывает.
+*/
+.coachCard {
+  top: 24%;
+}
+
+.coachCard.below {
+  top: 74%;
+}
+
+.coachStep {
+  margin-bottom: 9px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: .22em;
+
+  color: rgba(183, 255, 36, .6);
+}
+
+.coachText {
+  margin-bottom: 17px;
+
+  font-size: 15px;
+  font-weight: 800;
+
+  line-height: 1.45;
+
+  letter-spacing: .03em;
+
+  color: #fff;
+}
+
+.coachNext {
+  width: 100%;
+
+  padding: 13px 18px;
+
+  border-radius: 13px;
+
+  border: 0;
+
+  background:
+    linear-gradient(
+      100deg,
+      var(--acid),
+      #8dff6a
+    );
+
+  color: #071003;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 1000;
+
+  letter-spacing: .1em;
+
+  cursor: pointer;
+}
+
+.coachSkip {
+  margin-top: 10px;
+
+  border: 0;
+
+  background: none;
+
+  color: rgba(255, 255, 255, .4);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+  text-decoration: underline;
+
+  cursor: pointer;
+}
+
+
+@keyframes coachSpotPulse {
+
+  0%,
+  100% {
+    border-color: rgba(183, 255, 36, 1);
+  }
+
+  50% {
+    border-color: rgba(183, 255, 36, .45);
+  }
+}
+
+
+/*
+  На телефоне строка наставника поднимается выше: там между
+  столом и рукой места меньше, и на прежней высоте она
+  ложилась на карты.
+*/
+@media (max-width: 620px) {
+
+  .coach {
+    bottom:
+      calc(
+        var(--safe-bottom) + 236px
+      );
+
+    width: 94vw;
+
+    padding: 8px 10px 8px 12px;
+  }
+
+  .coachLine {
+    font-size: 11px;
+
+    line-height: 1.4;
+  }
+}

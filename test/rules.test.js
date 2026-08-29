@@ -406,3 +406,31 @@ test("к концу партии простой бот не начинает б�
     1
   );
 });
+
+
+/* =========================================================
+   КАРТА СЛОВАМИ
+   ========================================================= */
+
+test("карта называется в женском роде — она согласуется с «карта»", () => {
+
+  assert.equal(R.cardLabel(card("blue", "9")), "ГОЛУБАЯ · 9");
+  assert.equal(R.cardLabel(card("yellow", "skip")), "ЖЁЛТАЯ · ПРОПУСК");
+  assert.equal(R.cardLabel(card("wild", "+4")), "ЧЁРНАЯ · +4");
+});
+
+
+test("цвет отдельно живёт в мужском роде — он согласуется с «цвет»", () => {
+
+  assert.equal(R.colorWord("blue"), "ГОЛУБОЙ");
+  assert.equal(R.colorWordF("blue"), "ГОЛУБАЯ");
+});
+
+
+test("совпадение по номиналу согласовано по роду номинала", () => {
+
+  assert.equal(R.matchPhrase("9"), "ЛЮБАЯ 9");
+  assert.equal(R.matchPhrase("skip"), "ЛЮБОЙ ПРОПУСК");
+  assert.equal(R.matchPhrase("reverse"), "ЛЮБОЙ РАЗВОРОТ");
+  assert.equal(R.matchPhrase("+2"), "ЛЮБАЯ +2");
+});

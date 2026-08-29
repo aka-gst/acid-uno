@@ -143,6 +143,9 @@
     clearHint91();
 
 
+    window.AcidCoach?.update();
+
+
     if (
       !calmMode ||
       gameOver ||
@@ -2589,6 +2592,8 @@
 
     if (invalid) {
 
+      window.AcidCoach?.refuse(d.card);
+
       AcidFX.status(
         drawPenalty > 0
           ? `ШТРАФ +${drawPenalty}: ОТБЕЙ ИЛИ ЗАБЕРИ`
@@ -3595,6 +3600,21 @@
       );
 
 
+      /*
+        Взятая карта — лучший момент для урока: правило
+        проверяется прямо на ней, и сразу видно, чем
+        кончилось.
+      */
+      window.AcidCoach?.say(
+        canPlay(card)
+          ? `В РУКУ: ${AcidRules.cardLabel(card)} — ЭТА ПОДХОДИТ, ` +
+            "МОЖЕШЬ СРАЗУ ЕЁ ПОЛОЖИТЬ"
+          : `В РУКУ: ${AcidRules.cardLabel(card)} — ЭТА НЕ ПОДХОДИТ, ` +
+            "ЖМИ КОЛОДУ ЕЩЁ РАЗ",
+        3200
+      );
+
+
       updatePlayableGlow91();
     };
 
@@ -3892,6 +3912,23 @@
 
 
       render();
+
+
+      /*
+        На учебном столе каждый чужой ход называется вслух:
+        карты соперника лежат рубашкой вверх, и без слов
+        непонятно даже то, что он вообще сходил.
+
+        Без глагола: имена ботов и мужские, и женские, а
+        «Джо положила» — ровно та мелочь, по которой видно,
+        что текст писали не для людей.
+      */
+      window.AcidCoach?.say(
+        chosenColor
+          ? `ХОД ${seatName(seat)}: ЧЁРНАЯ, ` +
+            `ЦВЕТ ТЕПЕРЬ ${AcidRules.colorWord(chosenColor)}`
+          : `ХОД ${seatName(seat)}: ${AcidRules.cardLabel(card)}`
+      );
 
 
       await specialEffect91(
@@ -4214,6 +4251,12 @@
 
         AcidFX.status(
           `${seatName(activeSeat)} ДОБИРАЕТ...`
+        );
+
+
+        window.AcidCoach?.say(
+          `У ${seatName(activeSeat)} НЕЧЕМ ХОДИТЬ — ` +
+          "БЕРЁТ ИЗ КОЛОДЫ"
         );
 
 
@@ -5270,6 +5313,8 @@
         AcidFX.status(
           turnStatus91()
         );
+
+        window.AcidCoach?.tourIfNew();
       }
     };
 
@@ -5358,6 +5403,8 @@
     AcidFX.status(
       turnStatus91()
     );
+
+    window.AcidCoach?.tourIfNew();
   }
 
 
