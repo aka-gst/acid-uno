@@ -665,6 +665,8 @@
 
     startClock();
 
+    armBack();
+
     render();
   };
 
@@ -706,12 +708,18 @@
       const saved =
         window.localStorage.getItem(DECK_KEY);
 
+      /*
+        Кислотная колода — это и есть лицо игры, а классика
+        оставлена запасным вариантом для тех, кому привычнее.
+        Открываться игра должна в своём стиле, иначе всё
+        нарисованное для него никто и не увидит.
+      */
       return DECKS.includes(saved)
         ? saved
-        : "classic";
+        : "acid";
 
     } catch (error) {
-      return "classic";
+      return "acid";
     }
   }
 
@@ -719,7 +727,7 @@
   function applyDeck(name) {
 
     const deck =
-      DECKS.includes(name) ? name : "classic";
+      DECKS.includes(name) ? name : "acid";
 
     document.documentElement.dataset.deck = deck;
 
@@ -963,6 +971,81 @@
         true
       )
     );
+
+
+  /* =======================================================
+     КНОПКА «НАЗАД»
+
+     Кнопки выхода из живой партии мы закрыли, но остаётся
+     кнопка браузера — и она уносит из партии молча. Лишняя
+     запись в истории ловит нажатие: подтвердил — выходим,
+     отказался — запись возвращается на место, и партия
+     продолжается.
+     ======================================================= */
+
+  let backArmed = false;
+
+
+  function armBack() {
+
+    if (backArmed) {
+      return;
+    }
+
+    backArmed = true;
+
+    try {
+      history.pushState({ acidMatch: 1 }, "");
+
+    } catch (error) {
+      /* история недоступна — молча остаёмся без защиты */
+      backArmed = false;
+    }
+  }
+
+
+  window.addEventListener(
+    "popstate",
+    () => {
+
+      if (
+        !backArmed ||
+        gameOver ||
+        !$$("lobby")?.classList.contains("hidden")
+      ) {
+        return;
+      }
+
+      /* запись возвращается сразу: иначе второе «назад» уже уводит */
+      try {
+        history.pushState({ acidMatch: 1 }, "");
+      } catch (error) {
+        /* нечего возвращать */
+      }
+
+      const leave =
+        window.confirm(
+          "Выйти из партии? Она на этом закончится."
+        );
+
+      if (!leave) {
+        return;
+      }
+
+      backArmed = false;
+
+      if (AcidStore.online()) {
+
+        window.AcidRoom?.leave?.();
+
+        location.replace(location.pathname);
+
+        return;
+      }
+
+      openLobby();
+    }
+  );
 
 
   $$("tableButton")

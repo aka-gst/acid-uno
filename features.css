@@ -3845,3 +3845,235 @@ html[data-deck="acid"] .deckUno {
     transform: translate(-50%, 2px);
   }
 }
+
+
+/* =========================================================
+   НИЗКИЙ МОНИТОР
+
+   Ноутбук с открытыми панелями браузера оставляет под
+   страницу шестьсот-семьсот точек, а меню из двух дверей
+   выросло до восьмисот. Прокрутка есть, но стартовый экран
+   листать не должен: он весь обязан быть виден сразу.
+
+   Поэтому на низких экранах меню ужимается, а не режется.
+   ========================================================= */
+
+@media (min-width: 780px) and (max-height: 860px) {
+
+  .lobbyWindow {
+    padding: 20px 22px 18px;
+  }
+
+  .lobbyWindow h2 {
+    font-size: 25px;
+  }
+
+  .lobbyWindow .windowEyebrow {
+    font-size: 9px;
+  }
+
+  .doors {
+    gap: 14px;
+
+    margin-top: 16px;
+  }
+
+  .door {
+    padding: 15px 16px;
+  }
+
+  .doorPick b {
+    font-size: 19px;
+  }
+
+  .doorPick em {
+    font-size: 11px;
+
+    margin-top: 3px;
+  }
+
+  .doorBody {
+    margin-top: 11px;
+  }
+
+  .doorText {
+    font-size: 12px;
+
+    margin-bottom: 11px;
+  }
+
+  .door .lobbySetup {
+    margin-bottom: 11px;
+  }
+
+  .lobbyRow {
+    padding: 9px 11px 10px;
+  }
+
+  .lobbyLabel {
+    font-size: 9px;
+
+    margin-bottom: 6px;
+  }
+
+  .lobbyLabel em {
+    font-size: 10px;
+  }
+
+  .seatPick {
+    width: 36px;
+    height: 36px;
+
+    font-size: 15px;
+  }
+
+  .deckPick,
+  .clockToggle {
+    padding: 8px 10px;
+
+    font-size: 10px;
+  }
+
+  .lobbyNote {
+    font-size: 9px;
+
+    margin-top: 6px;
+  }
+
+  #lobbyStart,
+  .lobbyOnline {
+    padding: 12px 16px;
+
+    font-size: 14px;
+  }
+
+  #lobbyStart em,
+  .lobbyOnline em {
+    font-size: 10px;
+  }
+
+  .rulesOpen {
+    margin-top: 12px;
+
+    font-size: 11px;
+  }
+}
+
+
+/* =========================================================
+   СОПЕРНИКИ ПОД РАЗМЕР ЭКРАНА
+
+   Карты в руке на мониторе уже вырастают (правила в
+   style.css), а значки соперников оставались телефонными:
+   между большими картами внизу и крошечными плашками сверху
+   стол выглядел кривым.
+
+   Размер привязан к высоте окна, а не к ширине: стол
+   упирается именно в высоту. Нижняя граница выше прежней —
+   даже на низком ноутбуке соперник перестаёт быть крошкой.
+   ========================================================= */
+
+@media (min-width: 1000px) {
+
+  :root {
+    --table-max-w: 1240px;
+    --table-max-h: 700px;
+  }
+
+  .opponent {
+    width: clamp(146px, 17vh, 200px);
+  }
+
+  .opponentBack {
+    width: clamp(32px, 3.9vh, 46px);
+    height: clamp(48px, 5.9vh, 69px);
+  }
+
+  .opponentFace {
+    font-size: clamp(23px, 2.8vh, 32px);
+  }
+
+  .opponentName {
+    font-size: clamp(13px, 1.7vh, 18px);
+  }
+
+  .opponentCount {
+    font-size: clamp(22px, 2.8vh, 32px);
+  }
+
+  .opponentPlate {
+    padding: clamp(8px, 1.1vh, 13px) clamp(13px, 1.7vh, 20px);
+  }
+}
+
+
+/* =========================================================
+   СВОЙ ХОД ВИДЕН НА СВОЁМ ИМЕНИ
+
+   У соперника имя загоралось, у себя — нет: на своём ходу
+   подсвечен оказывался никто. Здесь подсветка сильнее, чем
+   у соперника: это твоя очередь, и заметить её надо первым.
+   ========================================================= */
+
+.playerHUD {
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+.playerHUD.is-turn .youLabel {
+  color: var(--acid);
+
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, .8),
+    0 0 16px var(--acid),
+    0 0 34px var(--acid);
+
+  animation: acidTurnBreath 2.2s ease-in-out infinite;
+}
+
+.playerHUD.is-turn .youLabel::after {
+  content: " · ТВОЙ ХОД";
+
+  letter-spacing: .18em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .playerHUD.is-turn .youLabel {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   КАКОЙ КАРТОЙ МОЖНО ПОЙТИ
+
+   Подсветку однажды сделали слабее по просьбе — и стало
+   непонятно вовсе. Теперь наоборот: играбельная карта
+   выглядит обычной картой, а неиграбельная явно гасится и
+   отходит вниз. Разница читается по всему вееру сразу, а не
+   по свечению одной карты.
+   ========================================================= */
+
+#hand .handCard.v9-unplayable {
+  filter: brightness(.42) saturate(.5);
+
+  opacity: .78;
+}
+
+#hand .handCard.v9-playable,
+#hand .handCard.playable {
+  filter: brightness(1.06);
+
+  opacity: 1;
+}
+
+/* и один общий контур, чтобы играбельные читались как группа */
+.hand.is-turn .handCard.v9-playable,
+.hand.is-turn .handCard.playable {
+  box-shadow:
+    0 0 0 2px rgba(183, 255, 36, .55),
+    0 0 16px rgba(183, 255, 36, .35),
+    0 12px 22px rgba(0, 0, 0, .5);
+}

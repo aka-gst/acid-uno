@@ -758,10 +758,25 @@
   }
 
 
+  /*
+    Осознанный выход из комнаты: место отпускается, иначе
+    следующий запуск снова усадит за тот же стол.
+  */
+  function leave() {
+
+    if (state.room) {
+      forget(state.room);
+    }
+
+    AcidStore.detach?.();
+  }
+
+
   window.AcidRoom = {
     state,
     createRoom,
     joinRoom,
+    leave,
     link: roomLink
   };
 

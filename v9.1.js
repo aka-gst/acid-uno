@@ -1059,6 +1059,19 @@
       );
 
 
+    /*
+      Своё имя за столом обязано загораться так же, как имя
+      соперника: иначе на своём ходу подсвечен никто.
+    */
+    document
+      .querySelector(".playerHUD")
+      ?.classList
+      .toggle(
+        "is-turn",
+        playerTurn && !gameOver
+      );
+
+
     playerGlow
       ?.classList
       .toggle(
