@@ -353,6 +353,59 @@
   ];
 
 
+  /*
+    Волна по кольцам арены цветом сыгранной карты. Называет
+    масть быстрее, чем это делает сама карта: волну видно
+    боковым зрением, а карту надо разглядеть.
+  */
+  function pulseRing(color) {
+
+    const el = $$("ringPulse");
+
+    if (!el) {
+      return;
+    }
+
+    el.style.setProperty(
+      "--wave",
+      `var(--${color === "wild" ? "purple" : color})`
+    );
+
+    el.classList.remove("go");
+
+    /* перезапуск: подряд идущие ходы иначе мигают один раз */
+    void el.offsetWidth;
+
+    el.classList.add("go");
+  }
+
+
+  /*
+    Короткий эффект на столе. Класс снимается по окончании
+    анимации, иначе второй такой же ход её не перезапустит.
+  */
+  function tableFx(name, ms) {
+
+    const table =
+      document.querySelector(".tableInner");
+
+    if (!table) {
+      return;
+    }
+
+    table.classList.remove(name);
+
+    void table.offsetWidth;
+
+    table.classList.add(name);
+
+    window.setTimeout(
+      () => table.classList.remove(name),
+      ms
+    );
+  }
+
+
   function flashCard(card) {
 
     const el = $$("cardFlash");
@@ -418,6 +471,8 @@
 
     let penalty = false;
 
+    let drawn = 0;
+
     events.forEach(event => {
 
       if (event.type === "played") {
@@ -428,12 +483,30 @@
 
         flashCard(event.card);
 
+        pulseRing(
+          event.card.color === "wild"
+            ? (event.color || "wild")
+            : event.card.color
+        );
+
+        /*
+          Помехи — только на спецкартах: если стол рвёт на
+          каждой цифре, это перестаёт что-либо значить.
+        */
+        if (
+          FLASH_VALUES.includes(event.card.value)
+        ) {
+          tableFx("glitch", 560);
+        }
+
         if (event.card.color === "wild") {
           flashColor(event.color);
         }
       }
 
       if (event.type === "drew") {
+
+        drawn += 1;
 
         const now = performance.now();
 
@@ -462,7 +535,16 @@
     });
 
     if (penalty) {
+
       AcidSound.play("penalty");
+
+      /*
+        Стол вздрагивает только на крупном штрафе: на «+2»
+        тряска превращается в тик, который идёт всю партию.
+      */
+      if (drawn >= 4) {
+        tableFx("jolt", 380);
+      }
     }
   });
 

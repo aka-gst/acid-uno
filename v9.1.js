@@ -1389,6 +1389,61 @@
        4) новые летят из колоды в свои слоты
      ======================================================= */
 
+  /*
+    След летящей карты: короткая полоса от места вылета к
+    месту приземления, гаснущая за полсекунды. Настоящий шлейф
+    из копий кадра браузер не потянет, а полоса по вектору
+    полёта читается так же и стоит один элемент.
+  */
+  function trail91(from, to, color, delay) {
+
+    const x1 = from.left + from.width / 2;
+    const y1 = from.top + from.height / 2;
+    const x2 = to.left + to.width / 2;
+    const y2 = to.top + to.height / 2;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+
+    const len = Math.hypot(dx, dy);
+
+    /* совсем короткий перелёт следа не оставляет */
+    if (len < 40) {
+      return;
+    }
+
+    window.setTimeout(
+      () => {
+
+        const bar =
+          document.createElement("div");
+
+        bar.className = "cardTrail";
+
+        bar.style.left = `${x1}px`;
+        bar.style.top = `${y1}px`;
+        bar.style.width = `${len}px`;
+
+        bar.style.transform =
+          `rotate(${Math.atan2(dy, dx)}rad)`;
+
+        bar.style.setProperty(
+          "--trail",
+          `var(--${color || "purple"})`
+        );
+
+        document.body.appendChild(bar);
+
+        window.setTimeout(
+          () => bar.remove(),
+          560
+        );
+      },
+      delay || 0
+    );
+  }
+
+
   function flyFromDeck91(card, delay) {
 
     const target =
@@ -1429,6 +1484,14 @@
         deckRect.height /
           Math.max(targetRect.height, 1)
       );
+
+
+    trail91(
+      deckRect,
+      targetRect,
+      card.color === "wild" ? "purple" : card.color,
+      delay
+    );
 
 
     target.classList.remove(
@@ -3287,6 +3350,10 @@
       botArea.getBoundingClientRect();
 
 
+    /* рубашка масти не показывает — след идёт фиолетовым */
+    trail91(from, to, "purple", 0);
+
+
     const el =
       document.createElement(
         "div"
@@ -3954,6 +4021,14 @@
         if (
           target
         ) {
+
+          trail91(
+            releasedRect,
+            target,
+            card.color === "wild" ? "magenta" : card.color,
+            0
+          );
+
 
           const flying =
             document.createElement(
