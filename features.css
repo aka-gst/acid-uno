@@ -3429,3 +3429,419 @@ html[data-deck="acid"] .value[data-v="wild"] {
   mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
 }
 
+
+
+/* =========================================================
+   РУБАШКА КИСЛОТНОЙ КОЛОДЫ
+
+   В макете рубашка — трилистник на чёрном, а не надпись на
+   фиолетовом. Имя игры остаётся, но уходит вниз мелкой
+   строкой: его читают один раз, знак — всю партию.
+   ========================================================= */
+
+html[data-deck="acid"] .deckBack {
+  border-color: rgba(183, 255, 36, .55);
+
+  background:
+    radial-gradient(
+      ellipse at 50% 34%,
+      rgba(24, 14, 38, .96),
+      rgba(6, 3, 12, .99) 72%
+    );
+
+  box-shadow:
+    0 0 8px rgba(183, 255, 36, .45),
+    0 0 22px rgba(139, 61, 255, .35),
+    inset 0 0 20px rgba(255, 255, 255, .05);
+}
+
+html[data-deck="acid"] .deckBack::before {
+  opacity: .07;
+}
+
+html[data-deck="acid"] .deckBack::after {
+  content: "";
+
+  position: absolute;
+
+  top: 17%;
+
+  width: 54%;
+  aspect-ratio: 1;
+
+  background: var(--acid);
+
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3' fill='white'/><path d='M 9.40 7.50 L 6.40 2.30 A 11.2 11.2 0 0 1 17.60 2.30 L 14.60 7.50 A 5.2 5.2 0 0 0 9.40 7.50 Z' fill='white'/><path d='M 17.20 12.00 L 23.20 12.00 A 11.2 11.2 0 0 1 17.60 21.70 L 14.60 16.50 A 5.2 5.2 0 0 0 17.20 12.00 Z' fill='white'/><path d='M 9.40 16.50 L 6.40 21.70 A 11.2 11.2 0 0 1 0.80 12.00 L 6.80 12.00 A 5.2 5.2 0 0 0 9.40 16.50 Z' fill='white'/></svg>");
+
+  filter:
+    drop-shadow(0 0 3px #fff)
+    drop-shadow(0 0 12px var(--acid))
+    drop-shadow(0 0 26px var(--acid));
+
+  pointer-events: none;
+}
+
+/* имя игры уходит под знак мелкой строкой */
+html[data-deck="acid"] .deckAcid {
+  position: relative;
+
+  top: 32%;
+
+  font-size: 8px;
+
+  letter-spacing: .24em;
+
+  background: none;
+
+  -webkit-text-fill-color: currentColor;
+
+  color: rgba(183, 255, 36, .75);
+
+  text-shadow: 0 0 8px rgba(183, 255, 36, .45);
+}
+
+html[data-deck="acid"] .deckUno {
+  display: none;
+}
+
+
+/* =========================================================
+   ЛИЦА СОПЕРНИКОВ
+
+   Были системные эмодзи: на каждой платформе рисуются
+   по-своему и выглядят вставкой из другой оперы. В макете за
+   столом сидят персонажи, поэтому здесь — четыре неоновых
+   силуэта в палитре игры, по кругу на места.
+   ========================================================= */
+
+.opponentFace {
+  display: block;
+
+  width: 1.35em;
+  height: 1.35em;
+
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  filter:
+    drop-shadow(0 0 2px rgba(255, 255, 255, .7))
+    drop-shadow(0 0 7px currentColor);
+}
+
+.opponentFace[data-face="0"] {
+  color: var(--acid);
+  background: var(--acid);
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c5.2 0 8.4 3.1 8.4 7.6v5.1c0 4.1-3.5 7.3-8.4 7.3s-8.4-3.2-8.4-7.3V9.6C3.6 5.1 6.8 2 12 2z' fill='white'/><rect x='6' y='8.4' width='12' height='3.6' rx='1.6' fill='black'/><rect x='9.2' y='17' width='5.6' height='1.6' rx='.8' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c5.2 0 8.4 3.1 8.4 7.6v5.1c0 4.1-3.5 7.3-8.4 7.3s-8.4-3.2-8.4-7.3V9.6C3.6 5.1 6.8 2 12 2z' fill='white'/><rect x='6' y='8.4' width='12' height='3.6' rx='1.6' fill='black'/><rect x='9.2' y='17' width='5.6' height='1.6' rx='.8' fill='black'/></svg>");
+}
+
+.opponentFace[data-face="1"] {
+  color: var(--cyan);
+  background: var(--cyan);
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.2c5 0 8.3 3.2 8.3 7.5 0 1.7-.4 2.9-.4 4.2 0 2.6-3.1 6.3-7.9 6.3s-7.9-3.7-7.9-6.3c0-1.3-.4-2.5-.4-4.2 0-4.3 3.3-7.5 8.3-7.5z' fill='white'/><circle cx='8.4' cy='9.8' r='2.6' fill='black'/><circle cx='15.6' cy='9.8' r='2.6' fill='black'/><rect x='9.6' y='15' width='4.8' height='2.6' rx='1.2' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.2c5 0 8.3 3.2 8.3 7.5 0 1.7-.4 2.9-.4 4.2 0 2.6-3.1 6.3-7.9 6.3s-7.9-3.7-7.9-6.3c0-1.3-.4-2.5-.4-4.2 0-4.3 3.3-7.5 8.3-7.5z' fill='white'/><circle cx='8.4' cy='9.8' r='2.6' fill='black'/><circle cx='15.6' cy='9.8' r='2.6' fill='black'/><rect x='9.6' y='15' width='4.8' height='2.6' rx='1.2' fill='black'/></svg>");
+}
+
+.opponentFace[data-face="2"] {
+  color: var(--magenta);
+  background: var(--magenta);
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4l7.4 3.6v8.4L12 21.6 4.6 14.4V6z' fill='white'/><rect x='10.8' y='7.6' width='2.4' height='7.4' rx='1.1' fill='black'/><rect x='6.6' y='9.4' width='2' height='3.6' rx='.9' fill='black'/><rect x='15.4' y='9.4' width='2' height='3.6' rx='.9' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4l7.4 3.6v8.4L12 21.6 4.6 14.4V6z' fill='white'/><rect x='10.8' y='7.6' width='2.4' height='7.4' rx='1.1' fill='black'/><rect x='6.6' y='9.4' width='2' height='3.6' rx='.9' fill='black'/><rect x='15.4' y='9.4' width='2' height='3.6' rx='.9' fill='black'/></svg>");
+}
+
+.opponentFace[data-face="3"] {
+  color: var(--yellow);
+  background: var(--yellow);
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4c5 0 8.2 3.3 8.2 7.8 0 3-1.4 5-3 6.1v3.1c0 1.3-1 2.2-2.3 2.2H9.1c-1.3 0-2.3-.9-2.3-2.2v-3.1c-1.6-1.1-3-3.1-3-6.1 0-4.5 3.2-7.8 8.2-7.8z' fill='white'/><circle cx='8.6' cy='10.2' r='2.5' fill='black'/><circle cx='15.4' cy='10.2' r='2.5' fill='black'/><path d='M12 13.4l1.5 2.6h-3z' fill='black'/><rect x='9.2' y='18' width='1.6' height='3' fill='black'/><rect x='13.2' y='18' width='1.6' height='3' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.4c5 0 8.2 3.3 8.2 7.8 0 3-1.4 5-3 6.1v3.1c0 1.3-1 2.2-2.3 2.2H9.1c-1.3 0-2.3-.9-2.3-2.2v-3.1c-1.6-1.1-3-3.1-3-6.1 0-4.5 3.2-7.8 8.2-7.8z' fill='white'/><circle cx='8.6' cy='10.2' r='2.5' fill='black'/><circle cx='15.4' cy='10.2' r='2.5' fill='black'/><path d='M12 13.4l1.5 2.6h-3z' fill='black'/><rect x='9.2' y='18' width='1.6' height='3' fill='black'/><rect x='13.2' y='18' width='1.6' height='3' fill='black'/></svg>");
+}
+
+
+
+/* =========================================================
+   АРЕНА ВМЕСТО СЕТКИ
+
+   В макете стол — круглая арена с кольцами и подсветкой
+   снизу, а не прямоугольник в клетку. Клетка остаётся, но
+   уходит на второй план: поверх неё ложатся концентрические
+   кольца и свет из центра.
+   ========================================================= */
+
+.tableGrid {
+  opacity: .07;
+}
+
+.tableInner::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 128%;
+  aspect-ratio: 1;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  z-index: 0;
+
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0 26px,
+      rgba(139, 61, 255, .16) 26px 27px,
+      transparent 27px 54px
+    );
+
+  /*
+    Кольца гаснут к краям стола: иначе видно, что круг больше
+    прямоугольника и обрезается его углами.
+  */
+  -webkit-mask-image:
+    radial-gradient(
+      circle at 50% 50%,
+      #000 34%,
+      transparent 72%
+    );
+
+  mask-image:
+    radial-gradient(
+      circle at 50% 50%,
+      #000 34%,
+      transparent 72%
+    );
+}
+
+.tableInner::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: -14%;
+
+  width: 86%;
+  height: 58%;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  z-index: 0;
+
+  background:
+    radial-gradient(
+      closest-side,
+      rgba(139, 61, 255, .22),
+      rgba(139, 61, 255, .07) 52%,
+      transparent 78%
+    );
+
+  filter: blur(10px);
+}
+
+
+/* =========================================================
+   ЧИП ТЕКУЩЕГО ЦВЕТА
+
+   Точка рядом со словом «цвет» не называет цвет — а именно
+   его и надо знать после чёрной карты. В макете это плашка
+   с названием, она же и красится.
+   ========================================================= */
+
+.currentColor {
+  gap: 7px;
+
+  padding: 5px 11px;
+
+  border-radius: 999px;
+
+  border: 1px solid color-mix(in srgb, var(--chip, var(--purple)) 55%, transparent);
+
+  background: color-mix(in srgb, var(--chip, var(--purple)) 12%, transparent);
+
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--chip, var(--purple)) 30%, transparent);
+}
+
+.currentColor .colorName {
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .14em;
+
+  color: var(--chip, var(--purple));
+
+  text-shadow: 0 0 8px color-mix(in srgb, var(--chip, var(--purple)) 60%, transparent);
+}
+
+
+/* =========================================================
+   БЫСТРЫЙ ЧАТ
+
+   Появляется только за живым столом: кнопку и лист создаёт
+   room.js, когда игрок сел в комнату. С ботами говорить
+   не с кем.
+   ========================================================= */
+
+#chatOpen {
+  position: fixed;
+
+  left: max(14px, env(safe-area-inset-left));
+
+  bottom:
+    max(
+      118px,
+      calc(env(safe-area-inset-bottom) + 94px)
+    );
+
+  z-index: 15000;
+
+  width: 46px;
+  height: 46px;
+
+  padding: 0;
+
+  font-size: 20px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(32, 234, 255, .5);
+
+  background: rgba(10, 5, 20, .82);
+
+  cursor: pointer;
+
+  box-shadow: 0 0 14px rgba(32, 234, 255, .28);
+}
+
+#chatSheet {
+  position: fixed;
+
+  left: max(14px, env(safe-area-inset-left));
+
+  bottom:
+    max(
+      172px,
+      calc(env(safe-area-inset-bottom) + 148px)
+    );
+
+  z-index: 15001;
+
+  width: min(280px, calc(100vw - 28px));
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 6px;
+
+  padding: 10px;
+
+  border-radius: 16px;
+
+  border: 1px solid rgba(32, 234, 255, .32);
+
+  background: rgba(8, 4, 16, .96);
+
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .6);
+}
+
+#chatSheet.hidden {
+  display: none;
+}
+
+#chatSheet button {
+  padding: 10px 8px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .06em;
+
+  color: var(--white);
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(181, 93, 255, .34);
+
+  background: rgba(255, 255, 255, .03);
+
+  cursor: pointer;
+}
+
+/*
+  Реплика висит у сказавшего. Плашка соперника мелкая, поэтому
+  пузырь уводится над ней и не растягивает саму плашку.
+*/
+.chatBubble {
+  position: absolute;
+
+  left: 50%;
+  bottom: 100%;
+
+  transform: translate(-50%, -8px);
+
+  z-index: 30;
+
+  max-width: 160px;
+
+  padding: 6px 10px;
+
+  border-radius: 12px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .06em;
+
+  white-space: nowrap;
+
+  color: var(--white);
+
+  border: 1px solid rgba(32, 234, 255, .5);
+
+  background: rgba(8, 4, 16, .96);
+
+  box-shadow: 0 0 16px rgba(32, 234, 255, .3);
+
+  pointer-events: none;
+
+  animation: acidChatIn .22s ease-out;
+}
+
+@keyframes acidChatIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 2px);
+  }
+}

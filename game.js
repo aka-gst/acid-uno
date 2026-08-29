@@ -836,6 +836,37 @@ function renderColor() {
 
   dot.style.color = shade;
 
+
+  /*
+    Точка не называет цвет, а после чёрной карты знать надо
+    именно название. Плашка красится тем же токеном.
+  */
+  const COLOR_WORDS = {
+    red: "РОЗОВЫЙ",
+    yellow: "ЖЁЛТЫЙ",
+    green: "ЗЕЛЁНЫЙ",
+    blue: "ГОЛУБОЙ"
+  };
+
+  const chip =
+    $("currentColor");
+
+  const name =
+    $("currentColorName");
+
+  if (name) {
+
+    name.textContent =
+      COLOR_WORDS[currentColor] || "";
+  }
+
+  chip
+    ?.style
+    .setProperty(
+      "--chip",
+      `var(--${currentColor})`
+    );
+
   const table =
     document.querySelector(
       ".tableInner"

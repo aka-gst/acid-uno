@@ -85,6 +85,7 @@ const AcidTransport = (() => {
       onLobby: settings.onLobby || (() => {}),
 
       onDrop: settings.onDrop || (() => {}),
+      onChat: settings.onChat || (() => {}),
 
 
       create() {
@@ -173,6 +174,14 @@ const AcidTransport = (() => {
               payload.events || []
             );
           }
+        );
+
+        source.addEventListener(
+          "chat",
+          message =>
+            transport.onChat(
+              JSON.parse(message.data)
+            )
         );
 
         source.addEventListener(

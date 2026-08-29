@@ -314,7 +314,8 @@ async function serveApi(request, response, url) {
       rooms.lobbyAction(
         room,
         url.searchParams.get("token") || "",
-        body.do
+        body.do,
+        body
       );
 
     return json(

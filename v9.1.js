@@ -699,9 +699,14 @@
   }
 
 
-  const OPPONENT_FACES = [
-    "🤖", "👾", "🎃", "👽", "🦾", "🐙"
-  ];
+  /*
+    Лица соперников — не эмодзи, а рисунки в палитре игры:
+    в макете за столом сидят персонажи, а системный смайл
+    выглядит вставкой из другой оперы и на каждой платформе
+    рисуется по-своему. Сам рисунок живёт в стилях, отсюда
+    задаётся только номер.
+  */
+  const OPPONENT_FACES = 4;
 
 
   /* сколько рубашек показываем в веере соперника */
@@ -714,10 +719,8 @@
       seatSpot91(index, total);
 
     const face =
-      OPPONENT_FACES[
-        (seat.index - 1 + OPPONENT_FACES.length) %
-        OPPONENT_FACES.length
-      ];
+      (seat.index - 1 + OPPONENT_FACES) %
+      OPPONENT_FACES;
 
     return `
       <button
@@ -730,7 +733,10 @@
         <span class="opponentFan"></span>
 
         <span class="opponentPlate">
-          <span class="opponentFace">${face}</span>
+          <span
+            class="opponentFace"
+            data-face="${face}"
+          ></span>
           <span class="opponentName">${seatName(seat.index)}</span>
           <span class="opponentCount">0</span>
         </span>

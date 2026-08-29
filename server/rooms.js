@@ -669,10 +669,35 @@ function act(room, key, action) {
    ЛОББИ-КОМАНДЫ
    ========================================================= */
 
-function lobbyAction(room, key, what) {
+function lobbyAction(room, key, what, body) {
 
-  if (seatByToken(room, key) === -1) {
+  const from = seatByToken(room, key);
+
+  if (from === -1) {
     return { error: "не за этим столом" };
+  }
+
+  /*
+    Чат ходит номерами фраз, а не текстом: сервер никогда не
+    пересылает то, что игрок набрал сам. Неизвестный номер
+    просто отбрасывается.
+  */
+  if (what === "chat") {
+
+    const phrase =
+      R.chatPhrase(body && body.phrase);
+
+    if (!phrase) {
+      return { error: "нет такой фразы" };
+    }
+
+    room.touchedAt = Date.now();
+
+    eachStream(room, stream =>
+      send(stream, "chat", { seat: from, phrase })
+    );
+
+    return { ok: true };
   }
 
   if (what === "addBot") {

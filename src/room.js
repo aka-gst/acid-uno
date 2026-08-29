@@ -285,6 +285,136 @@
   );
 
 
+
+  /* =======================================================
+     БЫСТРЫЙ ЧАТ
+
+     Только за живым столом и только готовыми фразами: с
+     ботами говорить не с кем, а свободный ввод открыл бы
+     дверь всему остальному. Наружу уходит номер фразы,
+     текст берётся из правил — теми же строками на сервере.
+     ======================================================= */
+
+  let chatSheet = null;
+
+
+  function buildChat() {
+
+    if (chatSheet) {
+      return;
+    }
+
+    const open =
+      document.createElement("button");
+
+    open.id = "chatOpen";
+    open.type = "button";
+    open.setAttribute("aria-label", "Сказать фразу");
+    open.textContent = "💬";
+
+    chatSheet =
+      document.createElement("div");
+
+    chatSheet.id = "chatSheet";
+    chatSheet.className = "hidden";
+
+    chatSheet.innerHTML =
+      AcidRules.CHAT_PHRASES
+        .map(
+          (phrase, index) =>
+            `<button type="button" data-phrase="${index}">${phrase}</button>`
+        )
+        .join("");
+
+    open.addEventListener(
+      "click",
+      () =>
+        chatSheet.classList.toggle("hidden")
+    );
+
+    chatSheet.addEventListener(
+      "click",
+      event => {
+
+        const button =
+          event.target.closest("button[data-phrase]");
+
+        if (!button) {
+          return;
+        }
+
+        chatSheet.classList.add("hidden");
+
+        lobbyCommand2(
+          "chat",
+          { phrase: Number(button.dataset.phrase) }
+        );
+      }
+    );
+
+    document.body.append(open, chatSheet);
+  }
+
+
+  /*
+    Реплика висит у того, кто её сказал: подпись без источника
+    за столом на семерых ничего не значит.
+  */
+  function showChat(payload) {
+
+    const mine =
+      payload.seat === state.seat;
+
+    /*
+      Своя реплика вешается на руку, а не на playerArea: тот
+      нулевой ширины, и пузырь по центру уезжает к левому краю.
+    */
+    const host =
+      mine
+        ? $$("hand")
+        : document.querySelector(
+            `.opponent[data-seat="${payload.seat}"]`
+          );
+
+    if (!host) {
+      return;
+    }
+
+    host
+      .querySelector(".chatBubble")
+      ?.remove();
+
+    const bubble =
+      document.createElement("span");
+
+    bubble.className = "chatBubble";
+
+    bubble.textContent = payload.phrase;
+
+    host.appendChild(bubble);
+
+    window.setTimeout(
+      () => bubble.remove(),
+      3200
+    );
+  }
+
+
+  /* та же команда лобби, но с телом */
+  async function lobbyCommand2(what, extra) {
+
+    if (!state.token) {
+      return;
+    }
+
+    await api(
+      `api/rooms/${encodeURIComponent(state.room)}` +
+      `/lobby?token=${encodeURIComponent(state.token)}`,
+      Object.assign({ do: what }, extra || {})
+    );
+  }
+
+
   function connect() {
 
     AcidStore.attach({
@@ -298,6 +428,8 @@
 
         paintLobbyList(payload);
       },
+
+      onChat: showChat,
 
       onDrop() {
 
@@ -354,6 +486,8 @@
 
     showPanel(true);
 
+    buildChat();
+
     connect();
 
     return answer;
@@ -378,6 +512,8 @@
       remember(state.room, state.token, state.seat);
 
       showPanel(true);
+
+      buildChat();
 
       connect();
 
@@ -414,6 +550,8 @@
     );
 
     showPanel(true);
+
+    buildChat();
 
     connect();
 
