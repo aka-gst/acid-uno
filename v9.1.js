@@ -854,10 +854,44 @@
   };
 
 
+  /*
+    Альбом — другая посадка. По высоте там триста точек, и
+    дуга сверху вырождается в тесную полоску: соперники
+    налезают друг на друга и на стол.
+
+    Зато по ширине места вдоволь, поэтому места разъезжаются
+    по краям — левому, верхнему и правому, как в UNO Mobile.
+    Углы 180 и 360 — это ровно левый и правый край, без
+    подъёма вверх.
+  */
+  const SEAT_ANGLES_WIDE = {
+    1: [270],
+    2: [180, 360],
+    3: [180, 270, 360],
+    4: [180, 234, 306, 360],
+    5: [180, 216, 270, 324, 360],
+    6: [180, 209, 243, 297, 331, 360]
+  };
+
+
+  function wideSeating91() {
+
+    return (
+      window.innerWidth > window.innerHeight &&
+      window.innerHeight <= 560
+    );
+  }
+
+
   function seatSpot91(index, total) {
 
+    const table =
+      wideSeating91()
+        ? SEAT_ANGLES_WIDE
+        : SEAT_ANGLES;
+
     const angles =
-      SEAT_ANGLES[total] || SEAT_ANGLES[1];
+      table[total] || table[1];
 
     const radians =
       angles[index] * Math.PI / 180;
@@ -1085,7 +1119,7 @@
     }
 
 
-    others.forEach(seat => {
+    others.forEach((seat, index) => {
 
       const el =
         row.querySelector(
@@ -1114,6 +1148,23 @@
         el.querySelector(".opponentFace"),
         seatFaceIndex(seat.index)
       );
+
+
+      /*
+        Посадку переписываем на каждой отрисовке. Список
+        мест от поворота телефона не меняется, значок не
+        пересобирается — а посадка в альбоме и в портрете
+        разная, и без этого соперники остались бы сидеть
+        по-старому до конца партии.
+      */
+      const spot =
+        seatSpot91(
+          index,
+          others.length
+        );
+
+      el.style.setProperty("--sx", spot.x.toFixed(3));
+      el.style.setProperty("--sy", spot.y.toFixed(3));
 
       el.classList.toggle(
         "is-active",
@@ -2828,11 +2879,16 @@
     }
 
 
+    /*
+      Про чёрную карту молчим. Цвет и так объявляет вспышка
+      посреди стола, а два сообщения об одном и том же
+      ложились друг на друга и становились нечитаемым
+      месивом поверх колоды. К тому же «выбираешь цвет»
+      появлялось уже после того, как цвет выбран.
+    */
     if (card.color === "wild") {
 
-      return mine
-        ? "ВЫБИРАЕШЬ ЦВЕТ"
-        : "ЦВЕТ ВЫБИРАЕТ СОПЕРНИК";
+      return null;
     }
 
 
