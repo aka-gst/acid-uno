@@ -76,6 +76,88 @@
   };
 
 
+  /* =======================================================
+     ОТКЛЮЧЁННОЕ ВРУЧНУЮ
+
+     Что именно из найденного участвует в жребии, решает
+     хозяин игры через админ-меню (src/artadmin.js). Здесь
+     только хранение и фильтр: сам список — плоский набор
+     имён файлов, которые в жребий не берутся.
+     ======================================================= */
+
+  const OFF_KEY =
+    "acid-uno-art-off";
+
+
+  function offList() {
+
+    try {
+
+      const raw =
+        window.localStorage.getItem(OFF_KEY);
+
+      const list =
+        raw ? JSON.parse(raw) : [];
+
+      return Array.isArray(list) ? list : [];
+
+    } catch (error) {
+
+      return [];
+    }
+  }
+
+
+  function setOff(list) {
+
+    try {
+
+      window.localStorage.setItem(
+        OFF_KEY,
+        JSON.stringify(list)
+      );
+
+    } catch (error) {
+
+      /* приватный режим — не запомним, и ладно */
+    }
+  }
+
+
+  function isOff(url) {
+    return offList().includes(url);
+  }
+
+
+  function toggleOff(url, off) {
+
+    const list =
+      offList().filter(one => one !== url);
+
+    if (off) {
+      list.push(url);
+    }
+
+    setOff(list);
+
+    return list;
+  }
+
+
+  /*
+    Что реально участвует в жребии. Если выключили всё —
+    возвращаем полный набор: пустой стол без фона и без
+    рубашки выглядел бы поломкой, а не выбором.
+  */
+  function pool(list) {
+
+    const on =
+      list.filter(url => !isOff(url));
+
+    return on.length ? on : list;
+  }
+
+
   function probe(url) {
 
     return new Promise(resolve => {
@@ -173,9 +255,12 @@
       return;
     }
 
+    const list =
+      pool(found.arena);
+
     const url =
-      found.arena[
-        Math.floor(Math.random() * found.arena.length)
+      list[
+        Math.floor(Math.random() * list.length)
       ];
 
     const arena = document.getElementById("arena");
@@ -215,9 +300,12 @@
       return;
     }
 
+    const list =
+      pool(found.back);
+
     const url =
-      found.back[
-        Math.floor(Math.random() * found.back.length)
+      list[
+        Math.floor(Math.random() * list.length)
       ];
 
     document.documentElement.style.setProperty(
@@ -255,7 +343,13 @@
     dressArena,
     dressBacks,
     dressFace,
-    dressSkin
+    dressSkin,
+
+    /* для админ-меню */
+    offList,
+    isOff,
+    toggleOff,
+    pool
   };
 
 });

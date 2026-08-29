@@ -421,10 +421,28 @@ function cardFaceHTML(card) {
     Пустой, пока в assets/ нет текстур: тогда его просто не
     видно.
   */
+  /*
+    На штрафных картах к знаку добавляется само число. Знак
+    из двух карточек — канонический уновский, но что именно
+    он означает, знает только тот, кто уже играл: «сколько
+    брать» по нему не прочитать. Углы с «+2» видно не всегда
+    — в веере они закрыты соседкой.
+
+    Отдельным элементом, а не внутри .value: знак там
+    нарисован маской по фону, и любая надпись внутри
+    обрезалась бы по форме маски.
+  */
+  const plus =
+    card.value === "+2" ||
+    card.value === "+4"
+      ? `<span class="cardPlus" aria-hidden="true">${card.value}</span>`
+      : "";
+
   return `
     <i class="cardSkin" aria-hidden="true"></i>
     <span class="cardCorner cardCornerTop" aria-hidden="true">${label}</span>
     <div class="value" data-v="${card.value}">${label}</div>
+    ${plus}
     <span class="cardCorner cardCornerBottom" aria-hidden="true">${label}</span>
   `;
 }
