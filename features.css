@@ -399,6 +399,92 @@
 
 
 /* =========================================================
+   КНОПКИ ШАПКИ: РОВНЫЙ РЯД И ОТКЛИК НА НАВЕДЕНИЕ
+
+   Ширина у всех четырёх одна: .iconButton — квадрат 39×39,
+   а подписи лежат в data-tip и на кнопку не влияют. Здесь
+   это закреплено явно — flex: 0 0 auto не даст ряду сжать
+   квадраты, если в шапке когда-нибудь станет тесно. Четыре
+   кнопки с зазорами занимают 180px, строка держится и на
+   320px.
+
+   Отклика на наведение не было вовсе — курсор над кнопкой
+   не менял ничего, только всплывала подсказка. Кнопка
+   поднимается, рамка светлеет, вокруг проступает то же
+   фиолетовое свечение, что у панелей. Сильнее нельзя:
+   шапка стоит поверх стола и не должна перетягивать
+   взгляд с карт.
+   ========================================================= */
+
+.topbarActions .iconButton {
+  flex: 0 0 auto;
+
+  cursor: pointer;
+
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease,
+    opacity .16s ease;
+}
+
+/*
+  Только (hover: hover): на телефоне :hover после тапа
+  залипает, и нажатая кнопка осталась бы подсвеченной.
+*/
+@media (hover: hover) {
+
+  .topbarActions .iconButton:hover {
+    transform: translateY(-3px) scale(1.05);
+
+    border-color: rgba(255, 255, 255, .52);
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .24),
+      inset 0 0 18px rgba(255, 255, 255, .14),
+      0 0 0 1px rgba(186, 73, 255, .34),
+      0 0 22px rgba(155, 48, 255, .55),
+      0 0 34px rgba(255, 43, 214, .22);
+  }
+
+  /* Выключенный звук притушен — под курсором он оживает. */
+  .topbarActions .soundButton.muted:hover {
+    opacity: .74;
+  }
+}
+
+/* Клавиатуре отклик нужен и там, где наведения нет. */
+.topbarActions .iconButton:focus-visible {
+  transform: translateY(-3px) scale(1.05);
+
+  border-color: rgba(255, 255, 255, .52);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .24),
+    inset 0 0 18px rgba(255, 255, 255, .14),
+    0 0 0 1px rgba(186, 73, 255, .34),
+    0 0 22px rgba(155, 48, 255, .55),
+    0 0 34px rgba(255, 43, 214, .22);
+}
+
+/* Нажатие утапливает кнопку — палец видит, что попал. */
+.topbarActions .iconButton:active {
+  transform: translateY(0) scale(.95);
+
+  transition-duration: .08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbarActions .iconButton,
+  .topbarActions .iconButton:hover,
+  .topbarActions .iconButton:focus-visible,
+  .topbarActions .iconButton:active {
+    transform: none;
+  }
+}
+
+
+/* =========================================================
    ИТОГ ПО ОЧКАМ
    ========================================================= */
 
@@ -1601,6 +1687,20 @@
 
     transform: translateY(0);
   }
+}
+
+/*
+  У четырёх кнопок шапки подпись одной ширины: «СТОЛ И
+  ИГРОКИ» вдвое длиннее «ТИХО», и плашка прыгала в размере,
+  пока ведёшь курсор вдоль ряда. Теперь она едет вдоль
+  шапки, меняя только текст. min-width, а не width: подпись
+  длиннее самой длинной из нынешних просто раздвинет плашку,
+  а не обрежется.
+*/
+.topbarActions [data-tip]::after {
+  min-width: 104px;
+
+  text-align: center;
 }
 
 
