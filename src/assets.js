@@ -72,8 +72,33 @@
     arena: [],
     bot: [],
     back: [],
-    skin: {}
+    skin: {},
+
+    /*
+      Свои рубашки — картинки с устройства хозяина. Живут в
+      IndexedDB (src/mybacks.js), сюда попадают уже готовыми
+      парами {id, url}. На сервер не уходят никогда: адрес у
+      них blob:, он существует только в этой вкладке.
+    */
+    my: []
   };
+
+
+  /* =======================================================
+     КЛЮЧ НАСТРОЙКИ
+
+     Выключенное и затемнение хранятся по адресу файла. У
+     своих рубашек адрес blob: — он новый в каждой вкладке,
+     и настройка по нему не пережила бы перезагрузку.
+     Поэтому для них ключом служит их собственный id.
+     ======================================================= */
+
+  const keys = new Map();
+
+
+  function keyFor(url) {
+    return keys.get(url) || url;
+  }
 
 
   /* =======================================================
@@ -125,17 +150,19 @@
 
 
   function isOff(url) {
-    return offList().includes(url);
+    return offList().includes(keyFor(url));
   }
 
 
   function toggleOff(url, off) {
 
+    const key = keyFor(url);
+
     const list =
-      offList().filter(one => one !== url);
+      offList().filter(one => one !== key);
 
     if (off) {
-      list.push(url);
+      list.push(key);
     }
 
     setOff(list);
@@ -196,7 +223,7 @@
   function dimOf(url) {
 
     const value =
-      Number(dimMap()[url]);
+      Number(dimMap()[keyFor(url)]);
 
     return Number.isFinite(value)
       ? Math.min(85, Math.max(0, value))
@@ -208,7 +235,9 @@
 
     const map = dimMap();
 
-    map[url] = Math.min(85, Math.max(0, Number(value) || 0));
+    const key = keyFor(url);
+
+    map[key] = Math.min(85, Math.max(0, Number(value) || 0));
 
     try {
 
@@ -222,7 +251,7 @@
       /* приватный режим — не запомним */
     }
 
-    return map[url];
+    return map[key];
   }
 
 
@@ -373,14 +402,28 @@
   }
 
 
+  /*
+    Все рубашки, что участвуют в жребии: набор из assets/ и
+    свои картинки хозяина — на равных правах.
+  */
+  function allBacks() {
+
+    return found.back.concat(
+      found.my.map(one => one.url)
+    );
+  }
+
+
   function dressBacks() {
 
-    if (!found.back.length) {
+    const every = allBacks();
+
+    if (!every.length) {
       return;
     }
 
     const list =
-      pool(found.back);
+      pool(every);
 
     const url =
       list[
@@ -396,13 +439,44 @@
   }
 
 
+  /*
+    Забрать свои рубашки из памяти браузера и завести им
+    ключи настроек. Отдельной функцией, потому что зовётся
+    ещё и после добавления новой картинки.
+  */
+  async function loadMine() {
+
+    if (!globalThis.AcidMyBacks) {
+      return [];
+    }
+
+    found.my =
+      await globalThis.AcidMyBacks.load();
+
+    found.my.forEach(one =>
+      keys.set(one.url, one.id)
+    );
+
+    return found.my;
+  }
+
+
+  function noteMine(one) {
+
+    keys.set(one.url, one.id);
+
+    found.my = globalThis.AcidMyBacks.list();
+  }
+
+
   async function boot() {
 
     await Promise.all([
       scan("arena"),
       scan("bot"),
       scan("back"),
-      scanSkins()
+      scanSkins(),
+      loadMine()
     ]);
 
     dressArena();
@@ -421,6 +495,9 @@
     boot,
     dressArena,
     dressBacks,
+    allBacks,
+    loadMine,
+    noteMine,
     dressFace,
     dressSkin,
 

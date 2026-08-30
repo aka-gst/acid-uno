@@ -38,6 +38,12 @@
       shape: "card"
     },
     {
+      key: "my",
+      title: "СВОИ РУБАШКИ",
+      hint: "картинка остаётся на этом устройстве",
+      shape: "card"
+    },
+    {
       key: "skin",
       title: "МАТЕРИАЛ КАРТЫ",
       hint: "жребий на каждую партию",
@@ -64,6 +70,16 @@
       return Object
         .entries(found.skin || {})
         .map(([name, url]) => [name.toUpperCase(), url]);
+    }
+
+
+    /*
+      Свои — пары {id, url}: имени у картинки с телефона нет,
+      и придумывать ей его незачем.
+    */
+    if (key === "my") {
+
+      return (found.my || []).map(one => ["", one.url, one.id]);
     }
 
     return (found[key] || []).map(url => [
@@ -96,6 +112,8 @@
       "</div>" +
       "</div>" +
       '<div class="artBody" id="artBody"></div>' +
+      '<input class="artFile" id="artFile" type="file" ' +
+      'accept="image/*">' +
       '<button class="artClose" id="artClose" type="button">' +
       "ГОТОВО</button>" +
       "</div>";
@@ -104,6 +122,10 @@
 
     $("artClose")
       .addEventListener("click", close);
+
+
+    $("artFile")
+      .addEventListener("change", onFile);
 
     /*
       Клик мимо окна тоже закрывает: меню служебное, держать
@@ -134,13 +156,19 @@
 
           const items = itemsOf(section.key);
 
-          if (!items.length) {
+          /*
+            Пустой раздел своих рубашек всё равно показываем:
+            иначе про возможность поставить свою картинку
+            никто не узнает — кнопки-то нет.
+          */
+          if (!items.length && section.key !== "my") {
             return "";
           }
 
+
           const cells =
             items
-              .map(([name, url]) => {
+              .map(([name, url, id]) => {
 
                 const off =
                   window.AcidAssets.isOff(url);
@@ -162,6 +190,16 @@
                       "</label>"
                     : "";
 
+                /*
+                  Свою рубашку можно и убрать совсем: чужие
+                  файлы из assets/ не удалить, а эту клал сам.
+                */
+                const drop =
+                  id
+                    ? '<button class="artDrop" type="button" ' +
+                      `data-drop="${id}" aria-label="Убрать">✕</button>`
+                    : "";
+
                 return (
                   '<div class="artItem">' +
                   `<button class="artCell${off ? " off" : ""}" ` +
@@ -172,17 +210,36 @@
                   "</span>" +
                   `<span class="artName">${name}</span>` +
                   "</button>" +
+                  drop +
                   slider +
                   "</div>"
                 );
               })
               .join("");
 
+
+          /*
+            Плитка «плюс» стоит последней: сперва то, что уже
+            есть, потом место для новой.
+          */
+          const add =
+            section.key === "my"
+              ? '<div class="artItem">' +
+                '<button class="artCell artAdd" type="button" id="artAdd">' +
+                '<span class="artThumb artPlus">+</span>' +
+                '<span class="artName">ДОБАВИТЬ</span>' +
+                "</button>" +
+                "</div>"
+              : "";
+
           return (
             `<div class="artSection artShape-${section.shape}">` +
             `<div class="artSectionHead">${section.title}` +
             `<em>${section.hint}</em></div>` +
-            `<div class="artGrid">${cells}</div>` +
+            `<div class="artGrid">${cells}${add}</div>` +
+            (section.key === "my"
+              ? `<div class="artNote" id="artNote">${NOTE}</div>`
+              : "") +
             "</div>"
           );
         })
@@ -195,7 +252,130 @@
     целиком, и вешать слушателя на каждую пришлось бы заново
     после каждого нажатия.
   */
+  /* =======================================================
+     СВОЯ КАРТИНКА
+
+     Файл никуда не отправляется: он перерисовывается в
+     маленький webp прямо здесь и ложится в память браузера
+     (src/mybacks.js). Из этого следует всё остальное — и то,
+     что модерация не нужна, и то, что чужую геометку из EXIF
+     мы не храним: перерисовка её срезает.
+     ======================================================= */
+
+  async function onFile(event) {
+
+    const file =
+      event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    say("ГОТОВЛЮ…");
+
+    try {
+
+      const made =
+        await window.AcidMyBacks.add(file);
+
+      window.AcidAssets.noteMine(made);
+
+      paint();
+
+      say("ГОТОВО — ЭТА КАРТИНКА ТЕПЕРЬ В ЖРЕБИИ");
+
+      window.AcidSound?.play("wild");
+
+    } catch (error) {
+
+      say(
+        (error?.message || "не вышло").toUpperCase() +
+        " · НУЖНА КАРТИНКА С ЭТОГО УСТРОЙСТВА"
+      );
+    }
+  }
+
+
+  const NOTE =
+    "картинку никто, кроме тебя, не увидит: " +
+    "она не уходит ни на сервер, ни сопернику";
+
+
+  let noteTimer = null;
+
+
+  /*
+    Строка под своими рубашками — обещание, а не место для
+    сообщений. Сообщение показываем на несколько секунд и
+    возвращаем обещание на место: оно должно быть видно
+    всегда, а не только пока никто ничего не нажимал.
+  */
+  function say(text) {
+
+    const note = $("artNote");
+
+    if (!note) {
+      return;
+    }
+
+    note.textContent = text;
+
+    clearTimeout(noteTimer);
+
+    noteTimer =
+      setTimeout(
+        () => {
+
+          const back = $("artNote");
+
+          if (back) {
+            back.textContent = NOTE;
+          }
+        },
+        3500
+      );
+  }
+
+
+  async function dropMine(id) {
+
+    await window.AcidMyBacks.remove(id);
+
+    window.AcidAssets.found.my =
+      window.AcidMyBacks.list();
+
+    paint();
+
+    say("УБРАЛ");
+  }
+
+
   function onBodyClick(event) {
+
+    /*
+      Плитка «плюс» ничего не выключает — она открывает
+      выбор файла.
+    */
+    if (event.target?.closest?.("#artAdd")) {
+
+      $("artFile")?.click();
+
+      return;
+    }
+
+
+    const drop =
+      event.target?.closest?.(".artDrop");
+
+    if (drop) {
+
+      dropMine(drop.dataset.drop);
+
+      return;
+    }
+
 
     const cell =
       event.target?.closest?.(".artCell");
