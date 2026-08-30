@@ -8327,3 +8327,531 @@ html[data-deck="acid"] .value[data-v="wild"] {
     --arc-ry: 30%;
   }
 }
+
+
+/* =========================================================
+   ЛОББИ — НОВАЯ РАСКЛАДКА
+   ---------------------------------------------------------
+   Было: две двери-колонки, и всё содержимое жило внутри
+   выбранной. Пока выбраны боты, правая половина экрана —
+   пустая рамка с заголовком; на телефоне вторая дверь
+   схлопывалась в строчку и меню превращалось в ленту.
+
+   Стало: двери — это выбор режима, две плитки в один ряд,
+   всегда одинаковые. Настройки стола и кнопка выбранного
+   режима переезжают под них (это делает pickDoor). Экран
+   читается сверху вниз: с кем играем → как → поехали.
+   ========================================================= */
+
+.doors {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  /*
+    Плитки одной высоты: подпись у живой игры длиннее и
+    переносится, а разной высоты они смотрятся как ошибка.
+  */
+  align-items: stretch;
+
+  gap: 10px;
+
+  margin-top: 18px;
+}
+
+
+/*
+  Тело двери опустело: всё, что там было, теперь на сцене
+  под дверями. Оставляем узел в разметке — на нём висят
+  обработчики, — но со стола убираем.
+*/
+.doorBody {
+  display: none;
+}
+
+
+.door {
+  position: relative;
+
+  overflow: hidden;
+
+  display: block;
+
+  height: auto;
+
+  padding: 0;
+
+  border-radius: 16px;
+
+  border: 1px solid rgba(181, 93, 255, .22);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(139, 61, 255, .07),
+      rgba(12, 6, 25, .5)
+    );
+
+  opacity: 1;
+
+  transition:
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
+}
+
+
+/*
+  Полоска сверху — единственное, что отличает плитки, пока
+  ни одна не выбрана. Цвет у каждой свой: у ботов малиновый,
+  у живой игры голубой, как и подсветка выбранной.
+*/
+.door::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0 0 auto;
+
+  height: 3px;
+
+  background: var(--magenta);
+
+  opacity: .25;
+
+  transition: opacity .18s ease;
+}
+
+.door[data-door="live"]::before {
+  background: var(--cyan);
+}
+
+.door.chosen::before {
+  opacity: 1;
+}
+
+
+.door.chosen {
+  transform: translateY(-1px);
+
+  border-color: rgba(255, 43, 214, .55);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 43, 214, .16),
+      rgba(12, 6, 25, .5)
+    );
+
+  box-shadow:
+    0 10px 30px rgba(255, 43, 214, .16);
+}
+
+.door[data-door="live"].chosen {
+  border-color: rgba(32, 234, 255, .5);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(32, 234, 255, .14),
+      rgba(12, 6, 25, .5)
+    );
+
+  box-shadow:
+    0 10px 30px rgba(32, 234, 255, .14);
+}
+
+
+/*
+  Нажимается вся плитка, а не подпись внутри неё: в половину
+  экрана шириной промахнуться мимо мелкой строки легко.
+*/
+.doorPick {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 3px;
+
+  min-height: 62px;
+
+  padding: 13px 14px;
+
+  text-align: left;
+}
+
+.doorPick b {
+  font-size: 15px;
+
+  letter-spacing: .05em;
+
+  color: rgba(248, 247, 255, .78);
+
+  transition: color .18s ease;
+}
+
+.doorPick em {
+  margin-top: 0;
+
+  font-size: 10px;
+  line-height: 1.3;
+
+  color: rgba(248, 247, 255, .38);
+}
+
+
+/*
+  Сцена: настройки и одна кнопка действия. Пробел до неё
+  больше, чем между плитками, — это следующий шаг, а не
+  продолжение выбора.
+*/
+.lobbyStage {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-top: 16px;
+}
+
+.lobbyStage .lobbySetup {
+  margin: 0;
+}
+
+.lobbyStage #lobbyStart,
+.lobbyStage .lobbyOnline {
+  margin: 0;
+}
+
+
+/* большой экран: плитки крупнее, но раскладка та же */
+@media (min-width: 780px) {
+
+  .doors {
+    gap: 14px;
+
+    margin-top: 22px;
+  }
+
+  .door:not(.chosen) {
+    opacity: 1;
+  }
+
+  .doorPick {
+    min-height: 76px;
+
+    padding: 16px 20px;
+  }
+
+  .doorPick b {
+    font-size: 19px;
+  }
+
+  .doorPick em {
+    font-size: 12px;
+  }
+
+  .lobbyStage {
+    gap: 14px;
+
+    margin-top: 20px;
+  }
+
+  /*
+    Окно больше не растягивается на два столбца содержимого —
+    широкое оно теперь выглядит пустым по краям.
+  */
+  .lobbyWindow {
+    width:
+      min(
+        560px,
+        calc(100vw - 64px)
+      );
+  }
+}
+
+
+/* лежачий телефон: всё то же, но ниже ростом */
+@media (min-width: 780px) and (max-height: 620px) {
+
+  .doors {
+    gap: 10px;
+
+    margin-top: 12px;
+  }
+
+  .doorPick {
+    min-height: 0;
+
+    padding: 10px 13px;
+  }
+
+  .doorPick b {
+    font-size: 15px;
+  }
+
+  .doorPick em {
+    font-size: 10px;
+  }
+
+  .lobbyStage {
+    gap: 9px;
+
+    margin-top: 11px;
+  }
+}
+
+
+/*
+  Живой стол: уровень соперника прячем — он про ботов.
+*/
+.lobbyStage.live .lobbyRow:has(#levelPicker) {
+  display: none;
+}
+
+
+/* =========================================================
+   ЛОББИ НА НИЗКОМ ЭКРАНЕ
+
+   Лежачий телефон — 390 точек высоты. В один столбец меню
+   в них не помещается и уезжает под нижний край: кнопку
+   «начать» приходится искать прокруткой. Поэтому сцена
+   разъезжается на два столбца — настройки слева, действия
+   справа, — и всё видно целиком.
+   ========================================================= */
+
+@media (max-height: 620px) {
+
+  .lobbyWindow {
+    padding: 14px 18px 12px;
+  }
+
+  .lobbyWindow h2 {
+    font-size: 22px;
+  }
+
+  .doors {
+    gap: 10px;
+
+    margin-top: 10px;
+  }
+
+  .doorPick {
+    min-height: 0;
+
+    padding: 9px 12px;
+  }
+
+  .doorPick b {
+    font-size: 14px;
+  }
+
+  .doorPick em {
+    font-size: 10px;
+  }
+
+  .lobbyStage {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.25fr)
+      minmax(0, 1fr);
+
+    align-items: start;
+
+    gap: 10px;
+
+    margin-top: 10px;
+  }
+
+  /*
+    Настройки — высокий блок; действия рядом с ним встают
+    друг под друга и занимают его высоту.
+  */
+  .lobbyStage .lobbySetup {
+    grid-row: 1 / span 3;
+  }
+
+  .lobbyRow {
+    padding: 8px 10px 9px;
+  }
+
+  .lobbyLabel {
+    margin-bottom: 5px;
+
+    font-size: 9px;
+  }
+
+  .seatPick {
+    width: 32px;
+    height: 32px;
+
+    font-size: 14px;
+  }
+
+  .levelPick {
+    padding: 8px 10px;
+  }
+
+  #lobbyStart,
+  .lobbyOnline,
+  .lobbyResume {
+    padding: 11px 14px;
+
+    font-size: 14px;
+  }
+
+  #lobbyStart em,
+  .lobbyOnline em,
+  .lobbyResume em {
+    font-size: 10px;
+  }
+
+  .rulesOpen {
+    margin-top: 10px;
+
+    font-size: 11px;
+  }
+}
+
+
+/*
+  Дожимаем меню под 390 точек высоты: надпись «ACID UNO» над
+  заголовком там лишняя — она есть на логотипе, — а строки
+  настроек можно ужать без потери попадаемости пальцем.
+*/
+@media (max-height: 620px) {
+
+  .lobbyWindow .windowEyebrow {
+    display: none;
+  }
+
+  .lobbyWindow h2 {
+    font-size: 20px;
+  }
+
+  .doors {
+    margin-top: 8px;
+  }
+
+  .lobbyStage {
+    margin-top: 8px;
+
+    gap: 8px;
+  }
+
+  .lobbyRow {
+    padding: 7px 10px 8px;
+  }
+
+  .levelPick {
+    padding: 7px 9px;
+  }
+
+  .levelPick em {
+    font-size: 9px;
+  }
+
+  .seatPick {
+    width: 29px;
+    height: 29px;
+
+    font-size: 13px;
+  }
+
+  .rulesOpen {
+    margin-top: 8px;
+  }
+}
+
+
+/* =========================================================
+   ВЕЕР В ШАПКЕ МЕНЮ
+
+   Четыре масти лежат внахлёст, как карты в руке, и слегка
+   покачиваются. Это единственное движение на экране — оно
+   говорит «игра живая», но не тянет на себя взгляд, пока
+   человек выбирает режим.
+   ========================================================= */
+
+.lobbyFan {
+  display: flex;
+
+  justify-content: center;
+
+  align-items: flex-end;
+
+  height: 42px;
+
+  margin-bottom: 6px;
+}
+
+.lobbyFan i {
+  width: 26px;
+  height: 38px;
+
+  margin: 0 -5px;
+
+  border-radius: 6px;
+
+  /* те же срезанные углы, что у карт на столе */
+  clip-path:
+    polygon(
+      16% 0%, 84% 0%, 100% 11%,
+      100% 89%, 84% 100%, 16% 100%,
+      0% 89%, 0% 11%
+    );
+
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--chip) 92%, #ffffff),
+      color-mix(in srgb, var(--chip) 55%, #0a0614)
+    );
+
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #ffffff 45%, transparent),
+    0 0 14px color-mix(in srgb, var(--chip) 45%, transparent);
+
+  transform-origin: 50% 100%;
+
+  animation: lobbyFanSway 7s ease-in-out infinite;
+}
+
+.lobbyFan i:nth-child(1) { transform: rotate(-13deg); animation-delay: 0s; }
+.lobbyFan i:nth-child(2) { transform: rotate(-4deg); animation-delay: .35s; }
+.lobbyFan i:nth-child(3) { transform: rotate(5deg); animation-delay: .7s; }
+.lobbyFan i:nth-child(4) { transform: rotate(14deg); animation-delay: 1.05s; }
+
+@keyframes lobbyFanSway {
+
+  0%, 100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+/*
+  Тем, кто просил меньше движения, — просто веер.
+*/
+@media (prefers-reduced-motion: reduce) {
+
+  .lobbyFan i {
+    animation: none;
+  }
+}
+
+/* на низком экране веер съедает высоту, которой нет */
+@media (max-height: 620px) {
+
+  .lobbyFan {
+    display: none;
+  }
+}

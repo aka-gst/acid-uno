@@ -1231,22 +1231,77 @@
     const setup =
       document.querySelector(".lobbySetup");
 
+    const stage =
+      $$("lobbyStage");
+
+
     document
       .querySelectorAll(".door")
-      .forEach(door => {
+      .forEach(door =>
+        door.classList.toggle(
+          "chosen",
+          door.dataset.door === which
+        )
+      );
 
-        const on =
-          door.dataset.door === which;
 
-        door.classList.toggle("chosen", on);
+    /*
+      Настройки и кнопка режима переезжают под двери, а не
+      внутрь выбранной. Раньше всё жило в одной двери, и
+      вторая половина экрана пустовала — из-за этого меню и
+      выглядело недоделанным.
 
-        if (on && setup) {
+      Порядок в разметке важен: сперва настройки, потом
+      действие. Кнопку другого режима убираем со сцены, но
+      не из документа — обработчики на ней уже висят.
+    */
+    if (!stage) {
+      return;
+    }
 
-          door
-            .querySelector(".doorSlot")
-            ?.appendChild(setup);
-        }
-      });
+    if (setup) {
+      stage.appendChild(setup);
+    }
+
+    const wanted =
+      which === "live"
+        ? $$("lobbyOnline")
+        : $$("lobbyStart");
+
+    const other =
+      which === "live"
+        ? $$("lobbyStart")
+        : $$("lobbyOnline");
+
+    if (wanted) {
+      stage.appendChild(wanted);
+    }
+
+    other?.classList.add("hidden");
+
+    wanted?.classList.remove("hidden");
+
+
+    /*
+      Уровень — про ботов: за живым столом играть вполсилы
+      не за кого, и room.js его всё равно не читает. Прячем,
+      чтобы настройка не обещала того, чего не будет.
+    */
+    stage.classList.toggle("live", which === "live");
+
+
+    /*
+      Возврат в партию едет на сцену последним. В лежачем
+      телефоне сцена становится двумя столбцами, и кнопке
+      надо оказаться в том же гриде, что и «начать», — иначе
+      она одна уходит под настройки и меню не влезает.
+    */
+    const resume =
+      $$("lobbyResume");
+
+    if (resume) {
+      stage.appendChild(resume);
+    }
 
     paintLobby();
   }
@@ -1281,6 +1336,19 @@
         true
       )
     );
+
+
+  /*
+    Первая отрисовка. Содержимое живёт под дверями, а не
+    внутри них, поэтому его надо перенести туда сразу — до
+    первого нажатия сцена иначе пустая.
+  */
+  pickDoor(
+    document
+      .querySelector(".door.chosen")
+      ?.dataset
+      .door || "bots"
+  );
 
 
   /* =======================================================
