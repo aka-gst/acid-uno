@@ -26,6 +26,28 @@ const AcidSound = (() => {
 
   let master = null;
 
+
+  /*
+    Шина панорамы. Каждый звук идёт через свой панорамник:
+    карта, положенная соперником слева, звучит слева. На
+    телефоне с двумя динамиками и в наушниках это половина
+    ощущения стола.
+  */
+  let panBus = null;
+
+
+  /*
+    Разброс для часто повторяющихся звуков. Один и тот же
+    щелчок десять раз за партию превращается в шум, который
+    перестаёшь слышать, а потом начинаешь замечать как
+    раздражитель. Небольшая гуляющая высота и длительность
+    снимают это полностью — ухо слышит «то же самое», но не
+    «то же самое в записи».
+  */
+  function vary(value, spread) {
+    return value * (1 + (Math.random() * 2 - 1) * spread);
+  }
+
   /*
     Три состояния, а не два: музыка мешает чаще, чем звуки
     ходов, и выключать её отдельно — обычное желание.
@@ -181,6 +203,46 @@ const AcidSound = (() => {
 
 
   /*
+    Узел панорамы под конкретный звук. Ноль — по центру,
+    минус единица — слева. Если браузер панорамник не умеет,
+    отдаём мастер как есть: звук просто останется по центру.
+  */
+  /*
+    Панорама текущего звука. Держим её здесь, а не тащим
+    через каждый спек: у одного звука бывает три-четыре
+    голоса, и все они звучат из одного места на столе.
+  */
+  let currentPan = 0;
+
+
+  function panned(pan) {
+
+    const audio = ensure();
+
+    const value =
+      pan === undefined ? currentPan : pan;
+
+    if (
+      !audio ||
+      !audio.createStereoPanner ||
+      !value
+    ) {
+      return master;
+    }
+
+    const node =
+      audio.createStereoPanner();
+
+    node.pan.value =
+      Math.max(-1, Math.min(1, value));
+
+    node.connect(master);
+
+    return node;
+  }
+
+
+  /*
     Один голос: осциллятор + огибающая.
   */
   function voice(spec) {
@@ -238,7 +300,9 @@ const AcidSound = (() => {
 
     osc.connect(gain);
 
-    gain.connect(spec.bus || master);
+    gain.connect(
+      spec.bus || panned(spec.pan)
+    );
 
     osc.start(at);
 
@@ -313,7 +377,9 @@ const AcidSound = (() => {
       должен приглушаться вместе с ней, а не жить сам по
       себе.
     */
-    gain.connect(spec.bus || master);
+    gain.connect(
+      spec.bus || panned(spec.pan)
+    );
 
     source.start(
       audio.currentTime + (spec.delay || 0)
@@ -327,42 +393,51 @@ const AcidSound = (() => {
 
   const BANK = {
 
-    /* карта легла на стол */
-    card() {
+    /*
+      Карта легла на стол. Самый частый звук в игре, поэтому
+      он единственный, который заметно гуляет: высота, длина
+      и яркость щелчка каждый раз чуть другие. Ухо слышит
+      «то же самое», но не «то же самое в записи».
+    */
+    card({ pan } = {}) {
       noise({
-        length: .11,
-        frequency: 2600,
-        gain: .17
+        length: vary(.11, .25),
+        frequency: vary(2600, .22),
+        gain: .17,
+        pan
       });
 
       voice({
         type: "triangle",
-        from: 520,
-        to: 190,
-        length: .13,
-        gain: .17
+        from: vary(520, .12),
+        to: vary(190, .12),
+        length: vary(.13, .2),
+        gain: .17,
+        pan
       });
     },
 
     /* взял карту из колоды */
-    draw() {
+    draw({ pan } = {}) {
       noise({
-        length: .09,
-        frequency: 1500,
-        gain: .12
+        length: vary(.09, .25),
+        frequency: vary(1500, .2),
+        gain: .12,
+        pan
       });
 
       voice({
         type: "sine",
-        from: 240,
-        to: 400,
-        length: .1,
-        gain: .1
+        from: vary(240, .12),
+        to: vary(400, .12),
+        length: vary(.1, .2),
+        gain: .1,
+        pan
       });
     },
 
     /* объявил UNO */
-    uno() {
+    uno({ pan } = {}) {
       voice({
         type: "square",
         from: 660,
@@ -391,7 +466,7 @@ const AcidSound = (() => {
     },
 
     /* разворот / смена направления */
-    reverse() {
+    reverse({ pan } = {}) {
       voice({
         type: "sawtooth",
         from: 300,
@@ -411,7 +486,7 @@ const AcidSound = (() => {
     },
 
     /* карта пропуска: резкая отсечка */
-    skip() {
+    skip({ pan } = {}) {
       voice({
         type: "square",
         from: 880,
@@ -441,7 +516,7 @@ const AcidSound = (() => {
       Положили +2 или +4. Звук идёт вверх — стопка растёт;
       забирают её вниз, звуком penalty.
     */
-    strike() {
+    strike({ pan } = {}) {
       voice({
         type: "sawtooth",
         from: 180,
@@ -468,7 +543,7 @@ const AcidSound = (() => {
     },
 
     /* чёрная карта: сейчас сменится цвет */
-    wild() {
+    wild({ pan } = {}) {
       [0, 1, 2, 3].forEach(i =>
         voice({
           type: "triangle",
@@ -489,7 +564,7 @@ const AcidSound = (() => {
     },
 
     /* прилетел штраф */
-    penalty() {
+    penalty({ pan } = {}) {
       voice({
         type: "square",
         from: 190,
@@ -731,7 +806,14 @@ const AcidSound = (() => {
      ПУБЛИЧНОЕ
      ======================================================= */
 
-  function play(name) {
+  /*
+    play("card", { pan: -0.6 }) — звук слева.
+
+    Панораму передаёт тот, кто знает, где на экране это
+    случилось: карта соперника слева звучит слева. Не передал
+    — играет по центру, как раньше.
+  */
+  function play(name, options) {
 
     if (
       on === "off" ||
@@ -743,11 +825,35 @@ const AcidSound = (() => {
     try {
       unlock();
 
-      BANK[name]();
+      currentPan =
+        Number(options?.pan) || 0;
+
+      BANK[name](options || {});
+
+      currentPan = 0;
 
     } catch (error) {
+
+      currentPan = 0;
       /* звук — не повод ронять партию */
     }
+  }
+
+
+  /*
+    Экранный X в панораму. Края экрана — не крайние значения:
+    полностью развести звук по каналам значит потерять его в
+    одном ухе.
+  */
+  function panFromScreen(x) {
+
+    const width =
+      window.innerWidth || 1;
+
+    return Math.max(
+      -0.75,
+      Math.min(0.75, (x / width - 0.5) * 1.6)
+    );
   }
 
 
@@ -836,6 +942,7 @@ const AcidSound = (() => {
 
   return {
     play,
+    panFromScreen,
     toggle,
     cycle,
     set,

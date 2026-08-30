@@ -442,6 +442,35 @@
     важное — а на телефоне игрок часто слышит раньше, чем
     успевает разглядеть эффект.
   */
+  /*
+    Откуда звучит событие. Место на столе знает разметка:
+    берём середину значка соперника или собственной руки и
+    отдаём звуку — карта, положенная слева, звучит слева.
+
+    Место не нашли — ноль, то есть центр.
+  */
+  function panOfSeat(index) {
+
+    const el =
+      index === AcidStore.mySeat()
+        ? $$("hand")
+        : document.querySelector(
+            `.opponent[data-seat="${index}"]`
+          );
+
+    if (!el) {
+      return 0;
+    }
+
+    const box =
+      el.getBoundingClientRect();
+
+    return AcidSound.panFromScreen(
+      box.left + box.width / 2
+    );
+  }
+
+
   function cueFor(card) {
 
     if (card.value === "reverse") {
@@ -478,7 +507,8 @@
       if (event.type === "played") {
 
         AcidSound.play(
-          cueFor(event.card)
+          cueFor(event.card),
+          { pan: panOfSeat(event.seat) }
         );
 
         flashCard(event.card);
@@ -518,7 +548,9 @@
 
           lastDrawSound = now;
 
-          AcidSound.play("draw");
+          AcidSound.play("draw", {
+            pan: panOfSeat(event.seat)
+          });
         }
       }
 
