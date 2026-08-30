@@ -733,19 +733,38 @@ function bestColor(hand, excludingIndex) {
   одно и то же, но слова разные.
 */
 const COLOR_WORDS = {
-  red: "РОЗОВЫЙ",
+  red: "КРАСНЫЙ",
   yellow: "ЖЁЛТЫЙ",
   green: "ЗЕЛЁНЫЙ",
-  blue: "ГОЛУБОЙ",
+  blue: "СИНИЙ",
   wild: "ЧЁРНЫЙ"
 };
 
 
+/*
+  Винительный падеж: «клади ЗЕЛЁНУЮ». Короткая подсказка в
+  игре построена как приказ, и родительный с именительным в
+  неё не встают.
+*/
+const COLOR_WORDS_ACC = {
+  red: "КРАСНУЮ",
+  yellow: "ЖЁЛТУЮ",
+  green: "ЗЕЛЁНУЮ",
+  blue: "СИНЮЮ",
+  wild: "ЧЁРНУЮ"
+};
+
+
+function colorWordAcc(color) {
+  return COLOR_WORDS_ACC[color] || "";
+}
+
+
 const COLOR_WORDS_F = {
-  red: "РОЗОВАЯ",
+  red: "КРАСНАЯ",
   yellow: "ЖЁЛТАЯ",
   green: "ЗЕЛЁНАЯ",
-  blue: "ГОЛУБАЯ",
+  blue: "СИНЯЯ",
   wild: "ЧЁРНАЯ"
 };
 
@@ -1367,6 +1386,7 @@ return {
   COLOR_WORDS_F,
   colorWord,
   colorWordF,
+  colorWordAcc,
   valueWord,
   matchPhrase,
   cardLabel,

@@ -3418,6 +3418,8 @@
 
     window.AcidCoach?.notify("play");
 
+    window.AcidCoach?.lesson(card);
+
 
     await specialEffect91(
       card,
@@ -4132,12 +4134,20 @@
       */
       window.AcidCoach?.notify("bot");
 
-      window.AcidCoach?.say(
-        chosenColor
-          ? `ХОД ${seatName(seat)}: ЧЁРНАЯ, ` +
-            `ЦВЕТ ТЕПЕРЬ ${AcidRules.colorWord(chosenColor)}`
-          : `ХОД ${seatName(seat)}: ${AcidRules.cardLabel(card)}`
-      );
+      /*
+        Урок про спецкарту важнее рассказа о ходе: он
+        показывается один раз в жизни, а «ход такого-то» —
+        каждую партию.
+      */
+      if (!window.AcidCoach?.lesson(card)) {
+
+        window.AcidCoach?.say(
+          chosenColor
+            ? `ХОД ${seatName(seat)}: ЧЁРНАЯ, ` +
+              `ЦВЕТ ТЕПЕРЬ ${AcidRules.colorWord(chosenColor)}`
+            : `ХОД ${seatName(seat)}: ${AcidRules.cardLabel(card)}`
+        );
+      }
 
 
       await specialEffect91(
@@ -4780,6 +4790,8 @@
 
 
       window.AcidCoach?.notify("play");
+
+      window.AcidCoach?.lesson(card);
 
 
       await specialEffect91(

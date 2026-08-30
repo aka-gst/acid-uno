@@ -927,10 +927,10 @@ function renderColor() {
     именно название. Плашка красится тем же токеном.
   */
   const COLOR_WORDS = {
-    red: "РОЗОВЫЙ",
+    red: "КРАСНЫЙ",
     yellow: "ЖЁЛТЫЙ",
     green: "ЗЕЛЁНЫЙ",
-    blue: "ГОЛУБОЙ"
+    blue: "СИНИЙ"
   };
 
   const chip =
@@ -1283,10 +1283,10 @@ document
         вместо красного — тем более.
       */
       const HUB_WORDS = {
-        red: "РОЗОВЫЙ",
+        red: "КРАСНЫЙ",
         yellow: "ЖЁЛТЫЙ",
         green: "ЗЕЛЁНЫЙ",
-        blue: "ГОЛУБОЙ"
+        blue: "СИНИЙ"
       };
 
       const hub = $("wheelHub");
