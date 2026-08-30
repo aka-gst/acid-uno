@@ -8977,3 +8977,278 @@ html[data-deck="acid"] .value[data-v="wild"] {
 .artBody {
   min-height: 0;
 }
+
+
+/* =========================================================
+   ПРАВКИ ПО ЖИВОЙ ИГРЕ, 30 АВГУСТА
+
+   Всё, что ниже, — из отзыва после настоящей партии. У
+   каждой правки есть замер до и после, он в отчёте.
+   ========================================================= */
+
+
+/*
+  1. КНОПКИ ПОВЕРХ КАРТ.
+
+  Замер на 1280×800 вчетвером: панель кнопок кончается на 62,
+  веер верхнего соперника начинается на 24 — то есть панель
+  лежит на картах, 38 точек по вертикали и 251 по
+  горизонтали. Вершина дуги — это arc-y минус arc-ry; было
+  12% высоты, стало 19%.
+*/
+@media (min-width: 900px) and (min-height: 620px) {
+
+  /*
+    Селекторы с числом мест — иначе не побеждают: выше в
+    файле у троих и четверых стоит --arc-ry: 33%, а это
+    правило точнее голого .opponents. Из-за него верхний
+    соперник и забирался под шапку.
+  */
+  .opponents,
+  .opponents[data-count="3"],
+  .opponents[data-count="4"] {
+    --arc-y: 46%;
+    --arc-ry: 25%;
+  }
+
+  .opponents[data-count="5"] {
+    --arc-ry: 25%;
+  }
+
+  .opponents[data-count="6"] {
+    --arc-ry: 23%;
+  }
+}
+
+
+/*
+  2. ЧЕЙ ХОД.
+
+  «Слабо понятно, что мой ход» — надпись стояла мелко в левом
+  нижнем углу, а смотрит человек в центр стола, где карты.
+  Теперь свой ход виден там же, где рука: сброс получает
+  живое кольцо, а колода — ровное свечение.
+
+  Это не украшение: за столом очередь узнают не по подписи, а
+  по тому, что на тебя смотрят. Кольцо и есть этот взгляд.
+*/
+html[data-turn="player"] #discard::before {
+  content: "";
+
+  position: absolute;
+
+  inset: -14px;
+
+  border-radius: 22px;
+
+  border: 2px solid var(--acid);
+
+  opacity: .9;
+
+  pointer-events: none;
+
+  animation: acidTurnRing 1.9s ease-in-out infinite;
+}
+
+@keyframes acidTurnRing {
+
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(183, 255, 36, .34),
+      0 0 18px rgba(183, 255, 36, .5);
+
+    opacity: .85;
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 10px rgba(183, 255, 36, 0),
+      0 0 30px rgba(183, 255, 36, .75);
+
+    opacity: 1;
+  }
+}
+
+html[data-turn="player"] #deck {
+  box-shadow:
+    0 0 0 2px rgba(183, 255, 36, .5),
+    0 0 26px rgba(183, 255, 36, .35);
+}
+
+/* чужой ход — стол приглушён, и это тоже сообщение */
+html[data-turn="bot"] #discard,
+html[data-turn="bot"] #deck {
+  filter: saturate(.82) brightness(.9);
+}
+
+
+/*
+  3. ОТКЛИК КОЛОДЫ.
+
+  «Нажимаю на колоду — колода никак не реагирует, кроме
+  летящей карты». Отдача рисуется из кода (v9.1.js), здесь —
+  готовность: палец видит, что стопка живая, ещё до нажатия.
+*/
+#deck {
+  transition:
+    box-shadow .18s ease,
+    transform .12s ease;
+}
+
+#deck:active {
+  transform: scale(.97);
+}
+
+
+/*
+  4. БЕЛЫЙ ПРЯМОУГОЛЬНИК ШТРАФА.
+
+  «Тут хз чо случилось» — посреди неонового стола висел
+  ярко-белый +2 в семьдесят четыре точки с белым же ореолом.
+  Белый в нашей палитре не участвует нигде, поэтому число и
+  читалось как чужой элемент, а не как часть игры.
+
+  Теперь цифра горит мастью беды: тёмное ядро, неоновый
+  контур. Белым остаётся только тонкая обводка, чтобы число
+  читалось на любом фоне.
+*/
+.stackHUDValue {
+  color: #1a0512;
+
+  text-shadow:
+    -1px -1px 0 rgba(255, 255, 255, .85),
+    1px -1px 0 rgba(255, 255, 255, .85),
+    -1px 1px 0 rgba(255, 255, 255, .85),
+    1px 1px 0 rgba(255, 255, 255, .85),
+    0 0 18px var(--magenta),
+    0 0 44px rgba(255, 43, 214, .8);
+}
+
+.stackHUD.mine .stackHUDValue {
+  color: #1a0208;
+
+  text-shadow:
+    -1px -1px 0 rgba(255, 232, 238, .9),
+    1px -1px 0 rgba(255, 232, 238, .9),
+    -1px 1px 0 rgba(255, 232, 238, .9),
+    1px 1px 0 rgba(255, 232, 238, .9),
+    0 0 18px var(--red),
+    0 0 48px rgba(255, 49, 88, .85);
+}
+
+
+/*
+  5. ИМЕНА СОПЕРНИКОВ ЦЕЛИКОМ.
+
+  «ПАСМУРНАЯ …», «БУМАЖНЫЙ Г…» — имена срезались многоточием.
+  Их придумывал хозяин, и обрубок читается как небрежность.
+  Две строки вместо одной и буквы чуть теснее: длинное имя
+  переносится, а не пропадает.
+*/
+.opponent .opponentName {
+  white-space: normal;
+
+  overflow: visible;
+
+  text-overflow: clip;
+
+  line-height: 1.15;
+
+  letter-spacing: .02em;
+
+  overflow-wrap: anywhere;
+}
+
+/*
+  Ширина тоже задана точнее моего — снимаем именно её.
+*/
+.opponents:not([data-count="1"]):not([data-count="2"]) .opponentName {
+  max-width: 150px;
+}
+
+
+/*
+  6. ЗНАЧОК СОПЕРНИКА КРУПНЕЕ.
+
+  «Иконки ботов всё ещё маленькие» — на мониторе портрет был
+  53 точки при экране в восемьсот. Это меньше, чем аватар в
+  списке контактов.
+*/
+@media (min-width: 900px) and (min-height: 620px) {
+
+  .opponent .opponentFace {
+    width: clamp(76px, 9vh, 104px);
+    height: clamp(76px, 9vh, 104px);
+  }
+
+  .opponents:not([data-count="1"]):not([data-count="2"]) .opponentFace {
+    width: clamp(76px, 9vh, 104px);
+    height: clamp(76px, 9vh, 104px);
+  }
+
+  .opponents:not([data-count="1"]):not([data-count="2"]) .opponentName {
+    max-width: 200px;
+  }
+}
+
+
+/*
+  7. ЭКРАН ИТОГА РАЗНЕСЁН.
+
+  Было полотно в три ряда огромными буквами: «ВРЕМЯ ВЫШЛО —
+  ВАФЕЛЬНАЯ ЭЛЛИ ВЫИГРАЛ». Стало три разных по весу вещи:
+  причина наклейкой сбоку, имя главным, служебное слово
+  мелким.
+*/
+.endWindow {
+  position: relative;
+}
+
+.endWhy {
+  position: absolute;
+
+  top: 14px;
+  right: -10px;
+
+  padding: 8px 12px;
+
+  border-radius: 10px;
+
+  background: var(--magenta);
+
+  color: #10030c;
+
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1.05;
+
+  letter-spacing: .1em;
+
+  text-align: center;
+
+  transform: rotate(7deg);
+
+  box-shadow:
+    0 8px 26px rgba(255, 43, 214, .45);
+}
+
+.endWhy.hidden {
+  display: none;
+}
+
+.endWord {
+  margin-bottom: 2px;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: .22em;
+
+  color: rgba(248, 247, 255, .45);
+}
+
+#endText {
+  overflow-wrap: anywhere;
+
+  line-height: 1.05;
+}

@@ -27,15 +27,15 @@
 
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=172" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=172">
-  <link rel="manifest" href="manifest.webmanifest?v=172">
+  <link rel="icon" href="favicon.svg?v=176" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=176">
+  <link rel="manifest" href="manifest.webmanifest?v=176">
 
     
-  <link rel="stylesheet" href="style.css?v=172">
-  <link rel="stylesheet" href="effects.css?v=172">
-  <link rel="stylesheet" href="v9.1.css?v=172">
-  <link rel="stylesheet" href="features.css?v=172">
+  <link rel="stylesheet" href="style.css?v=176">
+  <link rel="stylesheet" href="effects.css?v=176">
+  <link rel="stylesheet" href="v9.1.css?v=176">
+  <link rel="stylesheet" href="features.css?v=176">
   
 
   <!--
@@ -930,8 +930,29 @@
     </div>
 
 
+    <!--
+      Три разных по весу вещи вместо одного полотна текста:
+      причина конца партии наклейкой сбоку, имя победителя
+      главным, служебное слово мелким.
+
+      Глагола здесь нет намеренно. «ВАФЕЛЬНАЯ ЭЛЛИ ВЫИГРАЛ» —
+      имя женского рода с глаголом мужского; имена ботов
+      обоих родов, и склеивать их с одной формой нельзя.
+      Конструкция без глагола короче и верна для всех.
+    -->
+    <div
+      id="endWhy"
+      class="endWhy hidden"
+    >ВРЕМЯ<br>ВЫШЛО</div>
+
+
+    <div id="endWord" class="endWord">
+      ПОБЕДИТЕЛЬ
+    </div>
+
+
     <h1 id="endText">
-      ТЫ ВЫИГРАЛ
+      ТЫ
     </h1>
 
 
@@ -970,28 +991,28 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=172"></script>
+<script src="src/assets.js?v=176"></script>
 <!--
   Своё хранилище рубашек — сразу за набором картинок и
   до features.js: тот зовёт boot(), а boot() забирает
   свои картинки из памяти браузера. Загрузись этот файл
   позже — свои рубашки просто не находились бы.
 -->
-<script src="src/mybacks.js?v=172"></script>
-<script src="src/rules.js?v=172"></script>
-<script src="src/match.js?v=172"></script>
-<script src="src/audio.js?v=172"></script>
-<script src="animations.js?v=172"></script>
-<script src="src/bot.js?v=172"></script>
-<script src="src/transport.js?v=172"></script>
-<script src="src/store.js?v=172"></script>
-<script src="game.js?v=172"></script>
-<script src="v9.1.js?v=172"></script>
-<script src="src/features.js?v=172"></script>
-<script src="src/coach.js?v=172"></script>
-<script src="src/room.js?v=172"></script>
-<script src="src/tutorial.js?v=172"></script>
-<script src="src/artadmin.js?v=172"></script>
+<script src="src/mybacks.js?v=176"></script>
+<script src="src/rules.js?v=176"></script>
+<script src="src/match.js?v=176"></script>
+<script src="src/audio.js?v=176"></script>
+<script src="animations.js?v=176"></script>
+<script src="src/bot.js?v=176"></script>
+<script src="src/transport.js?v=176"></script>
+<script src="src/store.js?v=176"></script>
+<script src="game.js?v=176"></script>
+<script src="v9.1.js?v=176"></script>
+<script src="src/features.js?v=176"></script>
+<script src="src/coach.js?v=176"></script>
+<script src="src/room.js?v=176"></script>
+<script src="src/tutorial.js?v=176"></script>
+<script src="src/artadmin.js?v=176"></script>
 
 </body>
 </html>

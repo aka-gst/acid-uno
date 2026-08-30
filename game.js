@@ -1217,10 +1217,15 @@ async function finish(
       : "purple"
   );
 
+  /* без глагола: имена ботов бывают и женского рода */
+  $("endWhy")?.classList.add("hidden");
+
+  $("endWord").textContent = "ПОБЕДИТЕЛЬ";
+
   $("endText").textContent =
     playerWon
-      ? "ТЫ ВЫИГРАЛ"
-      : `${seatName(activeSeat)} ВЫИГРАЛ`;
+      ? "ТЫ"
+      : seatName(activeSeat);
 
   $("endScreen")
     .classList

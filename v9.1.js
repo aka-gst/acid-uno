@@ -1450,6 +1450,15 @@
     renderOpponents91();
 
 
+    /*
+      Флаг на корне: по нему CSS зажигает середину стола. До
+      этого «чей ход» было написано мелким в левом нижнем
+      углу, а смотрит человек в центр — туда, где карты.
+    */
+    document.documentElement.dataset.turn =
+      side === "player" ? "player" : "bot";
+
+
     const playerGlow =
       $("playerTurnGlow");
 
@@ -4135,6 +4144,38 @@
         playerDraw();
       }
     );
+
+
+    /*
+      Отдача стопки на нажатие. Раньше колода не отвечала
+      ничем, кроме летящей карты: пока карта не долетела,
+      непонятно, засчиталось ли нажатие вообще. В настоящей
+      колоде палец продавливает верхнюю карту — это и
+      повторяем.
+    */
+    fresh.addEventListener(
+      "pointerdown",
+      () => {
+
+        const back = fresh.querySelector(".deckBack");
+
+        if (!back) {
+          return;
+        }
+
+        back.animate(
+          [
+            { transform: "translateY(0) scale(1)" },
+            { transform: "translateY(3px) scale(.955)", offset: .35 },
+            { transform: "translateY(0) scale(1)" }
+          ],
+          {
+            duration: 260,
+            easing: "cubic-bezier(.2,.9,.25,1)"
+          }
+        );
+      }
+    );
   }
 
 
@@ -5880,12 +5921,18 @@
           { opacity: 0, scale: .82 }
         ],
         {
-          duration: 760,
+          /*
+            Было 760 мс на цифру — две с половиной секунды до
+            первого хода. Человек уже нажал «начать»: он ждёт
+            игру, а не считалку. 430 мс цифру прочесть
+            успеваешь, а томиться — нет.
+          */
+          duration: 430,
           easing: "cubic-bezier(.2,.8,.25,1)"
         }
       );
 
-      await wait91(760);
+      await wait91(430);
     }
   }
 

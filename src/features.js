@@ -797,12 +797,26 @@
         : "lose"
     );
 
+    /*
+      Причина уходит на наклейку, имя остаётся главным, а
+      глагола нет вовсе: имена ботов обоих родов, и «Вафельная
+      Элли выиграл» — это видно сразу, как и то, что за
+      именами никто не следил. А придумывал их хозяин сам.
+    */
+    $$("endWhy")?.classList.remove("hidden");
+
+    const drawn =
+      outcome.draw && playerWon;
+
+    $$("endWord").textContent =
+      drawn ? "ИТОГ" : "ПОБЕДИТЕЛЬ";
+
     $$("endText").textContent =
-      outcome.draw && playerWon
-        ? "ВРЕМЯ ВЫШЛО — НИЧЬЯ"
+      drawn
+        ? "НИЧЬЯ"
         : playerWon
-          ? "ВРЕМЯ ВЫШЛО — ТЫ ВЫИГРАЛ"
-          : `ВРЕМЯ ВЫШЛО — ${seatName(leaders[0])} ВЫИГРАЛ`;
+          ? "ТЫ"
+          : seatName(leaders[0]);
 
     renderScore(
       points,
