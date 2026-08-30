@@ -8110,3 +8110,54 @@ html[data-deck="acid"] .flyingCard .value {
     max-width: 130px;
   }
 }
+
+
+/* =========================================================
+   ПОСАДКА КАК В РЕФЕРЕНСЕ
+
+   У сидящих по бокам портрет стоит с внешней стороны, а
+   карты уходят внутрь, к столу. У сидящего сверху портрет
+   над картами. Сторону считает v9.1.js по знаку --sx.
+
+   Раньше портреты всех троих жались влево — отсюда и
+   ощущение, что стол сдвинут.
+   ========================================================= */
+
+.opponents:not([data-count="1"]):not([data-count="2"]) .opponent.beside {
+  grid-template-columns: auto 1fr;
+
+  justify-items: start;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+/* сидящий справа — портрет справа, карты слева */
+.opponents:not([data-count="1"]):not([data-count="2"]) .opponent.beside.mirror {
+  grid-template-columns: 1fr auto;
+
+  justify-items: end;
+}
+
+.opponent.beside.mirror .opponentFace {
+  order: 2;
+}
+
+.opponent.beside.mirror .opponentSide {
+  order: 1;
+}
+
+
+/*
+  Портрет — плитка со скруглением, а не круг: в референсе это
+  квадратный значок в рамке, и в него помещается заметно
+  больше лица.
+*/
+.opponent .opponentFace {
+  border-radius: 22%;
+}
+
+.opponent.is-active .opponentFace[data-art="1"] {
+  border-color: var(--acid);
+}
