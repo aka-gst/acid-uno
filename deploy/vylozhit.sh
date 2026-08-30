@@ -22,6 +22,7 @@ rsync -az \
   --exclude 'test' \
   --exclude 'server' \
   --exclude 'docs' \
+  --exclude 'tools' \
   --exclude '.claude' \
   --exclude 'ФИНИШ.md' \
   --exclude 'CLAUDE.md' \

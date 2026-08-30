@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, viewport-fit=cover"
+>
+
+<title>ACID UNO — старые и новые звуки</title>
+
+<style>
+
+  :root {
+    --acid: #b7ff24;
+    --magenta: #ff2bd6;
+    --cyan: #20eaff;
+  }
+
+  * {
+    box-sizing: border-box;
+
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+
+    padding: 18px 14px 40px;
+
+    background: #07030f;
+
+    color: #f8f7ff;
+
+    font-family:
+      ui-monospace, "SF Mono", Menlo, monospace;
+
+    font-size: 14px;
+  }
+
+  h1 {
+    margin: 0 0 4px;
+
+    font-size: 19px;
+    font-weight: 900;
+
+    letter-spacing: .06em;
+
+    color: var(--acid);
+  }
+
+  .lead {
+    margin: 0 0 18px;
+
+    font-size: 12px;
+    line-height: 1.5;
+
+    color: rgba(248, 247, 255, .5);
+  }
+
+  .row {
+    display: grid;
+
+    grid-template-columns: 1fr auto auto;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 9px 0;
+
+    border-top: 1px solid rgba(183, 255, 36, .16);
+  }
+
+  .name {
+    min-width: 0;
+  }
+
+  .name b {
+    display: block;
+
+    font-size: 13px;
+
+    letter-spacing: .04em;
+  }
+
+  .name em {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 10px;
+    font-style: normal;
+
+    color: rgba(248, 247, 255, .42);
+  }
+
+  button {
+    min-width: 74px;
+
+    padding: 11px 10px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(255, 255, 255, .2);
+
+    background: rgba(255, 255, 255, .05);
+
+    color: #f8f7ff;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: .06em;
+
+    cursor: pointer;
+  }
+
+  button.new {
+    border-color: var(--acid);
+
+    color: var(--acid);
+  }
+
+  button:active {
+    background: rgba(183, 255, 36, .18);
+  }
+
+  button.playing {
+    background: var(--magenta);
+
+    border-color: var(--magenta);
+
+    color: #fff;
+  }
+
+  .both {
+    display: block;
+
+    width: 100%;
+
+    margin: 16px 0 0;
+
+    padding: 14px;
+
+    border-color: var(--cyan);
+
+    color: var(--cyan);
+
+    font-size: 13px;
+  }
+
+  .note {
+    margin-top: 22px;
+
+    font-size: 11px;
+    line-height: 1.6;
+
+    color: rgba(248, 247, 255, .4);
+  }
+
+  .note b {
+    color: rgba(248, 247, 255, .7);
+  }
+
+</style>
+
+</head>
+
+<body>
+
+<h1>СТАРЫЕ И НОВЫЕ ЗВУКИ</h1>
+
+<p class="lead">
+  Слева — что стоит в игре сейчас (заказной набор).
+  Справа — синтезированные по разбору реф-видео.
+  В игре ничего не менял: скажешь какие — поставлю.
+</p>
+
+<div id="list"></div>
+
+<button class="both" id="all">
+  ПРОГНАТЬ ВСЁ ПОДРЯД: СТАРЫЙ → НОВЫЙ
+</button>
+
+<p class="note">
+  <b>Что изменилось.</b> В рефе каждое событие звучит в два
+  хода: сначала шумовой замах, потом тональное тело с
+  гармониками. Наши старые — одиночные короткие эффекты, без
+  замаха, поэтому рядом с рефом они звучат дёшево.<br><br>
+
+  <b>Чего не взял из рефа.</b> Мультяшной яркости и громкости:
+  у нас тёмный неон, а не детский мультфильм. И длину не
+  трогал у карты и добора — они звучат по десять раз за
+  партию, и замах на них через пять минут выест уши.
+</p>
+
+<script>
+
+  const SOUNDS = [
+    ["card", "карта легла", "коротко — звучит каждый ход"],
+    ["draw", "взял из колоды", "коротко — звучит каждый ход"],
+    ["skip", "пропуск хода", "замах + падающая секунда"],
+    ["reverse", "разворот", "вихрь вниз и обратно вверх"],
+    ["wild", "чёрная карта", "четыре тона по числу мастей"],
+    ["strike", "прилетел штраф", "удар, а не взрыв"],
+    ["penalty", "забрал штраф", "россыпь карт в стопку"],
+    ["uno", "объявлено UNO", "две ноты вверх"],
+    ["win", "победа", "восходящее трезвучие"],
+    ["lose", "поражение", "то же, но вниз"]
+  ];
+
+
+  const list = document.getElementById("list");
+
+  let current = null;
+
+
+  function play(url, button) {
+
+    if (current) {
+
+      current.audio.pause();
+
+      current.button.classList.remove("playing");
+    }
+
+    const audio = new Audio(url);
+
+    button.classList.add("playing");
+
+    current = { audio, button };
+
+    audio.onended = () =>
+      button.classList.remove("playing");
+
+    return audio.play().catch(() => {
+
+      button.classList.remove("playing");
+
+      button.textContent = "НЕТ ФАЙЛА";
+    });
+  }
+
+
+  SOUNDS.forEach(([name, title, hint]) => {
+
+    const row = document.createElement("div");
+
+    row.className = "row";
+
+    row.innerHTML =
+      `<div class="name"><b>${title}</b><em>${hint}</em></div>`;
+
+    const old = document.createElement("button");
+
+    old.textContent = "СТАРЫЙ";
+
+    old.onclick = () =>
+      play(`assets/sfx/sfx-${name}.webm`, old);
+
+    const fresh = document.createElement("button");
+
+    fresh.className = "new";
+
+    fresh.textContent = "НОВЫЙ";
+
+    fresh.onclick = () =>
+      play(`assets/sfx-new/sfx-${name}.webm`, fresh);
+
+    row.append(old, fresh);
+
+    list.appendChild(row);
+  });
+
+
+  /*
+    Прогон подряд: пара «старый → новый» с паузой, чтобы ухо
+    успело сравнить. Так слышно разницу, а не громкость.
+  */
+  document.getElementById("all").onclick = async () => {
+
+    const buttons = [...document.querySelectorAll(".row button")];
+
+    for (let i = 0; i < buttons.length; i += 2) {
+
+      buttons[i].click();
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      buttons[i + 1].click();
+
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  };
+
+</script>
+
+</body>
+
+</html>
