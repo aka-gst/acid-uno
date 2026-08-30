@@ -27,16 +27,29 @@
 
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=170" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=170">
-  <link rel="manifest" href="manifest.webmanifest?v=170">
+  <link rel="icon" href="favicon.svg?v=171" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=171">
+  <link rel="manifest" href="manifest.webmanifest?v=171">
 
     
-  <link rel="stylesheet" href="style.css?v=170">
-  <link rel="stylesheet" href="effects.css?v=170">
-  <link rel="stylesheet" href="v9.1.css?v=170">
-  <link rel="stylesheet" href="features.css?v=170">
+  <link rel="stylesheet" href="style.css?v=171">
+  <link rel="stylesheet" href="effects.css?v=171">
+  <link rel="stylesheet" href="v9.1.css?v=171">
+  <link rel="stylesheet" href="features.css?v=171">
   
+
+  <!--
+    Счётчик. Только два вопроса: сколько человек открыли игру
+    и зовут ли они второго. Ходит через /pulse/ на своём
+    домене — stats.aka-gst.ru снаружи намеренно отдаёт 404, и
+    все прошлые вызовы уходили в никуда.
+  -->
+  <script
+    defer
+    src="/pulse/script.js"
+    data-website-id="de024048-c4c3-4639-bbdf-808c558f6d71"
+  ></script>
+
 </head>
 
 
@@ -957,21 +970,21 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=170"></script>
-<script src="src/rules.js?v=170"></script>
-<script src="src/match.js?v=170"></script>
-<script src="src/audio.js?v=170"></script>
-<script src="animations.js?v=170"></script>
-<script src="src/bot.js?v=170"></script>
-<script src="src/transport.js?v=170"></script>
-<script src="src/store.js?v=170"></script>
-<script src="game.js?v=170"></script>
-<script src="v9.1.js?v=170"></script>
-<script src="src/features.js?v=170"></script>
-<script src="src/coach.js?v=170"></script>
-<script src="src/room.js?v=170"></script>
-<script src="src/tutorial.js?v=170"></script>
-<script src="src/artadmin.js?v=170"></script>
+<script src="src/assets.js?v=171"></script>
+<script src="src/rules.js?v=171"></script>
+<script src="src/match.js?v=171"></script>
+<script src="src/audio.js?v=171"></script>
+<script src="animations.js?v=171"></script>
+<script src="src/bot.js?v=171"></script>
+<script src="src/transport.js?v=171"></script>
+<script src="src/store.js?v=171"></script>
+<script src="game.js?v=171"></script>
+<script src="v9.1.js?v=171"></script>
+<script src="src/features.js?v=171"></script>
+<script src="src/coach.js?v=171"></script>
+<script src="src/room.js?v=171"></script>
+<script src="src/tutorial.js?v=171"></script>
+<script src="src/artadmin.js?v=171"></script>
 
 </body>
 </html>

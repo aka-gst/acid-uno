@@ -455,6 +455,28 @@
   }
 
 
+  /*
+    Счётчик. Уно — единственная игра, где приглашение второго
+    человека работает, и до сих пор единственная, где его
+    нельзя было измерить. Считаем ровно два события: позвал и
+    пришёл. Имён, кодов комнат и прочего не отправляем —
+    нужен ответ «зовут ли», а не кто кого.
+
+    Молча падает, если счётчик не загрузился: игра от него не
+    зависит.
+  */
+  function pulse(event) {
+
+    try {
+
+      window.umami?.track?.(event);
+
+    } catch (error) {
+      /* счётчик не повод ронять партию */
+    }
+  }
+
+
   async function createRoom(seats, clockOff) {
 
     const answer =
@@ -471,6 +493,8 @@
     state.room = answer.room;
     state.token = answer.token;
     state.seat = answer.seat;
+
+    pulse("room-created");
 
     remember(
       answer.room,
@@ -494,7 +518,7 @@
   }
 
 
-  async function joinRoom(id) {
+  async function joinRoom(id, byLink) {
 
     /*
       Уже сидели за этим столом — возвращаемся на своё место.
@@ -542,6 +566,15 @@
     state.room = answer.room;
     state.token = answer.token;
     state.seat = answer.seat;
+
+    /*
+      Только свежий вход по чужой ссылке. Возврат на своё
+      место (ветка выше) — это тот же человек, и считать его
+      вторым нельзя.
+    */
+    if (byLink) {
+      pulse("room-joined");
+    }
 
     remember(
       answer.room,
@@ -723,7 +756,7 @@
       ?.classList
       .add("hidden");
 
-    joinRoom(invited);
+    joinRoom(invited, true);
 
   } else {
 
