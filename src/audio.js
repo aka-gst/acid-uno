@@ -89,11 +89,180 @@ const AcidSound = (() => {
   }
 
 
+  /* =======================================================
+     ЗАПИСАННЫЙ ЗВУК
+
+     Синтез остаётся запасным вариантом. Есть файл — играем
+     файл, нет — играем осциллятором, как раньше. Так же
+     устроены картинки, и по той же причине: набор можно
+     класть по частям и слышать разницу сразу.
+
+     Грузим на первом касании, вместе с созданием контекста:
+     раньше декодировать некуда, а без касания браузер всё
+     равно не даст звучать.
+     ======================================================= */
+
+  const SFX = [
+    "card",
+    "draw",
+    "skip",
+    "reverse",
+    "wild",
+    "strike",
+    "penalty",
+    "uno",
+    "win",
+    "lose"
+  ];
+
+
+  const MUSIC = [
+    "music-loop",
+    "music-loop-2",
+    "music-loop-3"
+  ];
+
+
+  const buffers = {};
+
+  let musicBuffer = null;
+
+  let loading = false;
+
+
+  async function decode(url) {
+
+    const audio = ensure();
+
+    if (!audio) {
+      return null;
+    }
+
+    try {
+
+      const answer =
+        await fetch(url);
+
+      if (!answer.ok) {
+        return null;
+      }
+
+      return await audio.decodeAudioData(
+        await answer.arrayBuffer()
+      );
+
+    } catch (error) {
+
+      /* нет файла или не тот формат — останемся на синтезе */
+      return null;
+    }
+  }
+
+
+  async function loadSamples() {
+
+    if (loading) {
+      return;
+    }
+
+    loading = true;
+
+
+    await Promise.all(
+      SFX.map(async name => {
+
+        const buffer =
+          await decode(`assets/sfx/sfx-${name}.webm`);
+
+        if (buffer) {
+          buffers[name] = buffer;
+        }
+      })
+    );
+
+
+    /*
+      Петля выбирается жребием на загрузку — как фон и
+      рубашка. Грузим только одну: три по мегабайту в память
+      незачем.
+    */
+    const pick =
+      MUSIC[
+        Math.floor(Math.random() * MUSIC.length)
+      ];
+
+    musicBuffer =
+      await decode(`assets/music/${pick}.webm`);
+
+
+    /*
+      Пока петля декодировалась, могла уже играть
+      синтезированная — её и заменяем. Без этой замены
+      записанная музыка не включилась бы до конца партии:
+      startMusic видит работающий таймер и выходит.
+    */
+    if (
+      on === "full" &&
+      musicBuffer &&
+      !music.source
+    ) {
+
+      stopMusic();
+
+      startMusic();
+    }
+  }
+
+
+  /*
+    Проиграть записанный звук. Высота слегка гуляет у тех,
+    что звучат каждый ход, — по той же причине, по которой
+    гуляет синтез: одинаковая запись утомляет быстрее самого
+    звука.
+  */
+  function playSample(name, pan) {
+
+    const audio = ensure();
+
+    const buffer = buffers[name];
+
+    if (!audio || !buffer) {
+      return false;
+    }
+
+    const source =
+      audio.createBufferSource();
+
+    source.buffer = buffer;
+
+    source.playbackRate.value =
+      name === "card" || name === "draw"
+        ? vary(1, .09)
+        : 1;
+
+    const gain =
+      audio.createGain();
+
+    gain.gain.value = 1;
+
+    source.connect(gain);
+
+    gain.connect(panned(pan));
+
+    source.start();
+
+    return true;
+  }
+
+
   /* состояние музыкального цикла */
   const music = {
     timer: null,
     step: 0,
-    gain: null
+    gain: null,
+
+    /* источник записанной петли, если она есть */
+    source: null
   };
 
 
@@ -178,9 +347,13 @@ const AcidSound = (() => {
       }
     }
 
+    loadSamples();
+
+
     if (
       on === "full" &&
-      !music.timer
+      !music.timer &&
+      !music.source
     ) {
       startMusic();
     }
@@ -197,7 +370,11 @@ const AcidSound = (() => {
       mode: on,
       unlocked,
       context: ctx ? ctx.state : "нет",
-      music: Boolean(music.timer)
+      music: Boolean(music.timer || music.source),
+
+      /* что играет: запись или синтез */
+      samples: Object.keys(buffers).length,
+      recorded: Boolean(music.source)
     };
   }
 
@@ -776,8 +953,40 @@ const AcidSound = (() => {
     if (
       !audio ||
       on !== "full" ||
-      music.timer
+      music.timer ||
+      music.source
     ) {
+      return;
+    }
+
+
+    /*
+      Записанная петля вместо синтезированной, если она
+      загрузилась. Зацикливаем средствами самого источника:
+      он склеивает конец с началом сэмплово, без щелчка,
+      которого не избежать при перезапуске по таймеру.
+    */
+    if (musicBuffer) {
+
+      if (!music.gain) {
+        music.gain = audio.createGain();
+        music.gain.gain.value = 1;
+        music.gain.connect(master);
+      }
+
+      const source =
+        audio.createBufferSource();
+
+      source.buffer = musicBuffer;
+
+      source.loop = true;
+
+      source.connect(music.gain);
+
+      source.start();
+
+      music.source = source;
+
       return;
     }
 
@@ -799,6 +1008,17 @@ const AcidSound = (() => {
     clearInterval(music.timer);
 
     music.timer = null;
+
+    try {
+
+      music.source?.stop();
+
+    } catch (error) {
+
+      /* уже остановлен — не беда */
+    }
+
+    music.source = null;
   }
 
 
@@ -828,7 +1048,13 @@ const AcidSound = (() => {
       currentPan =
         Number(options?.pan) || 0;
 
-      BANK[name](options || {});
+      /*
+        Файл главнее синтеза. Нет файла — играем как раньше.
+      */
+      if (!playSample(name, currentPan)) {
+
+        BANK[name](options || {});
+      }
 
       currentPan = 0;
 
