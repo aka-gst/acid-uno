@@ -2088,11 +2088,38 @@
 
     if (
       gameOver ||
-      actionBusy ||
-      V91.drag
+      actionBusy
     ) {
       return;
     }
+
+
+    /*
+      Новый палец лёг на карту, а прошлое перетаскивание
+      молчит уже пару секунд — значит, его pointerup не
+      придёт никогда. Разбираем и работаем дальше: иначе
+      после одного неудачного жеста рука перестаёт слушаться
+      целиком.
+    */
+    if (V91.drag) {
+
+      if (
+        V91.drag.pointerId === event.pointerId ||
+        performance.now() - (V91.drag.at || 0) < 2500
+      ) {
+        return;
+      }
+
+      forceEndDrag91();
+    }
+
+
+    /*
+      Взялся за карту — значит, передумал брать из колоды.
+      Отложенный добор здесь и отменяется: иначе карта
+      прилетела бы поверх задуманного хода.
+    */
+    cancelDrawWish91();
 
 
     const index =
@@ -2142,6 +2169,17 @@
 
       pointerId:
         event.pointerId,
+
+      /*
+        Отметка времени последнего события этого пальца.
+        По ней видно зависшее перетаскивание: на телефоне
+        pointerup иногда не доходит вовсе — палец ушёл за
+        край экрана, или жест забрала система, — и тогда
+        карта остаётся «в руке» навсегда, а вместе с ней
+        блокируется всё остальное, включая колоду.
+      */
+      at:
+        performance.now(),
 
       cardId,
 
@@ -2570,6 +2608,9 @@
     ) {
       return;
     }
+
+
+    d.at = performance.now();
 
 
     event.preventDefault();
@@ -3515,6 +3556,63 @@
      END DRAG
      ======================================================= */
 
+  /*
+     Зависшее перетаскивание.
+
+     endDrag91 отвечает только своему пальцу — по pointerId.
+     Если его pointerup не пришёл (палец ушёл за край, жест
+     забрала система, вкладка ушла в фон), карта остаётся
+     висеть, а с ней остаётся V91.drag — и после этого игра
+     молча отклоняет всё, включая нажатие на колоду. Именно
+     так выглядело «я тапнул по колоде, а карта не прилетела».
+
+     Пять секунд без единого события от этого пальца — это
+     уже не перетаскивание.
+  */
+  const DRAG_STALE_MS = 5000;
+
+
+  function dragStale91() {
+
+    const d = V91.drag;
+
+    return (
+      !!d &&
+      performance.now() - (d.at || 0) > DRAG_STALE_MS
+    );
+  }
+
+
+  function forceEndDrag91() {
+
+    const d = V91.drag;
+
+    if (!d) {
+      return;
+    }
+
+
+    removeDragListeners91();
+
+
+    V91.drag = null;
+
+
+    AcidFX?.dragZone?.(false);
+
+
+    d.source?.remove();
+
+    d.placeholder?.remove();
+
+
+    render();
+
+
+    endAction91();
+  }
+
+
   async function endDrag91(event) {
 
     const d =
@@ -3526,8 +3624,20 @@
       event.pointerId !==
         d.pointerId
     ) {
+
+      /*
+        Чужой палец отпустили, а свой молчит слишком долго —
+        значит, своего pointerup уже не будет.
+      */
+      if (dragStale91()) {
+        forceEndDrag91();
+      }
+
       return;
     }
+
+
+    d.at = performance.now();
 
 
     event.preventDefault();
@@ -3737,6 +3847,96 @@
      Penalty draw is the only multi-card operation.
      ======================================================= */
 
+  /*
+     Отложенное намерение взять карту.
+
+     Отказ в доборе бывает временным: идёт раздача, летит
+     чужая карта, ход ещё не вернулся. Раньше такой тап
+     просто пропадал — «я тапнул по колоде, а мне карта не
+     прилетела». Молчание тут хуже отказа: человек решает,
+     что сломалась игра или он сам.
+
+     Поэтому намерение запоминается и срабатывает, как
+     только станет можно. Живёт оно секунды — чтобы карта не
+     прилетела «сама» через полпартии.
+  */
+  let drawWish = null;
+
+  const DRAW_WISH_MS = 3000;
+
+
+  function cancelDrawWish91() {
+
+    if (V91.drawWishTimer) {
+
+      clearInterval(V91.drawWishTimer);
+
+      V91.drawWishTimer = null;
+    }
+
+    drawWish = null;
+  }
+
+
+  function armDrawWish91(why) {
+
+    drawWish = performance.now();
+
+
+    if (why) {
+      AcidFX?.status?.(why);
+    }
+
+
+    if (V91.drawWishTimer) {
+      return;
+    }
+
+
+    V91.drawWishTimer =
+      setInterval(
+        () => {
+
+          const alive =
+            drawWish &&
+            performance.now() - drawWish < DRAW_WISH_MS;
+
+
+          if (!alive) {
+
+            clearInterval(V91.drawWishTimer);
+
+            V91.drawWishTimer = null;
+
+            drawWish = null;
+
+            return;
+          }
+
+
+          if (
+            gameOver ||
+            turn !== "player" ||
+            V91.drag ||
+            actionBusy
+          ) {
+            return;
+          }
+
+
+          clearInterval(V91.drawWishTimer);
+
+          V91.drawWishTimer = null;
+
+          drawWish = null;
+
+          playerDraw();
+        },
+        140
+      );
+  }
+
+
   playerDraw =
     async function () {
 
@@ -3744,15 +3944,49 @@
         performance.now();
 
 
+      if (gameOver) {
+        return;
+      }
+
+
+      /*
+        Не свой ход — не отказ навсегда. Говорим об этом
+        вслух и берём карту сами, когда ход вернётся.
+      */
+      if (turn !== "player") {
+
+        armDrawWish91("СЕЙЧАС ХОДИТ СОПЕРНИК — ВОЗЬМУ, КАК ВЕРНЁТСЯ ХОД");
+
+        return;
+      }
+
+
+      /*
+        Перетаскивание в ходу — добор подождёт. Но если оно
+        зависло, разбираем его и берём карту: иначе колода
+        мертва до конца партии.
+      */
+      if (V91.drag) {
+
+        if (!dragStale91()) {
+          return;
+        }
+
+        forceEndDrag91();
+      }
+
+
+      /*
+        Два тапа подряд — это один палец, а не два добора.
+        Но и терять второй нельзя: если первый ушёл в
+        ожидание, второй должен его подтвердить, а не
+        отменить.
+      */
       if (
-        gameOver ||
-        turn !== "player" ||
-        V91.drag ||
         now -
           V91.lastDrawAt <
           210
       ) {
-
         return;
       }
 
@@ -3781,7 +4015,15 @@
       }
 
 
+      /*
+        Ход ушёл на сервер и ещё не вернулся: карта придёт
+        ответом. Молчать нельзя — иначе тап снова выглядит
+        пропавшим.
+      */
       if (result.pending) {
+
+        AcidFX?.status?.("БЕРУ КАРТУ…");
+
         return;
       }
 
