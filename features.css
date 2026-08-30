@@ -8161,3 +8161,169 @@ html[data-deck="acid"] .flyingCard .value {
 .opponent.is-active .opponentFace[data-art="1"] {
   border-color: var(--acid);
 }
+
+
+/* =========================================================
+   ЗНАЧОК СОПЕРНИКА НЕ ПРОВИСАЕТ В СТОЛ
+
+   Портрет над картами делал значок вдвое выше, и верхний
+   соперник уходил внутрь стола. Сбоку значок низкий и
+   целиком помещается над кромкой.
+
+   Правило .beside объявлено выше только для тесных столов —
+   здесь оно распространяется на все.
+   ========================================================= */
+
+.opponent.beside {
+  grid-template-columns: auto 1fr;
+
+  justify-items: start;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.opponent.beside.mirror {
+  grid-template-columns: 1fr auto;
+
+  justify-items: end;
+}
+
+
+/* =========================================================
+   КНОПКИ ШАПКИ — ОДНОЙ ГРУППОЙ
+
+   Четыре кнопки стояли поодиночке и расползались по всей
+   правой половине. Собираем их в один блок: общая подложка,
+   узкие промежутки, скругление только по краям группы.
+   ========================================================= */
+
+.topbarActions {
+  gap: 4px;
+
+  padding: 4px;
+
+  border-radius: 18px;
+
+  background: rgba(10, 5, 22, .5);
+
+  border:
+    1px solid rgba(255, 255, 255, .1);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.topbarActions .iconButton {
+  border-radius: 12px;
+
+  border-color: transparent;
+
+  background: rgba(255, 255, 255, .05);
+
+  box-shadow: none;
+}
+
+.topbarActions .iconButton:hover {
+  border-color: rgba(183, 255, 36, .5);
+
+  background: rgba(183, 255, 36, .1);
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   НОМИНАЛ: КРУПНО, БЕЛЫМ, С ЧЁТКИМ КОНТУРОМ
+
+   Прошлая попытка сделала хуже: -webkit-text-stroke
+   рисуется поверх заливки, а не под ней, и двухпиксельная
+   обводка на тонкой неоновой цифре съедала саму цифру —
+   получалась тёмная на тёмном.
+
+   Контур теперь набран тенями: они ложатся ПОД текст, и
+   белая цифра остаётся белой. Размер поднят почти в
+   полтора раза — на карте есть место, и номинал имеет право
+   быть главным, что на ней видно.
+   ========================================================= */
+
+html[data-deck="acid"] .card .value,
+html[data-deck="acid"] .handCard .value,
+html[data-deck="acid"] .flyingCard .value {
+  -webkit-text-stroke: 0;
+
+  font-size: 50px;
+
+  font-weight: 1000;
+
+  letter-spacing: -.06em;
+
+  color: #fff;
+
+  /*
+    Восемь смещений — контур, дальше мягкая тень под ним и
+    цветное свечение мастью наружу. Порядок важен: чем
+    раньше в списке, тем выше слой.
+  */
+  text-shadow:
+    2px 0 0 rgba(3, 1, 8, .92),
+    -2px 0 0 rgba(3, 1, 8, .92),
+    0 2px 0 rgba(3, 1, 8, .92),
+    0 -2px 0 rgba(3, 1, 8, .92),
+    2px 2px 0 rgba(3, 1, 8, .92),
+    -2px 2px 0 rgba(3, 1, 8, .92),
+    2px -2px 0 rgba(3, 1, 8, .92),
+    -2px -2px 0 rgba(3, 1, 8, .92),
+    0 5px 10px rgba(0, 0, 0, .55),
+    0 0 22px color-mix(in srgb, var(--suit) 65%, transparent);
+}
+
+/* в тесной руке карта уже — цифра ужимается вместе с ней */
+.hand.is-crowded .handCard .value {
+  font-size: 40px;
+}
+
+@media (min-width: 900px) and (min-height: 620px) {
+
+  html[data-deck="acid"] .card .value,
+  html[data-deck="acid"] .handCard .value,
+  html[data-deck="acid"] .flyingCard .value {
+    font-size: 66px;
+  }
+
+  .hand.is-crowded .handCard .value {
+    font-size: 54px;
+  }
+}
+
+/*
+  У спецкарт в середине знак, а не цифра, и он нарисован
+  маской по фону — размер шрифта ему не нужен, а тени
+  сломали бы маску.
+*/
+html[data-deck="acid"] .value[data-v="skip"],
+html[data-deck="acid"] .value[data-v="reverse"],
+html[data-deck="acid"] .value[data-v="+2"],
+html[data-deck="acid"] .value[data-v="+4"],
+html[data-deck="acid"] .value[data-v="wild"] {
+  text-shadow: none;
+}
+
+
+/* верхний соперник целиком над столом, а не в нём */
+@media (min-width: 900px) and (min-height: 620px) {
+
+  .opponents[data-count="3"],
+  .opponents[data-count="4"] {
+    --arc-ry: 33%;
+  }
+}
+
+@media (max-width: 620px) {
+
+  .opponents[data-count="3"],
+  .opponents[data-count="4"] {
+    --arc-ry: 30%;
+  }
+}
