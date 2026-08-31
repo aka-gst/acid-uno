@@ -3778,8 +3778,8 @@ html[data-deck="acid"] .value[data-v="reverse"],
 
 html[data-deck="acid"] .value[data-v="+2"],
 .cardFlash[data-v="+2"] {
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='13.6' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='13.6' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
 }
 
 html[data-deck="acid"] .value[data-v="+4"],
@@ -9730,3 +9730,24 @@ html[data-level="calm"] .coachAgain {
   text-shadow:
     0 1px 2px rgba(0, 0, 0, .9);
 }
+
+
+/*
+  БЕЛЫЙ УГОЛОК НА ЗНАКЕ «+2».
+
+  «Вот эта часть на +2 в центре смотрится плохо, будто баг» —
+  и это правда был баг, в геометрии маски.
+
+  Знак нарисован тремя прямоугольниками: задняя карта белым,
+  вырезка чёрным (она делает зазор между картами), передняя
+  карта белым. Чёрное в маске значит «не рисовать».
+
+  Задняя карта кончалась на 20.4, а вырезка — на 19.6. То
+  есть на 0.8 единицы ниже вырезки задняя карта снова
+  становилась видимой — там, где её уже не должно быть.
+  Получался белый язычок справа снизу, из-за которого знак
+  читался как незакрывшаяся выноска.
+
+  Задняя карта укорочена до 19.0 — теперь она кончается выше
+  вырезки, и язычку взяться неоткуда.
+*/
