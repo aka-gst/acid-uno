@@ -27,15 +27,15 @@
 
   <title>ACID UNO</title>
 
-  <link rel="icon" href="favicon.svg?v=189" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=189">
-  <link rel="manifest" href="manifest.webmanifest?v=189">
+  <link rel="icon" href="favicon.svg?v=190" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=190">
+  <link rel="manifest" href="manifest.webmanifest?v=190">
 
     
-  <link rel="stylesheet" href="style.css?v=189">
-  <link rel="stylesheet" href="effects.css?v=189">
-  <link rel="stylesheet" href="v9.1.css?v=189">
-  <link rel="stylesheet" href="features.css?v=189">
+  <link rel="stylesheet" href="style.css?v=190">
+  <link rel="stylesheet" href="effects.css?v=190">
+  <link rel="stylesheet" href="v9.1.css?v=190">
+  <link rel="stylesheet" href="features.css?v=190">
   
 
   <!--
@@ -697,8 +697,8 @@
                 type="button"
                 data-level="calm"
               >
-                <b>ПРОСТОЙ</b>
-                <em>соперник не бьёт, игра подсказывает</em>
+                <b>ОБУЧЕНИЕ</b>
+                <em>игра ведёт за руку, соперник не бьёт</em>
               </button>
 
               <button
@@ -706,7 +706,7 @@
                 type="button"
                 data-level="normal"
               >
-                <b>ОБЫЧНЫЙ</b>
+                <b>ИГРА</b>
                 <em>всё по правилам</em>
               </button>
 
@@ -824,13 +824,29 @@
     </button>
 
 
-    <button
-      id="rulesOpen"
-      class="rulesOpen"
-      type="button"
-    >
-      как играть
-    </button>
+    <div class="lobbyFoot">
+
+      <button
+        id="rulesOpen"
+        class="rulesOpen"
+        type="button"
+      >
+        как играть
+      </button>
+
+      <!--
+        Выход с первого экрана. В партии кнопка «домой» есть, а
+        в лобби её не было: человек, зашедший посмотреть,
+        оказывался в игре без выхода — только кнопкой «назад»
+        браузера, которую на телефоне ещё поискать.
+      -->
+      <a
+        id="lobbyHome"
+        class="lobbyHome"
+        href="../"
+      >← на главную</a>
+
+    </div>
 
     </div>
 
@@ -991,28 +1007,28 @@
      animations.js обязательно идёт первым.
 ========================================= -->
 
-<script src="src/assets.js?v=189"></script>
+<script src="src/assets.js?v=190"></script>
 <!--
   Своё хранилище рубашек — сразу за набором картинок и
   до features.js: тот зовёт boot(), а boot() забирает
   свои картинки из памяти браузера. Загрузись этот файл
   позже — свои рубашки просто не находились бы.
 -->
-<script src="src/mybacks.js?v=189"></script>
-<script src="src/rules.js?v=189"></script>
-<script src="src/match.js?v=189"></script>
-<script src="src/audio.js?v=189"></script>
-<script src="animations.js?v=189"></script>
-<script src="src/bot.js?v=189"></script>
-<script src="src/transport.js?v=189"></script>
-<script src="src/store.js?v=189"></script>
-<script src="game.js?v=189"></script>
-<script src="v9.1.js?v=189"></script>
-<script src="src/features.js?v=189"></script>
-<script src="src/coach.js?v=189"></script>
-<script src="src/room.js?v=189"></script>
-<script src="src/tutorial.js?v=189"></script>
-<script src="src/artadmin.js?v=189"></script>
+<script src="src/mybacks.js?v=190"></script>
+<script src="src/rules.js?v=190"></script>
+<script src="src/match.js?v=190"></script>
+<script src="src/audio.js?v=190"></script>
+<script src="animations.js?v=190"></script>
+<script src="src/bot.js?v=190"></script>
+<script src="src/transport.js?v=190"></script>
+<script src="src/store.js?v=190"></script>
+<script src="game.js?v=190"></script>
+<script src="v9.1.js?v=190"></script>
+<script src="src/features.js?v=190"></script>
+<script src="src/coach.js?v=190"></script>
+<script src="src/room.js?v=190"></script>
+<script src="src/tutorial.js?v=190"></script>
+<script src="src/artadmin.js?v=190"></script>
 
 </body>
 </html>
