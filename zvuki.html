@@ -187,6 +187,35 @@
   ПРОГНАТЬ ВСЁ ПОДРЯД: СТАРЫЙ → НОВЫЙ
 </button>
 
+
+<h1 style="margin-top:30px">МУЗЫКА</h1>
+
+<p class="lead">
+  Спокойная — та, что сейчас в игре: она для меню и сюжета.
+  Боевая — новая, синтезирована кодом. Нейросетевой вариант
+  делает ПК на ACE-Step, положу сюда же третьей кнопкой.
+</p>
+
+<div class="row">
+  <div class="name">
+    <b>спокойная</b>
+    <em>что играет сейчас · 80 с</em>
+  </div>
+  <button onclick="play('assets/music/music-loop.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+<div class="row">
+  <div class="name">
+    <b>боевая, синтез</b>
+    <em>112 уд/мин · 16 тактов · 34 с · петля без шва</em>
+  </div>
+  <button class="new" onclick="play('assets/music/music-battle.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
 <p class="note">
   <b>Что изменилось.</b> В рефе каждое событие звучит в два
   хода: сначала шумовой замах, потом тональное тело с
