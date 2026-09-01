@@ -134,7 +134,12 @@ const AcidSound = (() => {
     трек куда — решает он, а разводка живёт здесь, чтобы
     новый файл можно было положить, а не переделывать слой.
   */
-  const BATTLE = "music-battle";
+  /*
+    Выбор владельца от 1 сентября: боевая — вариант «В» от
+    ACE-Step. Остальные четыре остались на странице сравнения
+    и в игру не грузятся.
+  */
+  const BATTLE = "music-battle-c";
 
 
   const MUSIC = [
@@ -149,6 +154,8 @@ const AcidSound = (() => {
   let musicBuffer = null;
 
   let battleBuffer = null;
+
+  let calmName = null;
 
 
   /*
@@ -197,6 +204,71 @@ const AcidSound = (() => {
   }
 
 
+  /*
+    Музыка качается отдельно от эффектов и только тем, у кого
+    она включена.
+
+    Заводское значение — «звуки без музыки», то есть
+    большинству эти полтора мегабайта не нужны вовсе, а
+    грузились они всем подряд: с телефона это чужой трафик за
+    то, чего человек не услышит.
+
+    Отдельной функцией, а не выходом из общей загрузки:
+    сначала я поставил ранний выход и получил поломку — тот,
+    кто включал музыку ПОТОМ, не получал её никогда, потому
+    что общая загрузка уже отработала и второй раз не
+    звалась. Поймал это замером: mode full, а track пустой.
+  */
+  let musicLoading = null;
+
+  function loadMusic() {
+
+    /*
+      Условие стоит внутри, а не снаружи: снаружи его легко
+      обойти или забыть, а сюда приходят оба пути — и общая
+      загрузка при первом касании, и включение музыки
+      кнопкой. Один замок на одной двери.
+    */
+    if (on !== "full") {
+      return Promise.resolve();
+    }
+
+    if (musicBuffer || musicLoading) {
+      return musicLoading || Promise.resolve();
+    }
+
+    musicLoading = (async () => {
+
+      /*
+        Спокойная выбирается жребием на загрузку — как фон и
+        рубашка. Грузим одну: три по мегабайту незачем.
+      */
+      const pick =
+        MUSIC[
+          Math.floor(Math.random() * MUSIC.length)
+        ];
+
+      calmName = pick;
+
+      musicBuffer =
+        await decode(`assets/music/${pick}.webm`);
+
+      /* боевая легче спокойной втрое */
+      battleBuffer =
+        await decode(`assets/music/${BATTLE}.webm`);
+
+      if (on === "full" && unlocked) {
+
+        stopMusic();
+
+        startMusic();
+      }
+    })();
+
+    return musicLoading;
+  }
+
+
   async function loadSamples() {
 
     if (loading) {
@@ -219,27 +291,7 @@ const AcidSound = (() => {
     );
 
 
-    /*
-      Петля выбирается жребием на загрузку — как фон и
-      рубашка. Грузим только одну: три по мегабайту в память
-      незачем.
-    */
-    const pick =
-      MUSIC[
-        Math.floor(Math.random() * MUSIC.length)
-      ];
-
-    musicBuffer =
-      await decode(`assets/music/${pick}.webm`);
-
-
-    /*
-      Боевая грузится тоже: она втрое легче спокойной (440 КБ
-      против полутора мегабайт), и ждать её в начале партии
-      было бы обиднее, чем занять эту память.
-    */
-    battleBuffer =
-      await decode(`assets/music/${BATTLE}.webm`);
+    await loadMusic();
 
 
     /*
@@ -422,7 +474,13 @@ const AcidSound = (() => {
       /* что играет: запись или синтез */
       samples: Object.keys(buffers).length,
       recorded: Boolean(music.source),
-      place
+      place,
+
+      /* какая петля сейчас на месте — чтобы проверять, а не верить */
+      track:
+        place === "match"
+          ? (battleBuffer ? BATTLE : null)
+          : calmName
     };
   }
 
@@ -1158,6 +1216,7 @@ const AcidSound = (() => {
 
     if (on === "full") {
       unlock();
+      loadMusic();
       startMusic();
 
     } else {
