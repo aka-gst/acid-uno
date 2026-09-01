@@ -2672,7 +2672,7 @@
 
     if (
       !d.started &&
-      distance >= 7
+      distance >= 12
     ) {
 
       activateDrag91();
@@ -3657,6 +3657,66 @@
   }
 
 
+  /*
+    Положить карту тапом: заводим то же перетаскивание, что
+    и пальцем, и сразу сажаем его в сброс. Ни одного своего
+    пути — значит и вести себя будет ровно как бросок.
+  */
+  function tapPlay91(card) {
+
+    const el =
+      playerCardElement(card.id);
+
+    /*
+      discardTarget91 отдаёт уже прямоугольник, а не элемент.
+      Я вызвал у него getBoundingClientRect и получил
+      TypeError — тап падал в запасной путь и говорил «тяни
+      карту в центр» вместо того, чтобы её положить.
+      Нашлось за один заход, потому что причина выкладывалась
+      наружу, а не глоталась молча.
+    */
+    const to =
+      discardTarget91();
+
+    if (!el || !to) {
+      return;
+    }
+
+    const from =
+      el.getBoundingClientRect();
+
+    const id = 990001;
+
+    beginDrag91(
+      new PointerEvent("pointerdown", {
+        clientX: from.left + from.width / 2,
+        clientY: from.top + from.height / 2,
+        pointerId: id
+      }),
+      card.id
+    );
+
+    if (!V91.drag) {
+      return;
+    }
+
+    activateDrag91();
+
+    const x = to.left + to.width / 2;
+
+    const y = to.top + to.height / 2;
+
+    positionDrag91(x, y, true);
+
+    endDrag91({
+      pointerId: id,
+      clientX: x,
+      clientY: y,
+      preventDefault() {}
+    });
+  }
+
+
   async function endDrag91(event) {
 
     const d =
@@ -3692,13 +3752,69 @@
 
     if (!d.started) {
 
-      V91.drag =
-        null;
+      /*
+        ТАП КЛАДЁТ КАРТУ.
+
+        Раньше здесь было только «забыли и вышли»: палец,
+        коснувшийся карты без движения, не делал ничего, и
+        игра молчала. А человек, игравший в УНО на телефоне,
+        первым делом именно тапает.
+
+        Хуже того: перетаскивание включалось после семи точек
+        движения, а палец при обычном тапе гуляет на пять с
+        лишним. То есть «тап» часто становился крошечным
+        перетаскиванием и отменялся — тоже молча. Порог
+        поднят до двенадцати, чтобы тап оставался тапом.
+
+        Кладём тем же путём, что и бросок: заводим
+        перетаскивание программно и сажаем карту в сброс,
+        поэтому карта летит, а не подменяется на месте.
+
+        Падать этому нельзя: если что-то пойдёт не так, тап
+        обязан остаться безобидным, как раньше, — поэтому всё
+        в try, а в catch человек хотя бы слышит подсказку.
+      */
+      const card = d.card;
+
+      V91.drag = null;
+
+      AcidFX.dragZone(false);
 
 
-      AcidFX.dragZone(
-        false
-      );
+      const можно =
+        !gameOver &&
+        !actionBusy &&
+        card &&
+        (
+          turn === "player"
+            ? canPlay(card)
+            : canIntercept(card)
+        );
+
+
+      if (можно) {
+
+        try {
+
+          tapPlay91(card);
+
+        } catch (error) {
+
+          /*
+            Причина кладётся наружу: без неё «тап не сработал»
+            неотличимо от «тап сработал и ничего не сделал», и
+            искать пришлось бы вслепую.
+          */
+          window.__tapErr =
+            String(error && error.stack || error).slice(0, 300);
+
+          AcidFX.status("ТЯНИ КАРТУ В ЦЕНТР");
+        }
+
+      } else if (card && turn === "player") {
+
+        AcidFX.status("ЭТА НЕ ПОДХОДИТ — ГОРЯЩИЕ ПОДСВЕЧЕНЫ");
+      }
 
 
       return;

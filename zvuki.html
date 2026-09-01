@@ -173,7 +173,71 @@
 
 <body>
 
-<h1>СТАРЫЕ И НОВЫЕ ЗВУКИ</h1>
+<h1>МУЗЫКА ДЛЯ БОЯ — ВЫБЕРИ ОДНУ</h1>
+
+<p class="lead">
+  Спокойная — та, что сейчас в игре: она для меню и сюжета.
+  Четыре боевых петли: одна синтезирована кодом, три сделаны
+  нейросетью на ПК. Громкость у всех одинаковая, сравнивать
+  можно честно. Послушай и скажи букву — поставлю её в партию,
+  остальные уберу. Спокойная внизу для сравнения: она остаётся
+  в меню в любом случае.
+</p>
+
+<div class="row">
+  <div class="name">
+    <b>СИНТЕЗ — свой код</b>
+    <em>112 уд/мин · 34 с · стык ровный, отношение 1.00</em>
+  </div>
+  <button class="new" onclick="play('assets/music/music-battle.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+<div class="row">
+  <div class="name">
+    <b>А — нейросеть</b>
+    <em>ACE-Step · 55 с · длиннее всех</em>
+  </div>
+  <button class="new" onclick="play('assets/music/music-battle-a.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+<div class="row">
+  <div class="name">
+    <b>Б — нейросеть</b>
+    <em>ACE-Step · 37 с · самый ровный стык из трёх</em>
+  </div>
+  <button class="new" onclick="play('assets/music/music-battle-b.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+<div class="row">
+  <div class="name">
+    <b>В — нейросеть</b>
+    <em>ACE-Step · 37 с</em>
+  </div>
+  <button class="new" onclick="play('assets/music/music-battle-c.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+<div class="row">
+  <div class="name">
+    <b>спокойная</b>
+    <em>остаётся в меню · для сравнения</em>
+  </div>
+  <button onclick="play('assets/music/music-loop.webm', this)">
+    СЛУШАТЬ
+  </button>
+</div>
+
+
+<h1 style="margin-top:34px">ЗВУКИ СОБЫТИЙ</h1>
+
+<p class="lead">Ниже — эффекты: слева то, что в игре сейчас, справа синтезированные. Это отдельный вопрос, музыку он не трогает.</p>
 
 <p class="lead">
   Слева — что стоит в игре сейчас (заказной набор).
@@ -187,66 +251,6 @@
   ПРОГНАТЬ ВСЁ ПОДРЯД: СТАРЫЙ → НОВЫЙ
 </button>
 
-
-<h1 style="margin-top:30px">МУЗЫКА</h1>
-
-<p class="lead">
-  Спокойная — та, что сейчас в игре: она для меню и сюжета.
-  Боевых пять: одна синтезирована кодом, три сделаны
-  нейросетью ACE-Step на ПК. Громкость у всех одинаковая
-  (−22 дБ), так что сравнивать можно честно — выбирать ухом,
-  а не по описанию.
-</p>
-
-<div class="row">
-  <div class="name">
-    <b>спокойная</b>
-    <em>что играет сейчас · 80 с</em>
-  </div>
-  <button onclick="play('assets/music/music-loop.webm', this)">
-    СЛУШАТЬ
-  </button>
-</div>
-
-<div class="row">
-  <div class="name">
-    <b>боевая · синтез кодом</b>
-    <em>112 уд/мин · 34 с · стык ровный, отношение 1.00</em>
-  </div>
-  <button class="new" onclick="play('assets/music/music-battle.webm', this)">
-    СЛУШАТЬ
-  </button>
-</div>
-
-<div class="row">
-  <div class="name">
-    <b>боевая · нейросеть, вариант А</b>
-    <em>ACE-Step · 55 с · длиннее всех</em>
-  </div>
-  <button class="new" onclick="play('assets/music/music-battle-a.webm', this)">
-    СЛУШАТЬ
-  </button>
-</div>
-
-<div class="row">
-  <div class="name">
-    <b>боевая · нейросеть, вариант Б</b>
-    <em>ACE-Step · 37 с · самый ровный стык из трёх</em>
-  </div>
-  <button class="new" onclick="play('assets/music/music-battle-b.webm', this)">
-    СЛУШАТЬ
-  </button>
-</div>
-
-<div class="row">
-  <div class="name">
-    <b>боевая · нейросеть, вариант В</b>
-    <em>ACE-Step · 37 с</em>
-  </div>
-  <button class="new" onclick="play('assets/music/music-battle-c.webm', this)">
-    СЛУШАТЬ
-  </button>
-</div>
 
 <p class="note">
   <b>Что изменилось.</b> В рефе каждое событие звучит в два
