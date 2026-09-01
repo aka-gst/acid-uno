@@ -125,6 +125,18 @@ const AcidSound = (() => {
   ];
 
 
+  /*
+    Боевая петля стоит отдельно от спокойных.
+
+    Слова владельца: «эта хорошо ток в фоне для сюжета и
+    меню» — то есть спокойная не плоха, она не на своём
+    месте. Поэтому мест теперь два: меню и партия. Который
+    трек куда — решает он, а разводка живёт здесь, чтобы
+    новый файл можно было положить, а не переделывать слой.
+  */
+  const BATTLE = "music-battle";
+
+
   const MUSIC = [
     "music-loop",
     "music-loop-2",
@@ -135,6 +147,23 @@ const AcidSound = (() => {
   const buffers = {};
 
   let musicBuffer = null;
+
+  let battleBuffer = null;
+
+
+  /*
+    Где мы сейчас: «menu» или «match». Меняется из игры одной
+    строкой, музыка подхватывает.
+  */
+  let place = "menu";
+
+
+  function sceneBuffer() {
+
+    return place === "match" && battleBuffer
+      ? battleBuffer
+      : musicBuffer;
+  }
 
   let loading = false;
 
@@ -202,6 +231,15 @@ const AcidSound = (() => {
 
     musicBuffer =
       await decode(`assets/music/${pick}.webm`);
+
+
+    /*
+      Боевая грузится тоже: она втрое легче спокойной (440 КБ
+      против полутора мегабайт), и ждать её в начале партии
+      было бы обиднее, чем занять эту память.
+    */
+    battleBuffer =
+      await decode(`assets/music/${BATTLE}.webm`);
 
 
     /*
@@ -383,7 +421,8 @@ const AcidSound = (() => {
 
       /* что играет: запись или синтез */
       samples: Object.keys(buffers).length,
-      recorded: Boolean(music.source)
+      recorded: Boolean(music.source),
+      place
     };
   }
 
@@ -975,7 +1014,7 @@ const AcidSound = (() => {
       он склеивает конец с началом сэмплово, без щелчка,
       которого не избежать при перезапуске по таймеру.
     */
-    if (musicBuffer) {
+    if (sceneBuffer()) {
 
       if (!music.gain) {
         music.gain = audio.createGain();
@@ -986,7 +1025,7 @@ const AcidSound = (() => {
       const source =
         audio.createBufferSource();
 
-      source.buffer = musicBuffer;
+      source.buffer = sceneBuffer();
 
       source.loop = true;
 
@@ -1148,6 +1187,85 @@ const AcidSound = (() => {
 
 
   /*
+    Сменить место: "menu" или "match".
+
+    Если музыка играет — перезапускаем её с нужной петлёй.
+    Если молчит, просто запоминаем: включат — заиграет та,
+    что положена этому месту.
+  */
+  /*
+    ЗА МЕСТОМ СЛЕДИМ САМИ.
+
+    Крючки в чужих файлах я ставил трижды — в game.js, в его
+    подмену в v9.1.js и в закрытие лобби в features.js — и все
+    три раза ловушка на самой функции показала ноль вызовов.
+    startGame подменяется по цепочке, и какая версия победит,
+    из файла не видно.
+
+    Поэтому звук не ждёт, пока его позовут, а смотрит сам:
+    открыто лобби — меню, закрыто — стол. Наблюдатель за
+    классом стоит на одном узле и не зависит ни от одной
+    подмены.
+  */
+  function watchPlace() {
+
+    const lobby =
+      document.getElementById("lobby");
+
+    if (!lobby) {
+      return;
+    }
+
+    const look = () =>
+      scene(
+        lobby.classList.contains("hidden")
+          ? "match"
+          : "menu"
+      );
+
+    new MutationObserver(look)
+      .observe(lobby, {
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+
+    look();
+  }
+
+
+  if (document.readyState === "loading") {
+
+    document.addEventListener("DOMContentLoaded", watchPlace);
+
+  } else {
+
+    watchPlace();
+  }
+
+
+  function scene(name) {
+
+    const next =
+      name === "match" ? "match" : "menu";
+
+    if (next === place) {
+      return place;
+    }
+
+    place = next;
+
+    if (on === "full" && unlocked) {
+
+      stopMusic();
+
+      startMusic();
+    }
+
+    return place;
+  }
+
+
+  /*
     Вкладка ушла из виду — музыка замолкает.
 
     Без этого она играет из невидимой вкладки, а система на
@@ -1209,6 +1327,7 @@ const AcidSound = (() => {
     panFromScreen,
     toggle,
     cycle,
+    scene,
     set,
     mode,
     enabled,

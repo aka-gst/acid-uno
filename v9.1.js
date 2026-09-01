@@ -1493,6 +1493,7 @@
       side === "player" ? "player" : "bot";
 
 
+
     const playerGlow =
       $("playerTurnGlow");
 
