@@ -1,0 +1,6 @@
+# Только зависимости container-а комнат. Статика сюда не попадает.
+server/server.js
+server/rooms.js
+src/bot.js
+src/match.js
+src/rules.js
