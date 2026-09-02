@@ -1302,6 +1302,209 @@
 
 
 /* =========================================================
+   УЧЕБНЫЙ ТУР
+
+   Отдельная мини-партия поверх лобби. Карты настоящие, но
+   стол компактный: подсказка и единственное нужное действие
+   помещаются на первом экране телефона.
+   ========================================================= */
+
+#tutorial {
+  z-index: 20020;
+}
+
+.tourWindow {
+  width:
+    min(
+      440px,
+      calc(100vw - 28px)
+    );
+
+  text-align: center;
+}
+
+.tourWindow h2 {
+  margin-bottom: 8px;
+}
+
+.tutorialHint {
+  min-height: 2.8em;
+
+  margin: 0;
+
+  color: var(--acid);
+
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: .1em;
+  line-height: 1.35;
+}
+
+.tutorialTable {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 6px;
+
+  margin: 14px 0 12px;
+
+  padding: 12px;
+
+  border:
+    1px solid rgba(32, 234, 255, .2);
+
+  border-radius: 18px;
+
+  background: rgba(32, 234, 255, .04);
+}
+
+.tutorialRow {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 6px;
+
+  color: rgba(255, 255, 255, .45);
+
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: .16em;
+}
+
+.tutorialTop {
+  --card-w: 54px;
+  --card-h: 80px;
+}
+
+.tutorialPenalty {
+  min-height: 1.1em;
+
+  color: var(--pink);
+
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: .14em;
+}
+
+.tutorialHandTitle {
+  margin-bottom: 7px;
+
+  color: rgba(255, 255, 255, .46);
+
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: .16em;
+}
+
+.tutorialHand {
+  --card-w: 52px;
+  --card-h: 78px;
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  min-height: 80px;
+}
+
+.tutorialCard {
+  display: block;
+
+  width: var(--card-w);
+  height: var(--card-h);
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.tutorialCard:active {
+  transform: translateY(3px) scale(.96);
+}
+
+.tutorialCard .card {
+  width: 100%;
+  height: 100%;
+}
+
+.tutorialStatus {
+  min-height: 1.4em;
+
+  margin: 12px 0 8px;
+
+  color: var(--cyan);
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  line-height: 1.35;
+}
+
+.tutorialActions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 8px;
+}
+
+.tutorialActions button,
+#tutorialFinish {
+  min-height: 46px;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(32, 234, 255, .38);
+
+  background: rgba(32, 234, 255, .07);
+
+  color: var(--cyan);
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+#tutorialUno,
+#tutorialFinish {
+  border-color: rgba(183, 255, 36, .68);
+
+  background: linear-gradient(90deg, #7e2cff, #e527d9);
+
+  color: var(--white);
+}
+
+#tutorialFinish {
+  width: 100%;
+}
+
+@media (min-width: 780px) {
+
+  .tourWindow {
+    width: min(440px, calc(100vw - 28px));
+  }
+}
+
+
+/* =========================================================
    КОМНАТА ПО ССЫЛКЕ
    ========================================================= */
 

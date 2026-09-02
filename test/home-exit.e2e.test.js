@@ -93,6 +93,22 @@ async function newGamePage() {
 
   await page.waitForSelector("#lobby", { timeout: 5000 });
 
+  const tutorialVisible = await page.$eval(
+    "#tutorial",
+    element => !element.classList.contains("hidden")
+  );
+
+  if (tutorialVisible) {
+    await page.evaluate(() =>
+      localStorage.setItem("acid-uno-rules-seen", "1")
+    );
+
+    await page.reload({
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+  }
+
   const rulesVisible = await page.$eval(
     "#rules",
     element => !element.classList.contains("hidden")
@@ -172,6 +188,168 @@ test.after(async () => {
     await stopped;
   }
 });
+
+
+test(
+  "первый заход проходит учебную партию и как играть запускает её снова",
+  { skip: !enabled },
+  async () => {
+
+    const context = await browser.createBrowserContext();
+
+    const page = await context.newPage();
+
+    await page.goto(ORIGIN, {
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    await page.waitForFunction(
+      () => !document
+        .getElementById("tutorial")
+        .classList.contains("hidden")
+    );
+
+    await page.click('[data-card-id="2"]');
+
+    assert.match(
+      await page.$eval(
+        "#tutorialStatus",
+        element => element.textContent
+      ),
+      /красная 3/i
+    );
+
+    assert.equal(
+      await page.$$eval(
+        "#tutorialHand [data-card-id]",
+        cards => cards.length
+      ),
+      4
+    );
+
+    await page.click('[data-card-id="1"]');
+
+    assert.match(
+      await page.$eval(
+        "#tutorialHint",
+        element => element.textContent
+      ),
+      /синюю \+2/i
+    );
+
+    await page.click('[data-card-id="2"]');
+
+    assert.match(
+      await page.$eval(
+        "#tutorialHint",
+        element => element.textContent
+      ),
+      /нажми UNO/i
+    );
+
+    await page.click("#tutorialUno");
+    await page.click('[data-card-id="3"]');
+
+    assert.equal(
+      await page.$$eval(
+        "#tutorialHand [data-card-id]",
+        cards => cards.length
+      ),
+      1
+    );
+
+    await page.click('[data-card-id="4"]');
+
+    await page.waitForSelector("#tutorialFinish:not(.hidden)");
+
+    await page.click("#tutorialFinish");
+
+    assert.equal(
+      await page.$eval(
+        "#tutorial",
+        element => element.classList.contains("hidden")
+      ),
+      true
+    );
+
+    await page.click("#rulesOpen");
+
+    await page.waitForFunction(
+      () => !document
+        .getElementById("tutorial")
+        .classList.contains("hidden")
+    );
+
+    assert.equal(
+      await page.$$eval(
+        "#tutorialHand [data-card-id]",
+        cards => cards.length
+      ),
+      4
+    );
+
+    await context.close();
+  }
+);
+
+
+test(
+  "первый экран обучения помещает карту и UNO в мобильное окно",
+  { skip: !enabled },
+  async () => {
+
+    const context = await browser.createBrowserContext();
+
+    const page = await context.newPage();
+
+    await page.setViewport({
+      width: 390,
+      height: 844,
+      isMobile: true,
+      hasTouch: true
+    });
+
+    await page.goto(ORIGIN, {
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    await page.evaluate(() =>
+      localStorage.removeItem("acid-uno-rules-seen")
+    );
+
+    await page.reload({
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    await page.waitForSelector("#tutorial:not(.hidden)");
+
+    const layout = await page.evaluate(() => {
+
+      const visible = selector => {
+        const rect = document.querySelector(selector).getBoundingClientRect();
+
+        return rect.top >= 0 && rect.bottom <= window.innerHeight;
+      };
+
+      return {
+        card: visible('[data-card-id="1"]'),
+        uno: visible("#tutorialUno"),
+        finish: visible("#tutorialReference")
+      };
+    });
+
+    assert.deepEqual(layout, {
+      card: true,
+      uno: true,
+      finish: true
+    });
+
+    await context.close();
+  }
+);
 
 
 test(
