@@ -268,3 +268,64 @@ test(
     await page.close();
   }
 );
+
+
+test(
+  "начала партии уходят в локальный сборщик только с test-префиксом",
+  { skip: !enabled },
+  async () => {
+
+    const context = await browser.createBrowserContext();
+    const page = await context.newPage();
+
+    await page.evaluateOnNewDocument(() => {
+      window.__analyticsEvents = [];
+      window.umami = {
+        track(name, data) {
+          window.__analyticsEvents.push({ name, data });
+        }
+      };
+    });
+
+    await page.goto(ORIGIN, {
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    await page.waitForSelector("#lobby", { timeout: 5000 });
+
+    await page.evaluate(() =>
+      localStorage.setItem("acid-uno-rules-seen", "1")
+    );
+
+    await page.reload({
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    if (await page.$eval("#rules", element => !element.classList.contains("hidden"))) {
+      await page.click("#rulesClose");
+    }
+
+    await page.click("#lobbyStart");
+
+    await page.waitForFunction(
+      () => document.getElementById("lobby").classList.contains("hidden")
+    );
+
+    await page.$eval("#again", button => button.click());
+
+    assert.deepEqual(
+      await page.evaluate(() => window.__analyticsEvents),
+      [{
+        name: "test-acid-uno-party-start",
+        data: { source: "lobby", attempt: 1 }
+      }, {
+        name: "test-acid-uno-party-start",
+        data: { source: "replay", attempt: 2 }
+      }]
+    );
+
+    await context.close();
+  }
+);

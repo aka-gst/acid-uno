@@ -1003,6 +1003,8 @@
           .add("hidden");
 
         startGame();
+
+        AcidAnalytics?.partyStarted("lobby");
       }
     );
 
