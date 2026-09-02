@@ -1,0 +1,270 @@
+"use strict";
+
+/*
+  Запуск:
+  ACID_UNO_E2E=1 NODE_PATH=/path/to/puppeteer/node_modules \
+  PUPPETEER_EXECUTABLE_PATH=/path/to/chrome \
+    node --test test/home-exit.e2e.test.js
+
+  Это именно браузерные проверки: они кликают настоящую ссылку
+  #homeLink в загруженной игре, а не проверяют текст исходника.
+*/
+
+const assert = require("node:assert/strict");
+const { spawn } = require("node:child_process");
+const { once } = require("node:events");
+const http = require("node:http");
+const path = require("node:path");
+const test = require("node:test");
+
+const enabled = process.env.ACID_UNO_E2E === "1";
+
+let puppeteer;
+
+if (enabled) {
+  puppeteer = require("puppeteer");
+}
+
+const PORT = 4184;
+const ORIGIN = `http://127.0.0.1:${PORT}/`;
+
+let server;
+let browser;
+
+
+function waitForServer() {
+
+  return new Promise((resolve, reject) => {
+
+    const until = Date.now() + 5000;
+
+    const probe = () => {
+
+      const request = http.get(ORIGIN, response => {
+
+        response.resume();
+
+        if (response.statusCode === 200) {
+          resolve();
+          return;
+        }
+
+        reject(new Error(`Локальная игра ответила ${response.statusCode}`));
+      });
+
+      request.on("error", error => {
+
+        if (Date.now() >= until) {
+          reject(error);
+          return;
+        }
+
+        setTimeout(probe, 50);
+      });
+    };
+
+    probe();
+  });
+}
+
+
+function nextDialog(page) {
+
+  return Promise.race([
+    once(page, "dialog").then(([dialog]) => dialog),
+    new Promise((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Подтверждение выхода не появилось")),
+        1000
+      )
+    )
+  ]);
+}
+
+
+async function newGamePage() {
+
+  const page = await browser.newPage();
+
+  await page.goto(ORIGIN, {
+    waitUntil: "domcontentloaded",
+    timeout: 5000
+  });
+
+  await page.waitForSelector("#lobby", { timeout: 5000 });
+
+  const rulesVisible = await page.$eval(
+    "#rules",
+    element => !element.classList.contains("hidden")
+  );
+
+  if (rulesVisible) {
+    await page.click("#rulesClose");
+  }
+
+  /*
+    Локальная игра живёт в /, поэтому её ../ не меняет адрес.
+    Меняем только место назначения этой же ссылки: обработчик и
+    браузерный click остаются настоящими, но уход становится наблюдаем.
+  */
+  await page.$eval(
+    "#homeLink",
+    link => link.setAttribute("href", "/outside/")
+  );
+
+  return page;
+}
+
+
+async function startMatch(page) {
+
+  await page.click("#lobbyStart");
+
+  await page.waitForFunction(
+    () => document.getElementById("lobby").classList.contains("hidden")
+  );
+}
+
+
+function clickHomeLink(page) {
+
+  return page.$eval(
+    "#homeLink",
+    link => link.click()
+  );
+}
+
+
+test.before(async () => {
+
+  if (!enabled) {
+    return;
+  }
+
+  server = spawn(process.execPath, ["server/server.js"], {
+    cwd: path.resolve(__dirname, ".."),
+    env: { ...process.env, PORT: String(PORT) },
+    stdio: "ignore"
+  });
+
+  await waitForServer();
+
+  browser = await puppeteer.launch({ headless: true });
+});
+
+
+test.after(async () => {
+
+  if (!enabled) {
+    return;
+  }
+
+  await browser?.close();
+
+  if (
+    server &&
+    server.exitCode === null &&
+    server.signalCode === null
+  ) {
+    const stopped = once(server, "exit");
+
+    server.kill();
+    await stopped;
+  }
+});
+
+
+test(
+  "НА ГЛАВНУЮ без начатой партии уводит без вопроса",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+    let dialogs = 0;
+
+    page.on("dialog", async dialog => {
+      dialogs += 1;
+      await dialog.dismiss();
+    });
+
+    await Promise.all([
+      page.waitForNavigation({
+        waitUntil: "domcontentloaded",
+        timeout: 5000
+      }),
+      clickHomeLink(page)
+    ]);
+
+    assert.equal(dialogs, 0);
+    assert.equal(page.url(), ORIGIN + "outside/");
+
+    await page.close();
+  }
+);
+
+
+test(
+  "НА ГЛАВНУЮ из партии по отмене сохраняет игру",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+
+    await startMatch(page);
+
+    const dialog = nextDialog(page);
+
+    const click = clickHomeLink(page);
+
+    const confirmation = await dialog;
+
+    assert.match(confirmation.message(), /прогресс.*не сохраниться/i);
+
+    await confirmation.dismiss();
+    await click;
+
+    assert.equal(
+      await page.$eval(
+        "#lobby",
+        element => element.classList.contains("hidden")
+      ),
+      true
+    );
+    assert.equal(page.url(), ORIGIN);
+
+    await page.close();
+  }
+);
+
+
+test(
+  "НА ГЛАВНУЮ из партии по согласию уводит",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+
+    await startMatch(page);
+
+    const dialog = nextDialog(page);
+    const navigation = page.waitForNavigation({
+      waitUntil: "domcontentloaded",
+      timeout: 5000
+    });
+
+    const click = clickHomeLink(page);
+
+    const confirmation = await dialog;
+
+    assert.match(confirmation.message(), /прогресс.*не сохраниться/i);
+
+    await confirmation.accept();
+    await click;
+    await navigation;
+
+    assert.equal(page.url(), ORIGIN + "outside/");
+    assert.equal(await page.$("#lobby"), null);
+
+    await page.close();
+  }
+);
