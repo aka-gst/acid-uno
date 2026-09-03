@@ -128,6 +128,41 @@ test("manifest с путём за разрешённым корнем остан
 });
 
 
+test("каждый локальный script из index.html обязан быть в static manifest", () => {
+
+  const root = tempTree();
+  write(root, "index.html", '<script src="src/match.js?v=1"></script>\n');
+  const missing = write(root, "missing-static.list", "index.html\n");
+  const complete = write(root, "complete-static.list", "index.html\nsrc/match.js\n");
+  const app = write(root, "app.list", "server/server.js\n");
+
+  const rejected = run(
+    [
+      "--dry-run",
+      "--source", root,
+      "--static-list", missing,
+      "--app-list", app
+    ],
+    root
+  );
+
+  assert.notEqual(rejected.code, 0, rejected.output);
+  assert.match(rejected.output, /missing local script: src\/match\.js/i);
+
+  const accepted = run(
+    [
+      "--dry-run",
+      "--source", root,
+      "--static-list", complete,
+      "--app-list", app
+    ],
+    root
+  );
+
+  assert.equal(accepted.code, 0, accepted.output);
+});
+
+
 test("stale-plan удаляет только путь из предыдущего manifest", () => {
 
   const root = tempTree();

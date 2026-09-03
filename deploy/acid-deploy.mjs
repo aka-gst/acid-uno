@@ -122,6 +122,50 @@ function manifestFromList(root, entries) {
 }
 
 
+function localScriptPaths(root) {
+
+  const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const scripts = new Set();
+
+  for (const tag of index.matchAll(/<script\b[^>]*>/gi)) {
+    const source = tag[0].match(/\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+
+    if (!source) continue;
+
+    const raw = source[1] ?? source[2] ?? source[3];
+
+    // Absolute paths belong to the site root (for example /pulse/script.js),
+    // not to the /acid static bundle.
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|\/|#)/i.test(raw)) continue;
+
+    const pathname = raw.split(/[?#]/, 1)[0];
+    let decoded;
+
+    try {
+      decoded = decodeURIComponent(pathname);
+    } catch {
+      fail(`invalid local script URL in index.html: ${raw}`);
+    }
+
+    scripts.add(safePath(path.posix.normalize(decoded.replaceAll("\\", "/"))));
+  }
+
+  return scripts;
+}
+
+
+function verifyLocalScriptsInManifest(root, staticManifest) {
+
+  const deployed = new Set(staticManifest.map(item => item.path));
+
+  for (const script of localScriptPaths(root)) {
+    if (!deployed.has(script)) {
+      fail(`static manifest is missing local script: ${script}`);
+    }
+  }
+}
+
+
 function encodeManifest(manifest) {
 
   return manifest.map(entry => `${entry.path} ${entry.hash}`).join("\n") + "\n";
@@ -604,6 +648,8 @@ function main(options) {
   const appEntries = readList(options.appList, "room-app");
   const staticManifest = manifestFromList(options.source, staticEntries);
   const appManifest = manifestFromList(options.source, appEntries);
+
+  verifyLocalScriptsInManifest(options.source, staticManifest);
 
   if (options.go) {
     deploy(options, staticManifest, appManifest);
