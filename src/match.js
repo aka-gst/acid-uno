@@ -625,6 +625,10 @@ function actUno(state, action) {
     return fail(state, "UNO объявляют на двух картах");
   }
 
+  if (legalMoves(state, action.seat).length === 0) {
+    return fail(state, "нет ходовой карты для UNO");
+  }
+
 
   const next = draft(state);
 

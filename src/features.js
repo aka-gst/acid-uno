@@ -406,6 +406,42 @@
   }
 
 
+  /*
+    Штрафные карты должны дёрнуться сами, а не сдвинуть стол под
+    пальцем игрока. Ищем уже спроецированную карту: слушатель событий
+    запускается после обновления DOM в AcidStore.dispatch().
+  */
+  function discardFx(name, ms) {
+
+    /*
+      Слушатель AcidStore слышит событие раньше, чем обычный
+      игровой путь заменит DOM сброса через render(). На следующем
+      кадре ищем уже новую карту, иначе класс уходит вместе со
+      старой и глитч никто не видит.
+    */
+    window.requestAnimationFrame(() => {
+
+      const card =
+        document.querySelector("#discard .card");
+
+      if (!card) {
+        return;
+      }
+
+      card.classList.remove(name);
+
+      void card.offsetWidth;
+
+      card.classList.add(name);
+
+      window.setTimeout(
+        () => card.classList.remove(name),
+        ms
+      );
+    });
+  }
+
+
   function flashCard(card) {
 
     const el = $$("cardFlash");
@@ -494,8 +530,11 @@
           каждой цифре, это перестаёт что-либо значить.
         */
         if (
-          FLASH_VALUES.includes(event.card.value)
+          event.card.value === "+2" ||
+          event.card.value === "+4"
         ) {
+          discardFx("glitch", 560);
+        } else if (FLASH_VALUES.includes(event.card.value)) {
           tableFx("glitch", 560);
         }
 

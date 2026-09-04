@@ -4331,6 +4331,7 @@
       !gameOver &&
       turn === "player" &&
       seat.hand.length === AcidRules.UNO_HAND_SIZE &&
+      seat.hand.some(canPlay) &&
       !seat.unoCalled
     );
 
@@ -4339,6 +4340,14 @@
       "called",
       Boolean(seat.unoCalled)
     );
+
+    document
+      .querySelector(".playerHUD")
+      ?.classList
+      .toggle(
+        "uno-called",
+        Boolean(seat.unoCalled)
+      );
   }
 
 

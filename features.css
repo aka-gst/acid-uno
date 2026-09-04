@@ -2785,7 +2785,25 @@ html[data-deck="acid"] .hand.is-crowded .handCard .cardCorner {
 
   place-items: center;
 
-  font-size: 21px;
+  grid-auto-flow: column;
+
+  gap: 5px;
+
+  min-width: 44px;
+
+  width: 94px;
+
+  min-height: 44px;
+
+  padding: 0 10px;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .06em;
+
+  white-space: nowrap;
 
   line-height: 1;
 
@@ -4323,6 +4341,36 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
 }
 
 
+/* После удачного UNO ответ виден на самом игроке, а не теряется
+   среди текста статуса. Метка держится, пока состояние партии
+   помнит объявление, и сбрасывается вместе с ростом руки. */
+.playerHUD.uno-called::after {
+  content: "UNO!";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) rotate(-7deg);
+  min-width: 64px;
+  padding: 7px 10px;
+  border: 2px solid #ecff69;
+  border-radius: 12px;
+  background: #a6f42a;
+  color: #09020c;
+  font: 900 22px/1 system-ui, sans-serif;
+  letter-spacing: .06em;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(183, 255, 36, .95), 0 0 28px rgba(183, 255, 36, .52);
+  animation: acidPlayerUno .72s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 30;
+}
+
+@keyframes acidPlayerUno {
+  from { transform: translateX(-50%) rotate(-7deg) scale(.94); }
+  to { transform: translateX(-50%) rotate(-7deg) scale(1.08); }
+}
+
+
 /* =========================================================
    ЗНАК СПЕЦКАРТЫ НА ВЕСЬ СТОЛ
 
@@ -5003,7 +5051,8 @@ html[data-skin="crt"] .value[data-v] {
   плохой сигнал. Держать дольше нельзя: помехи, которые видно,
   раздражают, а не сообщают.
 */
-.tableInner.glitch {
+.tableInner.glitch,
+#discard .card.glitch {
   animation: acidGlitch .26s steps(2, end) 2;
 }
 

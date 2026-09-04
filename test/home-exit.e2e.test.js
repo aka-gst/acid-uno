@@ -382,6 +382,191 @@ test(
 
 
 test(
+  "НА САЙТ доступна касанием не меньше 44 px в обеих ориентациях телефона",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 844, height: 390 }
+    ]) {
+      await page.setViewport(viewport);
+
+      const target = await page.$eval(
+        "#homeLink",
+        element => {
+          const rect = element.getBoundingClientRect();
+          const label = element.lastElementChild.getBoundingClientRect();
+
+          return {
+            width: rect.width,
+            height: rect.height,
+            labelHeight: label.height
+          };
+        }
+      );
+
+      assert.ok(
+        target.width >= 44,
+        `${viewport.width}×${viewport.height}: ширина ${target.width}px`
+      );
+      assert.ok(
+        target.height >= 44,
+        `${viewport.width}×${viewport.height}: высота ${target.height}px`
+      );
+      assert.ok(
+        target.labelHeight <= 16,
+        `${viewport.width}×${viewport.height}: НА САЙТ перенеслось на ${target.labelHeight}px`
+      );
+    }
+
+    await page.close();
+  }
+);
+
+
+test(
+  "+2 и +4 глючат на центральной карте, не на всём столе",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+
+    await startMatch(page);
+
+    const effects = [];
+
+    for (const spec of [
+      { id: 2002, color: "red", value: "+2", top: "red" },
+      { id: 2004, color: "wild", value: "+4", top: "blue", pick: "green" }
+    ]) {
+      effects.push(
+        await page.evaluate(async card => {
+          const state = AcidStore.current();
+
+          state.activeSeat = 0;
+          state.currentColor = card.top;
+          state.drawPenalty = 0;
+          state.penaltyType = null;
+          state.discard = [{ id: 1999, color: card.top, value: "5" }];
+          state.seats[0].hand = [
+            { id: card.id, color: card.color, value: card.value },
+            { id: 2999, color: card.top, value: "9" }
+          ];
+
+          const result = await AcidStore.dispatch({
+            type: "play",
+            seat: 0,
+            cardId: card.id,
+            color: card.pick
+          });
+
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          render();
+
+          await new Promise(requestAnimationFrame);
+
+          return {
+            card: document.querySelector("#discard .card")?.classList.contains("glitch"),
+            table: document.querySelector(".tableInner")?.classList.contains("glitch")
+          };
+        },
+        spec)
+      );
+    }
+
+    assert.deepEqual(effects, [
+      { card: true, table: false },
+      { card: true, table: false }
+    ]);
+
+    await page.close();
+  }
+);
+
+
+test(
+  "UNO появляется только с ходовой картой и отмечает самого игрока",
+  { skip: !enabled },
+  async () => {
+
+    const page = await newGamePage();
+
+    await startMatch(page);
+
+    async function playSkipAndRead(hand) {
+      return page.evaluate(async cards => {
+        const state = AcidStore.current();
+
+        state.activeSeat = 0;
+        state.currentColor = "red";
+        state.drawPenalty = 0;
+        state.penaltyType = null;
+        state.discard = [{ id: 3000, color: "red", value: "5" }];
+        state.seats[0].hand = [
+          { id: 3001, color: "red", value: "skip" },
+          ...cards
+        ];
+
+        const result = await AcidStore.dispatch({
+          type: "play",
+          seat: 0,
+          cardId: 3001
+        });
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        render();
+
+        return document
+          .getElementById("unoButton")
+          .classList.contains("show");
+      }, hand);
+    }
+
+    assert.equal(
+      await playSkipAndRead([
+        { id: 3002, color: "blue", value: "1" },
+        { id: 3003, color: "green", value: "9" }
+      ]),
+      false
+    );
+
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 5000 });
+    await page.waitForSelector("#lobby", { timeout: 5000 });
+    await startMatch(page);
+
+    assert.equal(
+      await playSkipAndRead([
+        { id: 3012, color: "red", value: "1" },
+        { id: 3013, color: "blue", value: "9" }
+      ]),
+      true
+    );
+
+    await page.click("#unoButton");
+
+    assert.equal(
+      await page.$eval(
+        ".playerHUD",
+        element => element.classList.contains("uno-called")
+      ),
+      true
+    );
+
+    await page.close();
+  }
+);
+
+
+test(
   "НА ГЛАВНУЮ из партии по отмене сохраняет игру",
   { skip: !enabled },
   async () => {
