@@ -504,6 +504,18 @@
             playable
           );
 
+          const base =
+            Number(el.dataset.fanZ || el.style.zIndex) || 1;
+
+          el.dataset.fanZ = String(base % 100 || base);
+
+          el.style.zIndex =
+            String(
+              playable
+                ? 100 + Number(el.dataset.fanZ)
+                : Number(el.dataset.fanZ)
+            );
+
 
           el.classList.toggle(
             "v9-unplayable",

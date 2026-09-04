@@ -1119,7 +1119,10 @@ $("restart")
 $("again")
   .addEventListener(
     "click",
-    startGame
+    () => {
+      startGame();
+      AcidAnalytics?.partyStarted("replay");
+    }
   );
 
 document

@@ -1302,6 +1302,209 @@
 
 
 /* =========================================================
+   УЧЕБНЫЙ ТУР
+
+   Отдельная мини-партия поверх лобби. Карты настоящие, но
+   стол компактный: подсказка и единственное нужное действие
+   помещаются на первом экране телефона.
+   ========================================================= */
+
+#tutorial {
+  z-index: 20020;
+}
+
+.tourWindow {
+  width:
+    min(
+      440px,
+      calc(100vw - 28px)
+    );
+
+  text-align: center;
+}
+
+.tourWindow h2 {
+  margin-bottom: 8px;
+}
+
+.tutorialHint {
+  min-height: 2.8em;
+
+  margin: 0;
+
+  color: var(--acid);
+
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: .1em;
+  line-height: 1.35;
+}
+
+.tutorialTable {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 6px;
+
+  margin: 14px 0 12px;
+
+  padding: 12px;
+
+  border:
+    1px solid rgba(32, 234, 255, .2);
+
+  border-radius: 18px;
+
+  background: rgba(32, 234, 255, .04);
+}
+
+.tutorialRow {
+  display: grid;
+
+  justify-items: center;
+
+  gap: 6px;
+
+  color: rgba(255, 255, 255, .45);
+
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: .16em;
+}
+
+.tutorialTop {
+  --card-w: 54px;
+  --card-h: 80px;
+}
+
+.tutorialPenalty {
+  min-height: 1.1em;
+
+  color: var(--pink);
+
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: .14em;
+}
+
+.tutorialHandTitle {
+  margin-bottom: 7px;
+
+  color: rgba(255, 255, 255, .46);
+
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: .16em;
+}
+
+.tutorialHand {
+  --card-w: 52px;
+  --card-h: 78px;
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  min-height: 80px;
+}
+
+.tutorialCard {
+  display: block;
+
+  width: var(--card-w);
+  height: var(--card-h);
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.tutorialCard:active {
+  transform: translateY(3px) scale(.96);
+}
+
+.tutorialCard .card {
+  width: 100%;
+  height: 100%;
+}
+
+.tutorialStatus {
+  min-height: 1.4em;
+
+  margin: 12px 0 8px;
+
+  color: var(--cyan);
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .07em;
+  line-height: 1.35;
+}
+
+.tutorialActions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 8px;
+}
+
+.tutorialActions button,
+#tutorialFinish {
+  min-height: 46px;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(32, 234, 255, .38);
+
+  background: rgba(32, 234, 255, .07);
+
+  color: var(--cyan);
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+#tutorialUno,
+#tutorialFinish {
+  border-color: rgba(183, 255, 36, .68);
+
+  background: linear-gradient(90deg, #7e2cff, #e527d9);
+
+  color: var(--white);
+}
+
+#tutorialFinish {
+  width: 100%;
+}
+
+@media (min-width: 780px) {
+
+  .tourWindow {
+    width: min(440px, calc(100vw - 28px));
+  }
+}
+
+
+/* =========================================================
    КОМНАТА ПО ССЫЛКЕ
    ========================================================= */
 
@@ -1850,7 +2053,7 @@
   /* кислотный жёлтый */
   --yellow: #f5d020;
   --yellow-light: #ffe97e;
-  --yellow-deep: #8f7200;
+  --yellow-deep: #dba400;
 
   /* кислотный зелёный — основной цвет игры */
   --green: #a6f42a;
@@ -1889,7 +2092,7 @@
     radial-gradient(
       circle at 30% 18%,
       var(--yellow-light),
-      var(--yellow) 35%,
+      var(--yellow) 55%,
       var(--yellow-deep) 100%
     );
 
@@ -3375,7 +3578,6 @@ html[data-deck="acid"] .value[data-v="+4"],
 .cardFlash[data-v="+4"] {
   background:
     conic-gradient(
-      from -45deg,
       var(--red) 0 25%,
       var(--yellow) 25% 50%,
       var(--green) 50% 75%,
@@ -3383,8 +3585,7 @@ html[data-deck="acid"] .value[data-v="+4"],
     );
 
   filter:
-    drop-shadow(0 0 3px #fff)
-    drop-shadow(0 0 12px rgba(255, 255, 255, .45));
+    drop-shadow(0 0 2px rgba(0, 0, 0, .8));
 }
 
 html[data-deck="acid"] .value[data-v="skip"],
@@ -3401,8 +3602,8 @@ html[data-deck="acid"] .value[data-v="reverse"],
 
 html[data-deck="acid"] .value[data-v="+2"],
 .cardFlash[data-v="+2"] {
-  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
-  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='15' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='13.6' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
+  mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.2' y='5.4' width='10.6' height='13.6' rx='2' fill='white'/><rect x='9.4' y='2.2' width='13' height='17.4' rx='2.6' fill='black'/><rect x='11' y='3.8' width='10.6' height='15' rx='2' fill='white'/></svg>");
 }
 
 html[data-deck="acid"] .value[data-v="+4"],
@@ -4034,6 +4235,22 @@ html[data-deck="acid"] .deckUno {
   letter-spacing: .18em;
 }
 
+.playerHUD .youLabel,
+.playerHUD #playerCount {
+  padding: 4px 10px;
+  border: 1px solid rgba(183, 255, 36, .18);
+  border-radius: 10px;
+  background: rgba(8, 4, 18, .84);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.playerHUD.is-turn .youLabel {
+  border-color: rgba(183, 255, 36, .6);
+  box-shadow: 0 0 18px rgba(183, 255, 36, .3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9);
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .playerHUD.is-turn .youLabel {
@@ -4089,6 +4306,7 @@ body:has(#animationLayer .v91-dragging) #hand .handCard.v9-unplayable {
 #hand .handCard.v9-playable,
 #hand .handCard.playable {
   filter: brightness(1.14) saturate(1.1);
+  z-index: 20;
 
   opacity: 1;
 }

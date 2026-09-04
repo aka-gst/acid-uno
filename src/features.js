@@ -1003,6 +1003,8 @@
           .add("hidden");
 
         startGame();
+
+        AcidAnalytics?.partyStarted("lobby");
       }
     );
 
@@ -1191,6 +1193,30 @@
     },
     true
   );
+
+
+  $$("homeLink")
+    ?.addEventListener(
+      "click",
+      event => {
+
+        if (
+          gameOver ||
+          !$$("lobby")?.classList.contains("hidden")
+        ) {
+          return;
+        }
+
+        const leave =
+          window.confirm(
+            "Выйти на сайт? Прогресс может не сохраниться."
+          );
+
+        if (!leave) {
+          event.preventDefault();
+        }
+      }
+    );
 
 
   /* =======================================================

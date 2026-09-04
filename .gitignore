@@ -1,0 +1,5 @@
+# macOS and temporary workspace artifacts
+.DS_Store
+
+# local temporary staging
+trash/
