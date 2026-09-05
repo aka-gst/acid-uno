@@ -5383,6 +5383,25 @@ html[data-skin="crt"] .value[data-v] {
     0 0 12px color-mix(in srgb, var(--wave) 55%, transparent);
 }
 
+/* Редкая реакция соперника на +4: оживает его готовый портрет,
+   а не весь стол и не поток текстовых подсказок. */
+.opponent.v91-reacting .opponentPlate {
+  animation: v91PersonaReact .62s ease-out;
+}
+
+@keyframes v91PersonaReact {
+  0% { transform: translateY(0) scale(1); }
+  34% {
+    transform: translateY(-5px) scale(1.06);
+    box-shadow: 0 0 0 2px rgba(255, 61, 126, .72), 0 0 28px rgba(255, 61, 126, .66);
+  }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opponent.v91-reacting .opponentPlate { animation: none; }
+}
+
 
 /* =========================================================
    РИСОВАННЫЕ КАРТИНКИ

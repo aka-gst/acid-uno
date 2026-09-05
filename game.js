@@ -1058,6 +1058,19 @@ function bestBotColor(
 }
 
 function botChoose(indexes) {
+  const persona =
+    window.AcidBot?.personaForSeat(
+      activeSeat
+    );
+
+  if (window.AcidBot?.chooseIndex) {
+    return window.AcidBot.chooseIndex(
+      bot,
+      indexes,
+      persona
+    );
+  }
+
   return AcidRules.chooseCard(
     bot,
     indexes

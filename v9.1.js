@@ -41,7 +41,9 @@
     botUnoVulnerable: false,
     botUnoTimer: null,
     botCatchTimer: null,
-    botUnoSeat: -1
+    botUnoSeat: -1,
+
+    plusFourReactions: new Set()
 
   };
 
@@ -4497,6 +4499,41 @@
   }
 
 
+  /*
+    Соперник отвечает не на наш текст, а на уже принятый
+    редьюсером ход. Реакция короткая и редкая: один +4 не
+    может породить поток одинаковых реплик.
+  */
+  function reactToPlusFour91(event) {
+
+    const target = activeSeat;
+
+    const reaction =
+      window.AcidBot?.reactionFor(
+        event,
+        target,
+        window.AcidBot.personaForSeat(target),
+        Math.random,
+        V91.plusFourReactions
+      );
+
+    if (!reaction) {
+      return;
+    }
+
+    const opponent =
+      opponentElement91(reaction.seat);
+
+    opponent?.classList.remove("v91-reacting");
+
+    requestAnimationFrame(
+      () => opponent?.classList.add("v91-reacting")
+    );
+
+    burst91(reaction.message, "danger");
+  }
+
+
   function clearBotUno91() {
 
     clearTimeout(
@@ -4774,6 +4811,17 @@
   });
 
 
+  AcidStore.subscribe(events => {
+
+    events.forEach(event => {
+
+      if (event.type === "played") {
+        reactToPlusFour91(event);
+      }
+    });
+  });
+
+
   async function playRemote91(events) {
 
     const me =
@@ -4924,6 +4972,8 @@
 
       V91.botPending =
         false;
+
+      V91.plusFourReactions.clear();
 
 
       clearAction91();

@@ -50,7 +50,7 @@
   roll — источник случайности [0, 1): в симуляторе он
   детерминированный, в игре обычный Math.random.
 */
-function decide(state, seat, roll) {
+function decide(state, seat, roll, persona) {
 
   const moves =
     M.legalMoves(state, seat);
@@ -69,7 +69,12 @@ function decide(state, seat, roll) {
 
     const chosen =
       hand[
-        R.chooseCard(hand, indexes, roll)
+        chooseIndex(
+          hand,
+          indexes,
+          persona || PERSONAS.balanced,
+          roll
+        )
       ];
 
     return {
@@ -101,6 +106,122 @@ function decide(state, seat, roll) {
   }
 
   return { type: "pass", seat };
+}
+
+
+/*
+  Характер задаёт не имя, а выбор в равной законной ситуации.
+  Balanced оставляет прежнюю политику — это важно для старых
+  симуляций длительности и комнат. Осторожный бережёт штрафы,
+  рискованный тратит их, пока на столе есть возможность.
+*/
+const PERSONAS = Object.freeze({
+  balanced: "balanced",
+  cautious: "cautious",
+  risky: "risky"
+});
+
+
+function personaForSeat(seat) {
+
+  if (seat <= 0) {
+    return PERSONAS.balanced;
+  }
+
+  return seat % 2 === 1
+    ? PERSONAS.cautious
+    : PERSONAS.risky;
+}
+
+
+function chooseIndex(hand, indexes, persona, noise) {
+
+  const style =
+    persona || PERSONAS.balanced;
+
+  if (style === PERSONAS.balanced) {
+    return R.chooseCard(hand, indexes, noise);
+  }
+
+  const jitter = noise || (() => Math.random());
+
+  let best = indexes[0];
+  let score = -Infinity;
+
+  indexes.forEach(index => {
+
+    const card = hand[index];
+
+    let current;
+
+    if (style === PERSONAS.cautious) {
+      current =
+        card.value === "+4"
+          ? -20
+          : card.value === "+2"
+            ? -12
+            : R.cardPoints(card);
+    } else {
+      current = {
+        "+4": 100,
+        "+2": 90,
+        skip: 75,
+        reverse: 75,
+        wild: 50
+      }[card.value] || R.cardPoints(card);
+    }
+
+    current += jitter() * .01;
+
+    if (current > score) {
+      score = current;
+      best = index;
+    }
+  });
+
+  return best;
+}
+
+
+const REACTION_CHANCE = .22;
+
+
+/*
+  Реакция — редкий ответ на состоявшийся ход, не генератор
+  реплик. Ключ карты не даёт одному событию прозвучать дважды.
+*/
+function reactionFor(event, targetSeat, persona, roll, seen) {
+
+  if (
+    !event ||
+    event.type !== "played" ||
+    event.card?.value !== "+4" ||
+    persona !== PERSONAS.cautious ||
+    targetSeat === event.seat
+  ) {
+    return null;
+  }
+
+  const key =
+    `${event.seat}:${event.card.id}`;
+
+  const memory = seen || new Set();
+
+  if (memory.has(key)) {
+    return null;
+  }
+
+  memory.add(key);
+
+  if ((roll || Math.random)() >= REACTION_CHANCE) {
+    return null;
+  }
+
+  return {
+    seat: targetSeat,
+    kind: "cautious-plus4",
+    message: "НЕ РИСКУЙ."
+  };
 }
 
 
@@ -143,8 +264,13 @@ function turnDelay(roll) {
 
 return {
   decide,
+  chooseIndex,
+  personaForSeat,
+  reactionFor,
   unoDelay,
   turnDelay,
+  PERSONAS,
+  REACTION_CHANCE,
   UNO_DELAY_MS,
   TURN_DELAY_MS
 };
