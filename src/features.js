@@ -988,11 +988,19 @@
     paintLobby();
 
     lobby?.classList.remove("hidden");
+
+    document.body?.classList.add(
+      "lobby-open"
+    );
   }
 
 
   function closeLobby() {
     lobby?.classList.add("hidden");
+
+    document.body?.classList.remove(
+      "lobby-open"
+    );
   }
 
 
